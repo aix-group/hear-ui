@@ -110,7 +110,7 @@ psycopg[binary]==3.2.12
     # via -r requirements.in
 psycopg-binary==3.2.12
     # via psycopg
-pydantic[email]==2.12.4
+pydantic[email]==2.12.5
     # via
     #   -r requirements.in
     #   fastapi
