@@ -1,69 +1,49 @@
-# HEAR Backend
+# HEAR-UI Backend
 
-> FastAPI backend for Cochlear Implant success prediction with ML model and SHAP explanations.
+> FastAPI backend for Cochlear Implant outcome prediction with ML model and SHAP explanations.
 
-For general project information, see the main [README](../README.md).
+For project-level documentation, see the main [README](../README.md).
 
 ---
 
 ## Overview
 
 The backend provides a REST API for:
-- **ML predictions:** Probability of successful cochlear implant outcomes (0-100%)
-- **SHAP explanations:** Feature importance analysis for transparency
-- **Feedback management:** Store and retrieve clinical feedback
-- **Patient data:** CRUD operations for patient records
-
----
-
-## Architecture
-
-```
-Backend (FastAPI)
- app/
-    api/routes/          # REST endpoints (predict, explainer, feedback, patients)
-    core/                # Business logic (model_wrapper, shap_explainer)
-    models/              # Database models + trained ML model (.pkl)
-    db/                  # Database session and utilities
-    tests/               # Test suite (pytest)
- alembic/                 # Database migrations
-```
+- **ML Predictions** — probability of successful CI outcome (0–100%)
+- **Explainable AI** — SHAP feature importance, coefficient-based, and LIME explanations
+- **Patient Management** — CRUD operations for patient records
+- **Feedback Collection** — store and retrieve clinical feedback
 
 ---
 
 ## Tech Stack
 
-- **Framework:** FastAPI 0.115+
-- **Database:** PostgreSQL 12 + SQLModel ORM
-- **ML:** scikit-learn (RandomForestClassifier, 39 features)
-- **Explainability:** SHAP (TreeExplainer for ensemble models)
-- **Migrations:** Alembic
-- **Testing:** pytest (165 tests, 83% coverage)
-- **Code Quality:** Ruff (linter), mypy (type checking)
+| Component | Technology |
+|-----------|------------|
+| Framework | FastAPI 0.114+ |
+| ORM | SQLModel (SQLAlchemy 2.0 async) |
+| Database | PostgreSQL 15 |
+| Migrations | Alembic |
+| ML Model | scikit-learn (RandomForest) |
+| Explainability | SHAP (TreeExplainer), coefficient-based, LIME |
+| Testing | pytest (542 tests, 86% coverage) |
+| Linting | Ruff (linter + formatter) |
+| Type Checking | mypy |
 
 ---
 
 ## Setup
 
-### Prerequisites
-
-- Docker & Docker Compose
-- Python 3.12+ (for local development)
-
-### Quick Start
+### With Docker (recommended)
 
 ```bash
 # From project root
-cd hear-ui
-
-# Start all services
 docker compose -f docker/docker-compose.yml \
   -f docker/docker-compose.override.yml \
-  --env-file "$PWD/.env" up -d
+  --env-file "$PWD/.env" up -d --build
 
-# Verify backend is running
+# Verify
 curl http://localhost:8000/api/v1/utils/health-check/
-# Expected: {"status":"ok"}
 
 # View logs
 docker compose -f docker/docker-compose.yml logs -f backend
@@ -73,172 +53,159 @@ docker compose -f docker/docker-compose.yml logs -f backend
 
 ```bash
 cd backend
-
-# Install dependencies (using uv or pip)
-pip install -r requirements.txt
+pip install -r requirements.txt   # or: uv sync
 
 # Set environment variables
-export DATABASE_URL=postgresql://postgres:password@localhost:5434/app
-export MODEL_PATH=app/models/logreg_best_pipeline.pkl
+export DATABASE_URL=postgresql://postgres:password@localhost:5432/hear_db
 
 # Run migrations
 alembic upgrade head
 
-# Start development server
+# Start server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Database Migrations
+---
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/utils/health-check/` | GET | Health status |
+| `/api/v1/predict/` | POST | Single ML prediction |
+| `/api/v1/predict/batch` | POST | Batch predictions |
+| `/api/v1/explainer/explain` | POST | SHAP/coefficient/LIME explanation |
+| `/api/v1/patients/` | GET/POST | List & create patients |
+| `/api/v1/patients/{id}` | GET/PUT/DELETE | Patient CRUD |
+| `/api/v1/patients/{id}/predict` | POST | Predict for stored patient |
+| `/api/v1/patients/{id}/explain` | POST | Explain for stored patient |
+| `/api/v1/feedback/` | GET/POST | Feedback management |
+| `/api/v1/features/` | GET | Available model features |
+| `/api/v1/config/` | GET | Frontend configuration |
+| `/api/v1/model-card/` | GET | Model documentation |
+| `/docs` | GET | Swagger UI |
+
+Interactive docs: http://localhost:8000/docs
+
+### Example Requests
 
 ```bash
-# Apply migrations
-docker compose -f docker/docker-compose.yml exec backend alembic upgrade head
+# Prediction
+curl -X POST http://localhost:8000/api/v1/predict/ \
+  -H "Content-Type: application/json" \
+  -d '{"Alter [J]": 45, "Geschlecht": "w", "Primäre Sprache": "Deutsch"}'
 
-# Create new migration
-docker compose -f docker/docker-compose.yml exec backend alembic revision --autogenerate -m "Description"
-
-# Rollback
-docker compose -f docker/docker-compose.yml exec backend alembic downgrade -1
-```
-
-### Access Database
-
-```bash
-# Via psql (from host)
-PGPASSWORD=your_password psql -h localhost -p 5434 -U postgres -d app
-
-# Via pgAdmin (web UI)
-# Open: http://localhost:5051
-# Login: admin@example.com / admin
-# Add server: Host=db, Port=5432, User=postgres, Password from .env
+# SHAP explanation
+curl -X POST http://localhost:8000/api/v1/explainer/explain \
+  -H "Content-Type: application/json" \
+  -d '{"age": 45, "gender": "w", "implant_type": "Cochlear"}'
 ```
 
 ---
 
 ## Testing
 
-### Run All Tests
-
 ```bash
-# Inside container
-docker compose -f docker/docker-compose.yml exec backend python -m pytest app/tests/ -v
+# In Docker (recommended)
+docker compose -f docker/docker-compose.yml exec backend \
+  python -m pytest app/tests/ -v --cov=app --cov-report=term-missing
 
-# With coverage
-docker compose -f docker/docker-compose.yml exec backend python -m pytest app/tests/ --cov=app --cov-report=html
-
-# Specific test file
-docker compose -f docker/docker-compose.yml exec backend python -m pytest app/tests/test_predict.py -v
-
-# Quick test script
-bash ./scripts/test.sh
+# Local
+cd backend && pytest app/tests/ -v --cov=app
 ```
+
+**Results**: 542 tests passed | 86% coverage
 
 ### Test Categories
 
-| Category | Tests | Coverage |
-|----------|-------|----------|
-| Health Checks | 5 | Core functionality |
-| ML Model Integration | 15 | Predictions |
-| SHAP Explainer | 12 | Feature importance |
-| API Endpoints | 25 | REST API |
-| Database CRUD | 20 | Persistence |
-| Security | 10 | Password hashing |
-| Integration | 78 | End-to-end |
-
-**Total:** 165 tests, 83% code coverage
-
-### CI/CD
-
-GitHub Actions workflows:
-- `ci.yml` - Combined pipeline (lint → test → e2e)
-- `backend-tests.yml` - Backend tests with coverage
-- `playwright.yml` - E2E API tests
+| Category | Description |
+|----------|-------------|
+| Unit Tests | Core logic (model wrapper, preprocessor, explainers) |
+| API Route Tests | All REST endpoints |
+| Integration Tests | Database operations, model loading |
+| SHAP Tests | Explainer correctness and consistency |
+| Consistency Tests | Predict vs. explainer alignment |
 
 ---
 
-## API
-
-### Main Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/utils/health-check/` | GET | Health status |
-| `/api/v1/predict/` | POST | ML prediction |
-| `/api/v1/explainer/explain` | POST | SHAP explanation |
-| `/api/v1/feedback/` | GET/POST | Feedback management |
-| `/api/v1/patients/` | GET | List patients (paginated) |
-| `/api/v1/patients/{id}` | GET/PUT/DELETE | Patient CRUD |
-| `/docs` | GET | Swagger UI |
-| `/redoc` | GET | ReDoc documentation |
-
-**Interactive documentation:** http://localhost:8000/docs
-
-### Example Requests
+## Database Migrations
 
 ```bash
-# Health check
-curl http://localhost:8000/api/v1/utils/health-check/
+# Apply migrations
+docker compose -f docker/docker-compose.yml exec backend alembic upgrade head
 
-# Prediction
-curl -X POST http://localhost:8000/api/v1/predict/ \
-  -H "Content-Type: application/json" \
-  -d '{"Alter [J]": 45, "Geschlecht": "w", ...}'
+# Create new migration
+docker compose -f docker/docker-compose.yml exec backend \
+  alembic revision --autogenerate -m "Description"
 
-# SHAP explanation
-curl -X POST http://localhost:8000/api/v1/explainer/explain \
-  -H "Content-Type: application/json" \
-  -d '{"age": 45, "gender": "w", ...}'
+# Rollback one step
+docker compose -f docker/docker-compose.yml exec backend alembic downgrade -1
 ```
 
-See [main README](../README.md) for full examples.
+---
+
+## Project Structure
+
+```
+backend/
+├── app/
+│   ├── main.py              # FastAPI app entrypoint, app.state.model_wrapper
+│   ├── api/
+│   │   ├── api.py           # Route registration
+│   │   ├── deps.py          # Dependency injection
+│   │   └── routes/          # API endpoint handlers
+│   ├── core/
+│   │   ├── model_wrapper.py       # ML model loading & inference
+│   │   ├── preprocessor.py        # Feature preprocessing pipeline
+│   │   ├── shap_explainer.py      # SHAP TreeExplainer
+│   │   ├── rf_dataset_adapter.py  # RandomForest dataset adapter
+│   │   ├── alternative_explainers.py  # Coefficient & LIME explainers
+│   │   └── explainer_registry.py  # Explainer factory
+│   ├── db/                  # Database connection, CRUD, models
+│   ├── models/              # SQLModel schemas + trained .pkl model
+│   ├── config/              # Feature definitions, locales, model cards
+│   └── tests/               # Test suite (542 tests)
+├── alembic.ini              # Alembic configuration
+├── Dockerfile               # Container build
+├── pyproject.toml           # Python project config (Ruff, pytest, mypy)
+└── requirements.txt         # Python dependencies
+```
 
 ---
 
-## Contributing
+## CI/CD
 
-### Code Standards
+GitHub Actions pipeline ([backend-ci.yml](../.github/workflows/backend-ci.yml)):
 
-- **Style:** PEP 8, enforced by Ruff
-- **Type hints:** Required for all functions
-- **Tests:** Write tests for new features (aim for 80%+ coverage)
-- **Documentation:** Update API docs and docstrings
+1. **Lint & Format** — Ruff check and format verification
+2. **Type Check** — mypy static analysis
+3. **Unit & Integration Tests** — pytest with PostgreSQL service, coverage ≥69%
+4. **DB Migration Check** — Alembic apply/rollback validation
+5. **E2E API Tests** — Playwright against Docker Compose stack
+6. **Docker Build + Security Scan** — Trivy vulnerability scanning
+7. **Smoke Tests** — Container runtime health checks
 
-### Development Workflow
+---
 
-1. Create feature branch: `git checkout -b feature/your-feature`
-2. Make changes and add tests
-3. Run linter: `ruff check app/`
-4. Run tests: `pytest app/tests/`
-5. Commit: `git commit -m "feat: add feature"`
-6. Push and open PR
-
-### Linting & Formatting
+## Linting & Formatting
 
 ```bash
-# Check code
-docker compose -f docker/docker-compose.yml exec backend ruff check app/
+# Check
+ruff check app/
 
-# Auto-fix issues
-docker compose -f docker/docker-compose.yml exec backend ruff check app/ --fix
+# Auto-fix
+ruff check app/ --fix
+
+# Format
+ruff format app/
 
 # Type checking
-docker compose -f docker/docker-compose.yml exec backend mypy app/
+mypy app/ --config-file=pyproject.toml
 ```
 
 ---
 
 ## License
 
-MIT License - see [LICENSE](../LICENSE)
-
----
-
-## Further Documentation
-
-- [Main README](../README.md) - Complete project documentation
-- [Testing Guide](README-TESTING.md) - Detailed test documentation
-- [Dependencies](README-DEPS.md) - Package management
-- [Model Deployment](MODEL_DEPLOYMENT.md) - Model configuration & deployment guide
-- [Project Documentation](../docs/Projektdokumentation.md) - Full technical docs (German)
-- [Production Readiness](../docs/PRODUCTION_READINESS.md) - Deployment checklist
+MIT License — see [LICENSE](../LICENSE)
 

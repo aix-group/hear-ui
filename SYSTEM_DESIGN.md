@@ -12,7 +12,7 @@ HEAR-UI is a Dockerized, web-based system that serves cochlear-implant outcome p
 
 ## Core Data Flow (Predict + Explain)
 1. Frontend sends patient data to `POST /api/v1/predict/` or `POST /api/v1/explainer/explain`.
-2. Backend validates input, then `ModelWrapper` preprocesses data via `CochlearImplantDatasetAdapter` and `preprocessor.py`.
+2. Backend validates input, then `ModelWrapper` preprocesses data via `RandomForestDatasetAdapter` and `preprocessor.py`.
 3. `ModelAdapter` runs inference on the loaded model file.
 4. Optional: explainer runs SHAP (or coefficient/LIME) using background data and feature metadata.
 5. Results are returned to the frontend; optional persistence saves a record in Postgres.

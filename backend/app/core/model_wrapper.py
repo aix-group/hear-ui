@@ -79,7 +79,7 @@ class ModelWrapper:
             model_adapter: Adapter for model framework (sklearn, PyTorch, etc.)
                           If None, auto-detected when model is loaded
             dataset_adapter: Adapter for dataset preprocessing
-                            If None, defaults to CochlearImplantDatasetAdapter
+                            If None, defaults to RandomForestDatasetAdapter
         """
         self.model: Any | None = None
         self.model_adapter: ModelAdapter | None = model_adapter
