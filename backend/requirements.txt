@@ -206,7 +206,7 @@ pandas==2.2.3
     # added for CSV upload/processing
 shap>=0.41.0
     # for explainability (SHAP values)
-scikit-learn==1.6.1
+scikit-learn==1.8.0
     # ML model dependencies (pinned to match pickled model version)
 numpy>=1.24.0
     # numerical computations
