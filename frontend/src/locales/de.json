@@ -27,6 +27,8 @@
     "form": {
       "title": "Neuen Patienten anlegen",
       "title_edit": "Patienten aktualisieren",
+      "title_copy_left": "Linkes Ohr anlegen",
+      "title_copy_right": "Rechtes Ohr anlegen",
       "back": "Zurück zu den Patienten",
       "submit": "Speichern",
       "reset": "Zurücksetzen",

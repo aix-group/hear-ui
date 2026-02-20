@@ -18,7 +18,7 @@
         {{ $t('form.back') }}
       </v-btn>
       <v-spacer/>
-      <h1>{{ isEdit ? $t('form.title_edit') : $t('form.title') }}</h1>
+      <h1>{{ isEdit ? $t('form.title_edit') : copyEarParam === 'L' ? $t('form.title_copy_left') : copyEarParam === 'R' ? $t('form.title_copy_right') : $t('form.title') }}</h1>
       <v-spacer/>
       <form v-if="definitionsReady" class="new-patient-form" autocomplete="off" @submit.prevent="submit">
         <!-- Required-fields info banner -->
@@ -172,6 +172,10 @@ const isEdit = computed(() => Boolean(patientId.value))
 const copyFromId = computed<string | null>(() => {
   const q = route.query.copyFrom
   return typeof q === 'string' && q ? q : null
+})
+const copyEarParam = computed<string | null>(() => {
+  const q = route.query.ear
+  return typeof q === 'string' && (q === 'L' || q === 'R') ? q : null
 })
 const backTarget = computed(() =>
   isEdit.value ? {name: 'PatientDetail', params: {id: patientId.value}} : {name: 'SearchPatients'}

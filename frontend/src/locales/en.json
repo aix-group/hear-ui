@@ -27,6 +27,8 @@
     "form": {
       "title": "Add new patient",
       "title_edit": "Update patient",
+      "title_copy_left": "Add left ear",
+      "title_copy_right": "Add right ear",
       "back": "Back to patients",
       "submit": "Submit",
       "reset": "Reset",

@@ -84,7 +84,7 @@
               color="primary"
               variant="tonal"
               prepend-icon="mdi-ear-hearing"
-              :to="{ name: 'CreatePatient', query: { copyFrom: patient_id } }"
+              :to="{ name: 'CreatePatient', query: { copyFrom: patient_id, ear: otherEar } }"
           >
             {{ $t('patient_details.add_other_ear') }} ({{ otherEar }})
           </v-btn>
