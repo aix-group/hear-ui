@@ -66,19 +66,7 @@
       <!-- Actions -->
       <div class="d-flex flex-wrap align-center gap-3 mb-4 ms-1">
 
-        <!-- Primary action -->
-        <v-btn
-            color="success"
-            variant="flat"
-            prepend-icon="mdi-chart-bar"
-            :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
-        >
-          {{ $t('patient_details.generate_prediction') }}
-        </v-btn>
-
-        <v-divider vertical class="mx-1" style="height:36px;align-self:center"/>
-
-        <!-- Edit -->
+        <!-- Left group: Edit + second ear -->
         <v-btn
             color="warning"
             variant="tonal"
@@ -88,7 +76,6 @@
           {{ $t('patient_details.change_patient') }}
         </v-btn>
 
-        <!-- Add second ear -->
         <v-btn
             v-if="otherEar"
             color="primary"
@@ -101,7 +88,7 @@
 
         <v-spacer />
 
-        <!-- Delete -->
+        <!-- Right group: Delete + Predict -->
         <v-btn
             color="error"
             variant="outlined"
@@ -110,6 +97,15 @@
             @click="openDeleteDialog"
         >
           {{ $t('patient_details.delete_patient') }}
+        </v-btn>
+
+        <v-btn
+            color="success"
+            variant="flat"
+            prepend-icon="mdi-chart-bar"
+            :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
+        >
+          {{ $t('patient_details.generate_prediction') }}
         </v-btn>
       </div>
 
