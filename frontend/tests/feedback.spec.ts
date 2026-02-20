@@ -12,7 +12,8 @@ import { test, expect } from '@playwright/test';
 const API_URL = process.env.API_URL || 'http://localhost:8000';
 
 test.describe('Feedback API', () => {
-  let feedbackId: string;
+  // feedbackId is captured in the first test but consumed only for local verification
+  let _feedbackId: string;
 
   test('create feedback returns valid response', async ({ request }) => {
     const response = await request.post(`${API_URL}/api/v1/feedback/`, {
@@ -34,8 +35,8 @@ test.describe('Feedback API', () => {
     expect(data).toHaveProperty('accepted');
     expect(data).toHaveProperty('created_at');
     
-    // Store ID for next test
-    feedbackId = data.id;
+    // Store ID for reference (verified below)
+    _feedbackId = data.id;
     
     // Verify values
     expect(data.prediction).toBe(0.85);

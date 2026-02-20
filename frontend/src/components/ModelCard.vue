@@ -26,11 +26,17 @@
 import { defineComponent } from 'vue'
 import { API_BASE } from '@/lib/api'
 
+interface ModelCardData {
+  name: string
+  version: string
+  [key: string]: unknown
+}
+
 export default defineComponent({
   name: 'ModelCard',
   data() {
     return {
-      modelCard: null
+      modelCard: null as ModelCardData | null
     }
   },
   async created() {

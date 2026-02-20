@@ -3,7 +3,6 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted} from 'vue'
 import i18next from 'i18next'
 import AppLayout from '@/layouts/AppLayout.vue'
 import {provideFeatureDefinitions} from '@/lib/featureDefinitions'

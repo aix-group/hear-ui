@@ -1,7 +1,7 @@
 /**
  * Unit tests for the useCustomToast composable and toaster module.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type MockInstance } from 'vitest'
 import { toaster } from '@/components/ui/toaster'
 import useCustomToast from '@/hooks/useCustomToast'
 
@@ -19,7 +19,7 @@ describe('toaster', () => {
 })
 
 describe('useCustomToast', () => {
-  let createSpy: ReturnType<typeof vi.spyOn>
+  let createSpy: MockInstance<Parameters<typeof toaster.create>, ReturnType<typeof toaster.create>>
 
   beforeEach(() => {
     createSpy = vi.spyOn(toaster, 'create').mockImplementation(() => {})
