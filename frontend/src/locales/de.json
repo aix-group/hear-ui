@@ -26,7 +26,7 @@
     },
     "form": {
       "title": "Neuen Patienten anlegen",
-      "title_edit": "Patienten aktualisieren",
+      "title_edit": "Patientendaten aktualisieren",
       "title_copy_left": "Linkes Ohr anlegen",
       "title_copy_right": "Rechtes Ohr anlegen",
       "back": "Zurück zu den Patienten",
@@ -34,6 +34,8 @@
       "reset": "Zurücksetzen",
       "error": {
         "name": "Name muss mindestens 2 Zeichen lang sein",
+        "first_name": "Vorname muss mindestens 2 Zeichen lang sein",
+        "last_name": "Nachname muss mindestens 2 Zeichen lang sein",
         "age": "Alter zwischen 0 und 130 angeben",
         "gender": "Geschlecht wählen",
         "operated_side": "Seite des operierten Ohrs wählen",
@@ -53,11 +55,16 @@
         "hz4k_status": "4000 Hz-Messung eintragen",
         "hl_operated_ear": "Hörminderung (operiertes Ohr) wählen",
         "hl_contra_ear": "Hörminderung (Gegenohr) wählen",
+        "amplification_operated_ear": "Versorgung (operiertes Ohr) wählen",
+        "amplification_contra_ear": "Versorgung (Gegenohr) wählen",
         "imaging_type_preop": "Bitte mindestens eine Bildgebung auswählen",
+        "imaging_findings_preop": "Bildgebungsbefund eintragen",
         "hearing_loss_onset": "Zeitpunkt des Hörverlusts angeben",
+        "acquisition_type": "Erwerbsart wählen",
         "hearing_loss_start": "Beginn des Hörverlusts angeben",
         "duration_severe_hl": "Dauer des schweren Verlusts wählen",
         "etiology": "Ursache eintragen",
+        "hearing_disorder_type": "Art der Hörstörung wählen",
         "ci_implant_type": "CI-Implantation wählen",
         "ci_implant_other": "CI-Implantation (sonstige) eintragen",
         "hl_operated_other": "Hörminderung (operiertes Ohr) – sonstige eintragen",
@@ -74,8 +81,8 @@
       "success": {
         "created_with_id": "Patient wurde erstellt (ID: {{id}})"
       },
-      "minimum_fields_title": "Pflichtfelder für Vorhersage",
-      "minimum_fields_hint": "Geschlecht, Alter und Hörminderung (operiertes Ohr) müssen ausgefüllt sein, damit eine Vorhersage berechnet werden kann. Weitere klinische Felder verbessern die Vorhersagequalität.",
+      "minimum_fields_title": "Pflichtfelder",
+      "minimum_fields_hint": "Alle mit * gekennzeichneten Felder sind Pflichtfelder und müssen ausgefüllt werden: Vorname, Nachname, Alter, Geschlecht, operierte Seite, Primäre Sprache, Präoperative Symptome (Geschmack, Tinnitus, Schwindel, Otorrhoe, Kopfschmerzen), Bildgebung (Typ und Befund), Objektive Messungen (OAE, LL, 4000 Hz), Hörminderung (operiertes Ohr und Gegenohr), Versorgung (operiertes Ohr und Gegenohr), Zeitpunkt und Beginn des Hörverlusts, Dauer der schweren Hörminderung, Erwerbsart, Ursache und Art der Hörstörung.",
       "minimum_fields_error": "Für eine Vorhersage werden mindestens Geschlecht, Alter und Hörminderung (operiertes Ohr) benötigt. Bitte diese Felder ausfüllen.",
       "required_fields_error": "Pflichtfelder fehlen. Bitte alle erforderlichen Felder ausfüllen (Alter, Geschlecht, Hörminderung, Beginn der Hörminderung, Art der Hörstörung, Bildgebung: Befund, Ursache).",
       "hints": {

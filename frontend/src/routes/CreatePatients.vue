@@ -23,15 +23,14 @@
       <form v-if="definitionsReady" class="new-patient-form" autocomplete="off" @submit.prevent="submit">
         <!-- Required-fields info banner -->
         <v-alert
-          v-if="!isEdit"
           type="info"
           variant="tonal"
           density="compact"
           class="mb-4"
           icon="mdi-information-outline"
         >
-          <strong>{{ $t('form.minimum_fields_title', { defaultValue: 'Pflichtfelder für Vorhersage' }) }}:</strong>
-          {{ $t('form.minimum_fields_hint', { defaultValue: 'Geschlecht, Alter und Hörminderung (operiertes Ohr) müssen ausgefüllt sein, damit eine Vorhersage berechnet werden kann. Weitere klinische Felder verbessern die Vorhersagequalität.' }) }}
+          <strong>{{ $t('form.minimum_fields_title') }}:</strong>
+          {{ $t('form.minimum_fields_hint') }}
         </v-alert>
 
         <template v-for="section in sectionedDefinitions" :key="section.name">
@@ -314,9 +313,12 @@ const sectionedDefinitions = computed(() => {
   return visibleSections.map((section) => ({
       name: section,
       label: sectionLabelFor(section),
-      fields: (grouped[section] ?? []).map((def: any) => ({
+      fields: (grouped[section] ?? []).map((def: any) => {
+        const isRequired = def.required === true
+        const baseLabel = labelFor(def.normalized, def.description ?? def.raw)
+        return {
         normalized: def.normalized,
-        label: labelFor(def.normalized, def.description ?? def.raw),
+        label: isRequired ? `${baseLabel} *` : baseLabel,
         component: getFieldComponent(def),
         inputType: def.input_type === 'number' ? 'number' : undefined,
         isDateMasked: def.input_type === 'date',
@@ -332,7 +334,7 @@ const sectionedDefinitions = computed(() => {
           : getOptionValueByRole(def.normalized, 'false', 'Keine'),
         otherField: def.other_field,
         otherLabel: def.other_field ? labelFor(def.other_field, def.other_field) : undefined,
-      }))
+      }})
     }))
 })
 
@@ -607,6 +609,13 @@ const buildInputFeatures = (values: Record<string, any>) => {
       value = Number(value)
     } else if (typeof value === 'boolean') {
       value = getOptionValueByRole(def.normalized, value ? 'true' : 'false', value ? 'Vorhanden' : 'Keine')
+    } else if (Array.isArray(def.options)) {
+      // For enum fields, only use a fallback that is actually a valid option value
+      const optionValues = def.options.map((opt: any) => opt.value)
+      if (value === undefined || value === null || value === '') {
+        const roleFallback = getOptionValueByRole(def.normalized, 'false', '')
+        value = optionValues.includes(roleFallback) ? roleFallback : ''
+      }
     } else {
       const fallback = getOptionValueByRole(def.normalized, 'false', 'Keine')
       value = withDefault(value, fallback)
@@ -655,7 +664,7 @@ const populateFormForEdit = (patient: any) => {
       const optionValues = def.options.map((opt: any) => opt.value)
       if (optionValues.includes(rawValue)) {
         setFieldValue(def.normalized, rawValue)
-      } else if (def.other_field && rawValue !== undefined && rawValue !== null && rawValue !== '') {
+      } else if (def.other_field && rawValue !== undefined && rawValue !== null && rawValue !== '' && rawValue !== 'Keine') {
         const otherOptions = getOtherValues(def.normalized).value
         if (otherOptions.length) {
           setFieldValue(def.normalized, otherOptions[0])
@@ -664,12 +673,15 @@ const populateFormForEdit = (patient: any) => {
           setFieldValue(def.normalized, rawValue)
         }
       } else {
-        setFieldValue(def.normalized, rawValue ?? '')
+        // Clear invalid values like 'Keine' that aren't actual option values
+        setFieldValue(def.normalized, '')
       }
       continue
     }
 
-    setFieldValue(def.normalized, rawValue ?? '')
+    // For non-enum text fields, treat stored 'Keine' as empty in edit mode
+    const cleanValue = rawValue === 'Keine' ? '' : (rawValue ?? '')
+    setFieldValue(def.normalized, cleanValue)
   }
 
   initialSnapshot.value = stableStringify(buildSnapshot(values as Record<string, any>))

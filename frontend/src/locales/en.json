@@ -26,7 +26,7 @@
     },
     "form": {
       "title": "Add new patient",
-      "title_edit": "Update patient",
+      "title_edit": "Update patient data",
       "title_copy_left": "Add left ear",
       "title_copy_right": "Add right ear",
       "back": "Back to patients",
@@ -34,6 +34,8 @@
       "reset": "Reset",
       "error": {
         "name": "Name must be at least 2 characters",
+        "first_name": "First name must be at least 2 characters",
+        "last_name": "Last name must be at least 2 characters",
         "age": "Enter an age between 0 and 130",
         "gender": "Select a gender",
         "operated_side": "Select the operated ear side",
@@ -53,11 +55,16 @@
         "hz4k_status": "Provide 4000 Hz measurement",
         "hl_operated_ear": "Select hearing loss (operated ear)",
         "hl_contra_ear": "Select hearing loss (contralateral ear)",
+        "amplification_operated_ear": "Select amplification (operated ear)",
+        "amplification_contra_ear": "Select amplification (contralateral ear)",
         "imaging_type_preop": "Select at least one imaging type",
-        "hearing_loss_onset": "Provide time of hearing loss",
-        "hearing_loss_start": "Provide start of hearing loss",
+        "imaging_findings_preop": "Enter imaging findings",
+        "hearing_loss_onset": "Select hearing loss onset",
+        "acquisition_type": "Select acquisition type",
+        "hearing_loss_start": "Select start of hearing loss",
         "duration_severe_hl": "Select duration of severe loss",
         "etiology": "Enter etiology",
+        "hearing_disorder_type": "Select hearing disorder type",
         "ci_implant_type": "Select CI implantation type",
         "ci_implant_other": "Enter CI implantation (other)",
         "hl_operated_other": "Enter hearing loss (operated ear) – other",
@@ -74,8 +81,8 @@
       "success": {
         "created_with_id": "Patient created with id: {{id}}"
       },
-      "minimum_fields_title": "Required fields for prediction",
-      "minimum_fields_hint": "Gender, age and hearing loss (operated ear) must be filled in for a prediction to be calculated. Further clinical fields improve prediction quality.",
+      "minimum_fields_title": "Required fields",
+      "minimum_fields_hint": "All fields marked with * are required: First name, Last name, Age, Gender, Operated side, Primary language, Pre-operative symptoms (Taste, Tinnitus, Vertigo, Otorrhea, Headache), Imaging (Type and Findings), Objective measurements (OAE, LL, 4000 Hz), Hearing loss (operated and contralateral ear), Amplification (operated and contralateral ear), Hearing loss onset and start, Duration of severe hearing loss, Acquisition type, Etiology and Hearing disorder type.",
       "minimum_fields_error": "A prediction requires at least gender, age and hearing loss (operated ear). Please fill in these fields.",
       "required_fields_error": "Required fields are missing. Please fill in all mandatory fields (Age, Gender, Hearing Loss, Onset of Hearing Loss, Type of Hearing Disorder, Imaging: Findings, Etiology).",
       "hints": {
