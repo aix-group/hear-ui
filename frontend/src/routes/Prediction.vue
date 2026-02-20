@@ -202,7 +202,7 @@
 <script lang="ts" setup>
 import {useRoute, useRouter} from 'vue-router'
 import {computed, onMounted, onBeforeUnmount, ref, watch} from 'vue'
-import Plotly from 'plotly.js-dist-min'
+import * as Plotly from 'plotly.js-dist-min'
 import {API_BASE} from "@/lib/api";
 import i18next from 'i18next'
 import FeedbackForm from '@/components/FeedbackForm.vue'
