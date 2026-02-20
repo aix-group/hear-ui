@@ -68,6 +68,7 @@
         "post24_measure": "Freiburger 24 Monate eintragen",
         "interval_days": "Abstand in Tagen eintragen",
         "submit_failed": "Patient konnte nicht erstellt werden. Bitte erneut versuchen.",
+        "required_field": "Pflichtfeld – bitte ausfüllen",
         "fix_fields": "Bitte korrigieren Sie die markierten Felder und versuchen Sie es erneut."
       },
       "success": {

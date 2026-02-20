@@ -68,6 +68,7 @@
         "post24_measure": "Enter Freiburger 24 months value",
         "interval_days": "Enter interval in days",
         "submit_failed": "Failed to create patient. Please try again.",
+        "required_field": "Required field – please fill in",
         "fix_fields": "Please fix the highlighted fields and try again."
       },
       "success": {

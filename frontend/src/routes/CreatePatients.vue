@@ -343,7 +343,11 @@ const validationSchema = computed(() => {
   const defs = definitions.value ?? []
   const schema: Record<string, any> = {}
 
-  const requiredMessage = () => i18next.t('form.error.name')
+  const requiredMessageFor = (def: any) => {
+    const key = `form.error.${def?.normalized}`
+    const msg = i18next.t(key)
+    return msg !== key ? msg : i18next.t('form.error.required_field')
+  }
 
   const isEmptyValue = (value: unknown, def: any) => {
     if (def?.multiple) return !Array.isArray(value) || value.length === 0
@@ -372,14 +376,14 @@ const validationSchema = computed(() => {
     schema[def.normalized] = (value: unknown) => {
       // Enum/select fields always receive a fallback via withDefault on submit; skip required-empty check
       const isEnumField = Array.isArray(def.options) || def.multiple
-      if (def.required && !isEnumField && isEmptyValue(value, def)) return requiredMessage()
+      if (def.required && !isEnumField && isEmptyValue(value, def)) return requiredMessageFor(def)
       if (!isEmptyValue(value, def) && allowed.length > 0) {
         if (def.multiple && Array.isArray(value)) {
           const normalized = normalizeImagingValue(value)
           const allAllowed = normalized.every((entry) => allowed.includes(entry))
-          if (!allAllowed) return requiredMessage()
+          if (!allAllowed) return requiredMessageFor(def)
         } else if (!allowed.includes(value as any)) {
-          return requiredMessage()
+          return requiredMessageFor(def)
         }
       }
       return true
@@ -388,7 +392,7 @@ const validationSchema = computed(() => {
     if (def.other_field) {
       schema[def.other_field] = (value: unknown, ctx: any) => {
         if (isOtherSelected(def.normalized, ctx?.form?.[def.normalized])) {
-          if (value === undefined || value === null || value === '') return requiredMessage()
+          if (value === undefined || value === null || value === '') return requiredMessageFor(def)
         }
         return true
       }
@@ -415,6 +419,44 @@ const clearManualError = (name: string) => {
     delete copy[name]
     manualErrors.value = copy
   }
+}
+
+// The three minimum fields that the backend requires for a prediction
+const MINIMUM_PREDICTION_FIELDS = ['gender', 'age', 'hl_operated_ear']
+
+const highlightEmptyMinimumFields = () => {
+  const fallback = i18next.t('form.error.required_field')
+  const errs = { ...manualErrors.value }
+  for (const name of MINIMUM_PREDICTION_FIELDS) {
+    const val = (values as any)[name]
+    const empty = val === undefined || val === null || val === ''
+    if (empty) {
+      const key = `form.error.${name}`
+      const msg = i18next.t(key)
+      errs[name] = msg !== key ? msg : fallback
+    }
+  }
+  manualErrors.value = errs
+}
+
+const highlightEmptyRequiredFields = () => {
+  const defs = definitions.value ?? []
+  const fallback = i18next.t('form.error.required_field')
+  const errs = { ...manualErrors.value }
+  for (const def of defs) {
+    if (!def?.required || !def?.normalized) continue
+    if (isCheckboxField(def)) continue
+    const val = (values as any)[def.normalized]
+    const empty = def.multiple
+      ? !Array.isArray(val) || val.length === 0
+      : val === undefined || val === null || val === ''
+    if (empty) {
+      const key = `form.error.${def.normalized}`
+      const msg = i18next.t(key)
+      errs[def.normalized] = msg !== key ? msg : fallback
+    }
+  }
+  manualErrors.value = errs
 }
 
 const updateField = (name: string, value: any) => {
@@ -670,8 +712,12 @@ const onSubmit = handleSubmit(
             // Translate minimum-fields backend error to current UI language
             if (rawDetail && rawDetail.includes('Mindestfelder')) {
               errorMessage = i18next.t('form.minimum_fields_error')
+              // Highlight the minimum prediction fields that are empty
+              highlightEmptyMinimumFields()
             } else if (rawDetail && rawDetail.includes('Pflichtfelder')) {
               errorMessage = i18next.t('form.required_fields_error')
+              // Highlight all empty required fields
+              highlightEmptyRequiredFields()
             } else {
               errorMessage = rawDetail
             }
@@ -709,7 +755,7 @@ const submit = async () => {
   // This avoids all async timing issues with vee-validate error propagation.
   const defs = definitions.value ?? []
   const newErrors: Record<string, string> = {}
-  const errMsg = i18next.t('form.error.name')
+  const fallbackMsg = i18next.t('form.error.required_field')
   for (const def of defs) {
     if (!def?.required || !def?.normalized) continue
     // Checkbox fields (rendered as VCheckbox) always carry true-value or false-value — never empty.
@@ -721,7 +767,12 @@ const submit = async () => {
       : def.input_type === 'number'
         ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
         : val === undefined || val === null || val === ''
-    if (isEmpty) newErrors[def.normalized] = errMsg
+    if (isEmpty) {
+      // Use a field-specific error message when available, otherwise the generic "Pflichtfeld"
+      const fieldKey = `form.error.${def.normalized}`
+      const fieldMsg = i18next.t(fieldKey)
+      newErrors[def.normalized] = fieldMsg !== fieldKey ? fieldMsg : fallbackMsg
+    }
   }
   manualErrors.value = newErrors
   submitAttempted.value = true
