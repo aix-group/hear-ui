@@ -1,9 +1,9 @@
 
 <template>
   <v-card>
-    <v-card-title>Model Card: {{ modelCard.name }}</v-card-title>
+    <v-card-title>Model Card: {{ modelCard?.name }}</v-card-title>
     <v-card-text>
-      <v-list>
+      <v-list v-if="modelCard">
         <v-list-item>
           <v-list-item-title>Version</v-list-item-title>
           <v-list-item-subtitle>{{ modelCard.version }}</v-list-item-subtitle>

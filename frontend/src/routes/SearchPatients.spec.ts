@@ -6,7 +6,7 @@ import { mountWithRouter } from '../test/helpers'
 import SearchPatients from './SearchPatients.vue'
 
 describe('SearchPatients.vue', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>
+  let fetchSpy: ReturnType<typeof vi.spyOn<typeof globalThis, 'fetch'>>
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch')

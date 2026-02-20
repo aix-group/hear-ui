@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { featureDefinitionsStore } from '@/lib/featureDefinitionsStore'
 
 describe('featureDefinitionsStore', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>
+  let fetchSpy: ReturnType<typeof vi.spyOn<typeof globalThis, 'fetch'>>
 
   beforeEach(() => {
     // Reset store state

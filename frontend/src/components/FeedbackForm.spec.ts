@@ -18,7 +18,7 @@ describe('FeedbackForm.vue', () => {
     },
   }
 
-  let fetchSpy: ReturnType<typeof vi.spyOn>
+  let fetchSpy: ReturnType<typeof vi.spyOn<typeof globalThis, 'fetch'>>
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch')

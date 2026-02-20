@@ -333,7 +333,9 @@ const sectionedDefinitions = computed(() => {
 })
 
 const validationSchema = computed(() => {
-  const _lang = language.value
+  // Read language.value to register it as a reactive dependency so the schema
+  // re-evaluates when the UI language switches (e.g. DE ↔ EN).
+  void language.value
   const defs = definitions.value ?? []
   const schema: Record<string, any> = {}
 
@@ -363,7 +365,7 @@ const validationSchema = computed(() => {
     if (!def?.normalized) continue
     const allowed = getAllowedValues(def)
 
-    schema[def.normalized] = (value: unknown, ctx: any) => {
+    schema[def.normalized] = (value: unknown) => {
       // Enum/select fields always receive a fallback via withDefault on submit; skip required-empty check
       const isEnumField = Array.isArray(def.options) || def.multiple
       if (def.required && !isEnumField && isEmptyValue(value, def)) return requiredMessage()
@@ -473,11 +475,6 @@ const normalizeImagingValue = (val: unknown): string[] => {
 const formFieldNames = computed(() => Object.keys(definitionsByNormalized.value ?? {}))
 
 
-const resolveOther = (value: unknown, other: unknown, triggers: string[]) => {
-  if (typeof value === 'string' && triggers.includes(value)) return other
-  return value
-}
-
 const withDefault = (value: any, fallback = 'Keine') => {
   if (Array.isArray(value)) return value.length ? value : fallback
   if (value === undefined || value === null || value === '') return fallback
@@ -485,7 +482,7 @@ const withDefault = (value: any, fallback = 'Keine') => {
 }
 
 
-const normalizeErrors = (errors: Record<string, unknown>) => {
+const normalizeErrors = (errors: object | null | undefined) => {
   const toMessage = (err: unknown): string | undefined => {
     if (!err) return undefined
     if (typeof err === 'string') return err
@@ -696,9 +693,9 @@ const onSubmit = handleSubmit(
       showError(err?.message ?? i18next.t('form.error.submit_failed'))
     }
   },
-  (errors) => {
-    formFieldNames.value.forEach(name => setFieldTouched(name, true, true))
-    const messages = normalizeErrors(errors)
+  (ctx) => {
+    formFieldNames.value.forEach(name => setFieldTouched(name, true))
+    const messages = normalizeErrors(ctx as object)
     showError(messages.length ? messages.join('\n') : i18next.t('form.error.fix_fields'))
   }
 )
