@@ -26,6 +26,7 @@
     },
     "form": {
       "title": "Neuen Patienten anlegen",
+      "title_edit": "Patienten aktualisieren",
       "back": "Zurück zu den Patienten",
       "submit": "Speichern",
       "reset": "Zurücksetzen",

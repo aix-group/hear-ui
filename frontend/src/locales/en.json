@@ -26,6 +26,7 @@
     },
     "form": {
       "title": "Add new patient",
+      "title_edit": "Update patient",
       "back": "Back to patients",
       "submit": "Submit",
       "reset": "Reset",

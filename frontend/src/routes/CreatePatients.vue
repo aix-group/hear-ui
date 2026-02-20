@@ -18,7 +18,7 @@
         {{ $t('form.back') }}
       </v-btn>
       <v-spacer/>
-      <h1>{{ $t('form.title') }}</h1>
+      <h1>{{ isEdit ? $t('form.title_edit') : $t('form.title') }}</h1>
       <v-spacer/>
       <form v-if="definitionsReady" class="new-patient-form" autocomplete="off" @submit.prevent="submit">
         <!-- Required-fields info banner -->
@@ -708,12 +708,15 @@ const submit = async () => {
   const errMsg = i18next.t('form.error.name')
   for (const def of defs) {
     if (!def?.required || !def?.normalized) continue
-    // Enum/select fields always receive a fallback via withDefault; skip required-empty check
-    if (Array.isArray(def.options) || def.multiple) continue
+    // Checkbox fields (rendered as VCheckbox) always carry true-value or false-value — never empty.
+    // All other required fields (VTextField, VSelect, VCombobox) must be validated.
+    if (isCheckboxField(def)) continue
     const val = (values as any)[def.normalized]
-    const isEmpty = def.input_type === 'number'
-      ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
-      : val === undefined || val === null || val === ''
+    const isEmpty = def.multiple
+      ? !Array.isArray(val) || val.length === 0
+      : def.input_type === 'number'
+        ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
+        : val === undefined || val === null || val === ''
     if (isEmpty) newErrors[def.normalized] = errMsg
   }
   manualErrors.value = newErrors
