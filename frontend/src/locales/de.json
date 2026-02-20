@@ -191,6 +191,7 @@
       "update_success": "Patient aktualisiert",
       "create_success": "Patient erstellt",
       "change_patient": "Patientendaten aktualisieren",
+      "add_other_ear": "Anderes Ohr anlegen",
       "sections": {
         "demographics": "Demografie",
         "language": "Sprache & Kommunikation",

@@ -64,51 +64,53 @@
       />
 
       <!-- Actions -->
-      <div class="d-flex justify-space-between align-center mb-4">
-        <v-row class="ms-4">
+      <div class="d-flex flex-wrap align-center gap-3 mb-4 ms-1">
 
-          <!-- TODO: redirect to create patient form but with the values filled out -->
-          <v-btn
-              class="me-4"
-              color="warning"
-              variant="flat"
-              :to="{ name: 'UpdatePatient', params: { id: patient_id } }"
-          >
-            {{ $t('patient_details.change_patient') }}
-          </v-btn>
-
-          <!-- Copy to other ear -->
-          <v-btn
-              v-if="otherEar"
-              class="me-4"
-              color="primary"
-              variant="tonal"
-              prepend-icon="mdi-content-copy"
-              :to="{ name: 'CreatePatient', query: { copyFrom: patient_id } }"
-          >
-            Anderes Ohr ({{ otherEar }}) anlegen
-          </v-btn>
-
-          <!-- TODO: implement patient deletion if needed for MVP -->
-          <v-btn
-              class="me-4"
-              color="error"
-              variant="flat"
-              :disabled="!patient_id"
-              @click="openDeleteDialog"
-          >
-            {{ $t('patient_details.delete_patient') }}
-          </v-btn>
-        </v-row>
+        <!-- Primary action -->
         <v-btn
-            class="me-4"
             color="success"
             variant="flat"
+            prepend-icon="mdi-chart-bar"
             :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
         >
           {{ $t('patient_details.generate_prediction') }}
         </v-btn>
 
+        <v-divider vertical class="mx-1" style="height:36px;align-self:center"/>
+
+        <!-- Edit -->
+        <v-btn
+            color="warning"
+            variant="tonal"
+            prepend-icon="mdi-pencil"
+            :to="{ name: 'UpdatePatient', params: { id: patient_id } }"
+        >
+          {{ $t('patient_details.change_patient') }}
+        </v-btn>
+
+        <!-- Add second ear -->
+        <v-btn
+            v-if="otherEar"
+            color="primary"
+            variant="tonal"
+            prepend-icon="mdi-ear-hearing"
+            :to="{ name: 'CreatePatient', query: { copyFrom: patient_id } }"
+        >
+          {{ $t('patient_details.add_other_ear') }} ({{ otherEar }})
+        </v-btn>
+
+        <v-spacer />
+
+        <!-- Delete -->
+        <v-btn
+            color="error"
+            variant="outlined"
+            prepend-icon="mdi-delete-outline"
+            :disabled="!patient_id"
+            @click="openDeleteDialog"
+        >
+          {{ $t('patient_details.delete_patient') }}
+        </v-btn>
       </div>
 
       <v-snackbar

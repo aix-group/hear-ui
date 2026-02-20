@@ -364,7 +364,9 @@ const validationSchema = computed(() => {
     const allowed = getAllowedValues(def)
 
     schema[def.normalized] = (value: unknown, ctx: any) => {
-      if (def.required && isEmptyValue(value, def)) return requiredMessage()
+      // Enum/select fields always receive a fallback via withDefault on submit; skip required-empty check
+      const isEnumField = Array.isArray(def.options) || def.multiple
+      if (def.required && !isEnumField && isEmptyValue(value, def)) return requiredMessage()
       if (!isEmptyValue(value, def) && allowed.length > 0) {
         if (def.multiple && Array.isArray(value)) {
           const normalized = normalizeImagingValue(value)
@@ -709,12 +711,12 @@ const submit = async () => {
   const errMsg = i18next.t('form.error.name')
   for (const def of defs) {
     if (!def?.required || !def?.normalized) continue
+    // Enum/select fields always receive a fallback via withDefault; skip required-empty check
+    if (Array.isArray(def.options) || def.multiple) continue
     const val = (values as any)[def.normalized]
-    const isEmpty = def.multiple
-      ? !Array.isArray(val) || val.length === 0
-      : def.input_type === 'number'
-        ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
-        : val === undefined || val === null || val === ''
+    const isEmpty = def.input_type === 'number'
+      ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
+      : val === undefined || val === null || val === ''
     if (isEmpty) newErrors[def.normalized] = errMsg
   }
   manualErrors.value = newErrors

@@ -191,6 +191,7 @@
       "update_success": "Patient updated",
       "create_success": "Patient created",
       "change_patient": "Update patient data",
+      "add_other_ear": "Create other ear",
       "sections": {
         "demographics": "Demographics",
         "language": "Language & Communication",

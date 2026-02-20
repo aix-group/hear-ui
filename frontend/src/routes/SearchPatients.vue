@@ -18,6 +18,7 @@
           prepend-inner-icon="mdi-magnify"
           rounded="lg"
           variant="solo"
+          autocomplete="off"
       />
     </v-row>
 
