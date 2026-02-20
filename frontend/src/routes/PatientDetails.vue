@@ -64,49 +64,55 @@
       />
 
       <!-- Actions -->
-      <div class="d-flex flex-wrap align-center gap-3 mb-4 ms-1">
+      <div class="patient-actions">
 
-        <!-- Left group: Edit + second ear -->
-        <v-btn
-            color="warning"
-            variant="tonal"
-            prepend-icon="mdi-pencil"
-            :to="{ name: 'UpdatePatient', params: { id: patient_id } }"
-        >
-          {{ $t('patient_details.change_patient') }}
-        </v-btn>
+        <!-- Left group -->
+        <div class="patient-actions__group">
+          <v-btn
+              class="patient-action-btn"
+              color="warning"
+              variant="tonal"
+              prepend-icon="mdi-pencil"
+              :to="{ name: 'UpdatePatient', params: { id: patient_id } }"
+          >
+            {{ $t('patient_details.change_patient') }}
+          </v-btn>
 
-        <v-btn
-            v-if="otherEar"
-            color="primary"
-            variant="tonal"
-            prepend-icon="mdi-ear-hearing"
-            :to="{ name: 'CreatePatient', query: { copyFrom: patient_id } }"
-        >
-          {{ $t('patient_details.add_other_ear') }} ({{ otherEar }})
-        </v-btn>
+          <v-btn
+              v-if="otherEar"
+              class="patient-action-btn"
+              color="primary"
+              variant="tonal"
+              prepend-icon="mdi-ear-hearing"
+              :to="{ name: 'CreatePatient', query: { copyFrom: patient_id } }"
+          >
+            {{ $t('patient_details.add_other_ear') }} ({{ otherEar }})
+          </v-btn>
+        </div>
 
-        <v-spacer />
+        <!-- Right group -->
+        <div class="patient-actions__group">
+          <v-btn
+              class="patient-action-btn"
+              color="error"
+              variant="outlined"
+              prepend-icon="mdi-delete-outline"
+              :disabled="!patient_id"
+              @click="openDeleteDialog"
+          >
+            {{ $t('patient_details.delete_patient') }}
+          </v-btn>
 
-        <!-- Right group: Delete + Predict -->
-        <v-btn
-            color="error"
-            variant="outlined"
-            prepend-icon="mdi-delete-outline"
-            :disabled="!patient_id"
-            @click="openDeleteDialog"
-        >
-          {{ $t('patient_details.delete_patient') }}
-        </v-btn>
-
-        <v-btn
-            color="success"
-            variant="flat"
-            prepend-icon="mdi-chart-bar"
-            :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
-        >
-          {{ $t('patient_details.generate_prediction') }}
-        </v-btn>
+          <v-btn
+              class="patient-action-btn"
+              color="success"
+              variant="flat"
+              prepend-icon="mdi-chart-bar"
+              :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
+          >
+            {{ $t('patient_details.generate_prediction') }}
+          </v-btn>
+        </div>
       </div>
 
       <v-snackbar
@@ -353,6 +359,40 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ── Action bar ─────────────────────────────────────────── */
+.patient-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: nowrap;
+}
+
+.patient-actions__group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-action-btn {
+  height: 40px !important;
+  min-width: 160px;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 768px) {
+  .patient-actions {
+    flex-wrap: wrap;
+  }
+  .patient-action-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
+/* ── Existing styles ────────────────────────────────────── */
 .patient-sheet {
   padding: 32px;
   border-width: 2px;
