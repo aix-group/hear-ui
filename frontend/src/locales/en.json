@@ -76,15 +76,15 @@
         "interval_days": "Enter interval in days",
         "submit_failed": "Failed to create patient. Please try again.",
         "required_field": "Required field – please fill in",
-        "fix_fields": "Please fix the highlighted fields and try again."
+        "fix_fields": "Please fill in the red-highlighted fields."
       },
       "success": {
         "created_with_id": "Patient created with id: {{id}}"
       },
       "minimum_fields_title": "Required fields",
       "minimum_fields_hint": "All fields marked with * are required: First name, Last name, Age, Gender, Operated side, Primary language, Pre-operative symptoms (Taste, Tinnitus, Vertigo, Otorrhea, Headache), Imaging (Type and Findings), Objective measurements (OAE, LL, 4000 Hz), Hearing loss (operated and contralateral ear), Amplification (operated and contralateral ear), Hearing loss onset and start, Duration of severe hearing loss, Acquisition type, Etiology and Hearing disorder type.",
-      "minimum_fields_error": "A prediction requires at least gender, age and hearing loss (operated ear). Please fill in these fields.",
-      "required_fields_error": "Required fields are missing. Please fill in all mandatory fields (Age, Gender, Hearing Loss, Onset of Hearing Loss, Type of Hearing Disorder, Imaging: Findings, Etiology).",
+      "minimum_fields_error": "Please fill in the red-highlighted fields.",
+      "required_fields_error": "Please fill in the red-highlighted fields.",
       "hints": {
         "objective_oae": "Otoacoustic emissions measurement",
         "objective_ll": "Loudness level measurement",

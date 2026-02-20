@@ -91,7 +91,7 @@ jobs:
         run: |
           cd backend
           mypy app/ --config-file=pyproject.toml --ignore-missing-imports || {
-            echo "::warning::Type checking found issues (non-blocking)"
+            echo "ℹ️ Type checking found issues (non-blocking)"
             exit 0
           }
       
@@ -351,7 +351,7 @@ jobs:
           cd backend
           echo "Testing downgrade SQL generation..."
           alembic downgrade head:-1 --sql > downgrade_preview.sql || {
-            echo "::warning::No downgrade path or single migration"
+            echo "ℹ️ No downgrade path or single migration (OK for initial migration)"
             exit 0
           }
           echo "Downgrade path verified"
@@ -655,7 +655,7 @@ jobs:
           if trivy image --severity CRITICAL --exit-code 1 --quiet hear-backend:ci-test 2>/dev/null; then
             echo "✅ No CRITICAL vulnerabilities found in backend image"
           else
-            echo "::warning::CRITICAL vulnerabilities found in backend image - review trivy report"
+            echo "ℹ️ CRITICAL vulnerabilities found in backend image (base image) – review trivy report"
           fi
       
       - name: Scan frontend image for vulnerabilities

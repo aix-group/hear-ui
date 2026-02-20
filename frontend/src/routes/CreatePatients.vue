@@ -377,8 +377,7 @@ const validationSchema = computed(() => {
 
     schema[def.normalized] = (value: unknown) => {
       // Enum/select fields always receive a fallback via withDefault on submit; skip required-empty check
-      const isEnumField = Array.isArray(def.options) || def.multiple
-      if (def.required && !isEnumField && isEmptyValue(value, def)) return requiredMessageFor(def)
+      if (def.required && isEmptyValue(value, def)) return requiredMessageFor(def)
       if (!isEmptyValue(value, def) && allowed.length > 0) {
         if (def.multiple && Array.isArray(value)) {
           const normalized = normalizeImagingValue(value)
@@ -604,7 +603,7 @@ const buildInputFeatures = (values: Record<string, any>) => {
 
     if (def.multiple) {
       const normalized = normalizeImagingValue(value)
-      value = withDefault(normalized.join(', '))
+      value = normalized.join(', ')
     } else if (def.input_type === 'number') {
       value = Number(value)
     } else if (typeof value === 'boolean') {
@@ -617,8 +616,7 @@ const buildInputFeatures = (values: Record<string, any>) => {
         value = optionValues.includes(roleFallback) ? roleFallback : ''
       }
     } else {
-      const fallback = getOptionValueByRole(def.normalized, 'false', 'Keine')
-      value = withDefault(value, fallback)
+      value = value ?? ''
     }
 
     input_features[def.raw] = value
@@ -656,7 +654,10 @@ const populateFormForEdit = (patient: any) => {
     const rawValue = input?.[def.raw]
 
     if (def.multiple) {
-      setFieldValue(def.normalized, splitImagingTypes(rawValue))
+      const split = splitImagingTypes(rawValue)
+      const optionValues = (def.options ?? []).map((opt: any) => opt.value)
+      const filtered = optionValues.length > 0 ? split.filter((v: string) => optionValues.includes(v)) : split
+      setFieldValue(def.normalized, filtered)
       continue
     }
 

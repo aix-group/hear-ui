@@ -76,15 +76,15 @@
         "interval_days": "Abstand in Tagen eintragen",
         "submit_failed": "Patient konnte nicht erstellt werden. Bitte erneut versuchen.",
         "required_field": "Pflichtfeld – bitte ausfüllen",
-        "fix_fields": "Bitte korrigieren Sie die markierten Felder und versuchen Sie es erneut."
+        "fix_fields": "Bitte die rot umkreisten Felder ausfüllen."
       },
       "success": {
         "created_with_id": "Patient wurde erstellt (ID: {{id}})"
       },
       "minimum_fields_title": "Pflichtfelder",
       "minimum_fields_hint": "Alle mit * gekennzeichneten Felder sind Pflichtfelder und müssen ausgefüllt werden: Vorname, Nachname, Alter, Geschlecht, operierte Seite, Primäre Sprache, Präoperative Symptome (Geschmack, Tinnitus, Schwindel, Otorrhoe, Kopfschmerzen), Bildgebung (Typ und Befund), Objektive Messungen (OAE, LL, 4000 Hz), Hörminderung (operiertes Ohr und Gegenohr), Versorgung (operiertes Ohr und Gegenohr), Zeitpunkt und Beginn des Hörverlusts, Dauer der schweren Hörminderung, Erwerbsart, Ursache und Art der Hörstörung.",
-      "minimum_fields_error": "Für eine Vorhersage werden mindestens Geschlecht, Alter und Hörminderung (operiertes Ohr) benötigt. Bitte diese Felder ausfüllen.",
-      "required_fields_error": "Pflichtfelder fehlen. Bitte alle erforderlichen Felder ausfüllen (Alter, Geschlecht, Hörminderung, Beginn der Hörminderung, Art der Hörstörung, Bildgebung: Befund, Ursache).",
+      "minimum_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
+      "required_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
       "hints": {
         "objective_oae": "Messung der Otoakustischen Emissionen",
         "objective_ll": "Messung des Lautstärkepegels",
