@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
 from sqlmodel import Session
 
@@ -215,7 +215,16 @@ def search_patients_api(
         vorname = input_features.get("Vorname") or input_features.get("first_name")
         if nachname and vorname:
             return f"{nachname}, {vorname}"
-        for k in ["Nachname", "last_name", "Vorname", "first_name", "Name", "name", "full_name", "fullname"]:
+        for k in [
+            "Nachname",
+            "last_name",
+            "Vorname",
+            "first_name",
+            "Name",
+            "name",
+            "full_name",
+            "fullname",
+        ]:
             v = input_features.get(k)
             if v:
                 return str(v)
@@ -422,7 +431,9 @@ def predict_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
 
 
 @router.get("/{patient_id}/explainer")
-async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
+async def explainer_patient_api(
+    patient_id: UUID, request: Request, session: Session = Depends(get_db)
+):
     """Return SHAP explanation for a stored patient by delegating to the SHAP route.
 
     This constructs a `ShapVisualizationRequest` from the saved input_features
@@ -590,10 +601,11 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
             for f, v in sorted_feats[:5]
         ]
 
-        from app.api.routes.explainer import ShapVisualizationResponse
-
         # ── Out-of-scope warnings ──────────────────────────────────────────
         from datetime import date as _date
+
+        from app.api.routes.explainer import ShapVisualizationResponse
+
         warnings: list[str] = []
         patient_age: float | None = None
         bd = input_features.get("Geburtsdatum") or ""
@@ -602,7 +614,9 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
                 bd = bd.strip()
                 if len(bd) == 10 and bd[2] == ".":  # DD.MM.YYYY
                     yr = int(bd[6:10])
-                elif len(bd) >= 4 and (bd[4] == "-" or len(bd) == 4):  # YYYY-MM-DD or YYYY
+                elif len(bd) >= 4 and (
+                    bd[4] == "-" or len(bd) == 4
+                ):  # YYYY-MM-DD or YYYY
                     yr = int(bd[:4])
                 else:
                     yr = None
@@ -613,7 +627,9 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
         if patient_age is None:
             # Use `is not None` (not `or`) so that age=0 is not treated as missing
             raw_age_alt = input_features.get("Alter [J]")
-            raw_age = raw_age_alt if raw_age_alt is not None else input_features.get("age")
+            raw_age = (
+                raw_age_alt if raw_age_alt is not None else input_features.get("age")
+            )
             try:
                 if raw_age is not None:
                     candidate = float(raw_age)
@@ -638,7 +654,10 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
         _KEY_FIELDS: list[tuple[str, str]] = [
             ("Geschlecht", "Geschlecht"),
             ("Seiten", "Operierte Seite"),
-            ("Diagnose.Höranamnese.Hörminderung operiertes Ohr...", "Hörminderung operiertes Ohr"),
+            (
+                "Diagnose.Höranamnese.Hörminderung operiertes Ohr...",
+                "Hörminderung operiertes Ohr",
+            ),
         ]
         missing_fields: list[str] = []
         for raw_key, display_name in _KEY_FIELDS:
@@ -646,11 +665,28 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
             if val is None or str(val).strip() in ("", "Keine", "0"):
                 missing_fields.append(display_name)
         if missing_fields:
-            warnings.append(
-                "Fehlende Schlüsselfelder: "
-                + ", ".join(missing_fields)
-                + " – die Vorhersagequalität kann eingeschränkt sein."
-            )
+            # If the request prefers English, translate the short warning and field names
+            accept_lang = (request.headers.get("accept-language") or "").lower()
+            wants_en = accept_lang.startswith("en")
+            if wants_en:
+                # Simple mapping of German display names to English equivalents
+                translate_map = {
+                    "Geschlecht": "Gender",
+                    "Operierte Seite": "Operated side",
+                    "Hörminderung operiertes Ohr": "Hearing loss (operated ear)",
+                }
+                eng_names = [translate_map.get(n, n) for n in missing_fields]
+                warnings.append(
+                    "Missing key fields: "
+                    + ", ".join(eng_names)
+                    + " — prediction quality may be reduced."
+                )
+            else:
+                warnings.append(
+                    "Fehlende Schlüsselfelder: "
+                    + ", ".join(missing_fields)
+                    + " – die Vorhersagequalität kann eingeschränkt sein."
+                )
         # ──────────────────────────────────────────────────────────────────
 
         return ShapVisualizationResponse(
@@ -675,8 +711,10 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
 # What-if / predict-override endpoint
 # ---------------------------------------------------------------------------
 
+
 class _WhatIfRequest(BaseModel):
     """Overrides to apply on top of a patient's stored input_features."""
+
     overrides: dict[str, Any] = {}
 
 
@@ -700,6 +738,7 @@ async def predict_override_api(
 
     try:
         from app.main import app as fastapi_app
+
         wrapper = getattr(fastapi_app.state, "model_wrapper", None)
     except Exception:
         wrapper = None

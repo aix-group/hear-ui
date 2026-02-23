@@ -506,56 +506,54 @@ const whatIfFeatures = computed(() => {
   const defMap = Object.fromEntries(defs.map((d: any) => [d.raw, d]))
 
   // All SHAP-matched features that are adjustable (options or numeric) – sorted by |importance| descending
-  return matchedFeatures.value
-    .map((f) => {
-      const def = defMap[f.rawKey]
-      const currentVal = patientInputFeatures.value?.[f.rawKey]
-      const label = labelFor(f.normalizedKey, f.rawKey)
+  const mapped = matchedFeatures.value.map((f) => {
+    const def = defMap[f.rawKey]
+    const currentVal = patientInputFeatures.value?.[f.rawKey]
+    const label = labelFor(f.normalizedKey, f.rawKey)
 
-      if (def?.input_type === 'number') {
-        const numVal = currentVal !== undefined && currentVal !== null ? Number(currentVal) : 0
-        return {
-          rawKey: f.rawKey,
-          normalized: def?.normalized,
-          label,
-          inputType: 'number' as const,
-          options: null,
-          sliderMin: 0,
-          sliderMax: f.rawKey.toLowerCase().includes('alter') || f.rawKey === 'Alter [J]' ? 100
-            : f.rawKey.toLowerCase().includes('dauer') ? 60
-            : f.rawKey.toLowerCase().includes('measure') || f.rawKey.toLowerCase().includes('messung') ? 100
-            : 50,
-          sliderStep: 1,
-          defaultVal: numVal,
-        }
+    if (def?.input_type === 'number') {
+      const numVal = currentVal !== undefined && currentVal !== null ? Number(currentVal) : 0
+      return {
+        rawKey: f.rawKey,
+        normalized: def?.normalized,
+        label,
+        inputType: 'number' as const,
+        options: null,
+        sliderMin: 0,
+        sliderMax: f.rawKey.toLowerCase().includes('alter') || f.rawKey === 'Alter [J]' ? 100
+          : f.rawKey.toLowerCase().includes('dauer') ? 60
+          : f.rawKey.toLowerCase().includes('measure') || f.rawKey.toLowerCase().includes('messung') ? 100
+          : 50,
+        sliderStep: 1,
+        defaultVal: numVal,
       }
-      if (def?.options?.length > 0) {
-        return {
-          rawKey: f.rawKey,
-          normalized: def?.normalized,
-          label,
-          inputType: 'select' as const,
-          options: (def.options as any[]).map((opt: any) => ({
-            // Feature option definitions provide localized `labels` (de/en).
-            // Prefer current UI language label, fall back to the english/de or raw value.
-            title:
-              (opt.labels && (opt.labels.de && i18next.language?.startsWith('de') ? opt.labels.de : opt.labels.en))
-                ?? opt.value,
-            value: opt.value,
-          })),
-          sliderMin: 0, sliderMax: 1, sliderStep: 1,
-          defaultVal: currentVal ?? null,
-        }
+    }
+    if (def?.options?.length > 0) {
+      return {
+        rawKey: f.rawKey,
+        normalized: def?.normalized,
+        label,
+        inputType: 'select' as const,
+        options: (def.options as any[]).map((opt: any) => ({
+          title: (opt.labels && (opt.labels.de && i18next.language?.startsWith('de') ? opt.labels.de : opt.labels.en)) ?? opt.value,
+          value: opt.value,
+        })),
+        sliderMin: 0, sliderMax: 1, sliderStep: 1,
+        defaultVal: currentVal ?? null,
       }
-      return null
-    })
-    .filter(Boolean) as Array<{
-      rawKey: string; label: string; inputType: string;
-      options: Array<{title: string; value: any}> | null;
-      sliderMin: number; sliderMax: number; sliderStep: number;
-      defaultVal: any;
-    }>
-    // Remove gender from the controls and prioritise specific features
+    }
+    return null
+  }).filter(Boolean)
+
+  const typed = mapped as Array<{
+    rawKey: string; label: string; inputType: string;
+    options: Array<{title: string; value: any}> | null;
+    sliderMin: number; sliderMax: number; sliderStep: number;
+    defaultVal: any;
+  }>
+
+  // Remove gender from the controls and prioritise specific features
+  return typed
     .filter((item: any) => item.normalized !== 'gender')
     .sort((a: any, b: any) => {
       const preferred = [
@@ -910,9 +908,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   i18next.off('languageChanged', onLanguageChanged)
 })
-
 </script>
-
 
 <style scoped>
 .prediction-sheet {

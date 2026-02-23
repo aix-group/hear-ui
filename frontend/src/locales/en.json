@@ -134,7 +134,7 @@
       },
       "explanations": {
         "title": "Factors influencing the prediction",
-        "subtitle": "Sorted by positive and negative influencing factors, grouped by category (e.g. Demographics, Imaging). \u2b06\u00a0=\u00a0increases probability, \u2b07\u00a0=\u00a0decreases probability."
+        "subtitle": "Sorted by positive and negative influencing factors, grouped by category (e.g. Demographics, Imaging)."
       },      "whatif": {
         "toggle": "What-If Analysis",
         "description": "Adjust individual features to see how the prediction changes – without modifying the stored patient data.",
