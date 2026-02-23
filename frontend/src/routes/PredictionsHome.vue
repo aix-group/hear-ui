@@ -13,73 +13,7 @@
 
       <v-divider class="my-6"/>
 
-      <!-- About Section -->
-      <v-row>
-        <v-col>
-          <h2>{{ $t('predictions_home.about.title') }}</h2>
-          <p class="text-medium-emphasis mt-2">
-            {{ $t('predictions_home.about.description') }}
-          </p>
-        </v-col>
-      </v-row>
 
-      <!-- How to get a prediction -->
-      <v-row>
-        <div>
-          <v-col>
-            <h2>{{ $t('predictions_home.process.title') }}</h2>
-            <v-timeline align="start" class="mt-4" density="compact" side="end">
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-magnify"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step1.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step1.description') }}</div>
-                </div>
-              </v-timeline-item>
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-account-plus"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step2.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step2.description') }}</div>
-                </div>
-              </v-timeline-item>
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-account-details"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step3.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step3.description') }}</div>
-                </div>
-              </v-timeline-item>
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-creation"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step4.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step4.description') }}</div>
-                </div>
-              </v-timeline-item>
-            </v-timeline>
-          </v-col>
-        </div>
-      </v-row>
-      <v-spacer class="my-6 mb-8"></v-spacer>
-
-      <v-divider class="my-6 mb-8"/>
 
       <!-- Action Buttons -->
       <div class="d-flex justify-center ga-4 mt-8">

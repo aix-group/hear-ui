@@ -22,7 +22,8 @@
       "prediction_subtitle": "Modellvorhersagen anzeigen und analysieren.",
       "prediction_text": "Untersuchen Sie Risikowerte, Modellausgaben und Leistungskennzahlen für Ihre Patient:innen.",
       "prediction_image_alt": "Illustration für Risikoanalysen und Modellvorhersagen.",
-      "welcome_text": "Willkommen bei Hear-UI, einem Projekt zur Vorhersage von Hörverlust."
+      "welcome_text": "Willkommen bei Hear-UI, einem Projekt zur Vorhersage von Hörverlust.",
+      "goto_predictions": "Zu den Vorhersagen"
     },
     "form": {
       "title": "Neuen Patienten anlegen",

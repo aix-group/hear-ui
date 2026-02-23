@@ -38,124 +38,65 @@
         />
       </v-col>
     </v-row>
-    <v-divider
-        class="my-6 home-divider"
-    />
+    <v-divider class="my-6 home-divider" />
 
-    <!-- Cards -->
-    <v-row
-        align="stretch"
-        justify="center"
-    >
-      <!-- Search Patients -->
-      <v-col class="pa-3" cols="12" md="4" sm="6">
-        <v-hover v-slot="{ isHovering, props }">
-          <v-card
-              :to="{ name: 'SearchPatients' }"
-              class="home-card"
-              color="primary"
-              link
-              v-bind="props"
-              variant="outlined"
-          >
-            <v-img
-                :alt="$t('homepage.search_patients_image_alt')"
-                class="home-card-image"
-                cover
-                height="160"
-                placeholder="assets/images/logo_black.png"
-                src="assets/images/search.png"
-            ></v-img>
-
-            <v-col class="home-card-titles">
-              <v-card-title>
-                {{ $t('homepage.search_patients_title') }}
-              </v-card-title>
-              <v-card-subtitle>
-                {{ $t('homepage.search_patients_subtitle') }}
-              </v-card-subtitle>
-            </v-col>
-
-            <v-card-text>
-              {{ $t('homepage.search_patients_text') }}
-            </v-card-text>
-          </v-card>
-        </v-hover>
-      </v-col>
-
-      <!-- Create Patient -->
-      <v-col class="pa-3" cols="12" md="4" sm="6">
-        <v-hover v-slot="{ isHovering, props }">
-          <v-card
-              :to="{ name: 'CreatePatient' }"
-              class="home-card"
-              color="primary"
-              link
-              v-bind="props"
-              variant="outlined"
-          >
-            <v-img
-                :alt="$t('homepage.create_patient_image_alt')"
-                class="home-card-image"
-                cover
-                height="160"
-                placeholder="assets/images/logo_black.png"
-                src="assets/images/add_patient.png"
-            ></v-img>
-
-            <v-col class="home-card-titles">
-              <v-card-title>
-                {{ $t('homepage.create_patient_title') }}
-              </v-card-title>
-              <v-card-subtitle>
-                {{ $t('homepage.create_patient_subtitle') }}
-              </v-card-subtitle>
-            </v-col>
-
-            <v-card-text>
-              {{ $t('homepage.create_patient_text') }}
-            </v-card-text>
-          </v-card>
-        </v-hover>
-      </v-col>
-
-      <!-- Predictions -->
-      <v-col class="pa-3" cols="12" md="4" sm="6">
-        <v-hover v-slot="{ isHovering, props }">
-          <v-card
-              :to="{ name: 'PredictionsHome' }"
-              class="home-card"
-              color="primary"
-              link
-              v-bind="props"
-              variant="outlined"
-          >
-            <v-img
-                :alt="$t('homepage.prediction_image_alt')"
-                class="home-card-image"
-                cover
-                height="160"
-                placeholder="assets/images/logo_black.png"
-                src="assets/images/prediction.png"
-
-            ></v-img>
-
-            <v-col class="home-card-titles">
-              <v-card-title>
-                {{ $t('homepage.prediction_title') }}
-              </v-card-title>
-              <v-card-subtitle>
-                {{ $t('homepage.prediction_subtitle') }}
-              </v-card-subtitle>
-            </v-col>
-
-            <v-card-text>
-              {{ $t('homepage.prediction_text') }}
-            </v-card-text>
-          </v-card>
-        </v-hover>
+    <!-- About Prediction Models -->
+    <v-row class="mt-2">
+      <v-col>
+        <h2 class="text-h6 font-weight-bold mb-2">{{ $t('predictions_home.about.title') }}</h2>
+        <p class="text-body-1 text-medium-emphasis">
+          {{ $t('predictions_home.about.description') }}
+        </p>
       </v-col>
     </v-row>
+
+    <v-divider class="my-6" />
+
+    <!-- How to get a prediction -->
+    <v-row>
+      <v-col>
+        <h2 class="text-h6 font-weight-bold mb-2">{{ $t('predictions_home.process.title') }}</h2>
+        <v-timeline align="start" class="mt-4" density="compact" side="end">
+          <v-timeline-item dot-color="primary" fill-dot icon="mdi-magnify" size="small">
+            <div class="d-flex">
+              <strong class="me-4">{{ $t('predictions_home.process.step1.title') }}</strong>
+              <div>{{ $t('predictions_home.process.step1.description') }}</div>
+            </div>
+          </v-timeline-item>
+          <v-timeline-item dot-color="primary" fill-dot icon="mdi-account-plus" size="small">
+            <div class="d-flex">
+              <strong class="me-4">{{ $t('predictions_home.process.step2.title') }}</strong>
+              <div>{{ $t('predictions_home.process.step2.description') }}</div>
+            </div>
+          </v-timeline-item>
+          <v-timeline-item dot-color="primary" fill-dot icon="mdi-account-details" size="small">
+            <div class="d-flex">
+              <strong class="me-4">{{ $t('predictions_home.process.step3.title') }}</strong>
+              <div>{{ $t('predictions_home.process.step3.description') }}</div>
+            </div>
+          </v-timeline-item>
+          <v-timeline-item dot-color="primary" fill-dot icon="mdi-creation" size="small">
+            <div class="d-flex">
+              <strong class="me-4">{{ $t('predictions_home.process.step4.title') }}</strong>
+              <div>{{ $t('predictions_home.process.step4.description') }}</div>
+            </div>
+          </v-timeline-item>
+        </v-timeline>
+      </v-col>
+    </v-row>
+
+    <!-- CTA Button to Predictions -->
+    <div class="d-flex justify-center mt-8 mb-4">
+      <v-btn
+          :to="{ name: 'PredictionsHome' }"
+          color="primary"
+          prepend-icon="mdi-creation"
+          size="large"
+          variant="elevated"
+      >
+        {{ $t('homepage.goto_predictions') }}
+      </v-btn>
+    </div>
   </v-container>
 </template>
 

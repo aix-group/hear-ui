@@ -22,6 +22,7 @@
       "prediction_subtitle": "Run and inspect model predictions.",
       "prediction_text": "Explore risk scores, model outputs and performance for your patients.",
       "prediction_image_alt": "Illustration representing risk prediction and analytics.",
+      "goto_predictions": "Go to Predictions",
       "welcome_text": "Welcome to Hear-UI, a project for predicting hearing loss."
     },
     "form": {
