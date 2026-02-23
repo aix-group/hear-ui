@@ -28,7 +28,7 @@
     "markdown-it": "^14.1.0",
     "marked": "^17.0.3",
     "plotly.js": "^3.3.0",
-    "plotly.js-dist-min": "^3.3.0",
+    "plotly.js-dist-min": "^3.4.0",
     "vee-validate": "^4.15.1",
     "vue": "^3.3.4",
     "vue-plotly": "^1.1.0",
