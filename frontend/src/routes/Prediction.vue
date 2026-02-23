@@ -490,7 +490,7 @@ const sectionBoundaries = computed(() => {
     if (key !== lastKey) {
       boundaries.push({
         yStart: i,
-        label: (f.importance >= 0 ? '⬆ ' : '⬇ ') + (f.section ?? 'Weitere'),
+        label: (f.importance >= 0 ? '⬆ ' : '⬇ ') + (f.section ?? (language.value?.startsWith('en') ? 'Other' : 'Weitere')),
         isPositive: f.importance >= 0,
       })
       lastKey = key
@@ -659,23 +659,23 @@ function renderExplanationPlot() {
     {
       type: "bar",
       orientation: "h",
-      name: "⬆ Erhöht Wahrscheinlichkeit",
+      name: language.value?.startsWith('en') ? "⬆ Increases probability" : "⬆ Erhöht Wahrscheinlichkeit",
       x: posIdx.map(i => featureImportances.value[i]),
       y: posIdx.map(i => yVals[i]),
       marker: { color: 'rgba(221, 5, 74, 0.78)', line: { width: 0 } },
       customdata: posIdx.map(i => featureLabels.value[i]),
-      hovertemplate: "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
+      hovertemplate: language.value?.startsWith('en') ? "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>" : "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
       showlegend: true,
     },
     {
       type: "bar",
       orientation: "h",
-      name: "⬇ Senkt Wahrscheinlichkeit",
+      name: language.value?.startsWith('en') ? "⬇ Decreases probability" : "⬇ Senkt Wahrscheinlichkeit",
       x: negIdx.map(i => featureImportances.value[i]),
       y: negIdx.map(i => yVals[i]),
       marker: { color: 'rgba(33, 150, 243, 0.78)', line: { width: 0 } },
       customdata: negIdx.map(i => featureLabels.value[i]),
-      hovertemplate: "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
+      hovertemplate: language.value?.startsWith('en') ? "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>" : "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
       showlegend: true,
     },
   ]
@@ -720,7 +720,7 @@ function renderExplanationPlot() {
   const layout: Partial<Plotly.Layout> = {
     height: explanationPlotHeight.value,
     xaxis: {
-      title: { text: "Beitrag zur Vorhersage", font: { size: 12, color: '#666' } },
+      title: { text: language.value?.startsWith('en') ? "Contribution to prediction" : "Beitrag zur Vorhersage", font: { size: 12, color: '#666' } },
       automargin: true,
       zeroline: true,
       zerolinewidth: 2,

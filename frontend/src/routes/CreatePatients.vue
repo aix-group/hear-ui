@@ -33,6 +33,18 @@
           {{ $t('form.minimum_fields_hint') }}
         </v-alert>
 
+        <!-- Age out-of-scope warning (shown immediately when age < 18 or > 90) -->
+        <v-alert
+          v-if="ageWarningMessage"
+          type="warning"
+          variant="tonal"
+          density="compact"
+          class="mb-4"
+          icon="mdi-alert-outline"
+        >
+          {{ ageWarningMessage }}
+        </v-alert>
+
         <template v-for="section in sectionedDefinitions" :key="section.name">
           <h3 class="section-title">{{ section.label }}</h3>
           <v-row dense>
@@ -425,6 +437,26 @@ const {handleSubmit, handleReset, setFieldTouched, setFieldValue, values, errors
 
 const formValues = values
 const formErrors = computed(() => errors.value ?? {})
+
+// Warn immediately if entered age is outside the model's training range (18–90)
+const ageWarningMessage = computed(() => {
+  const bd = (formValues as any).birth_date
+  let age: number | null = null
+  if (typeof bd === 'string' && bd.length === 10) {
+    age = calculateAgeFromDate(bd)
+  }
+  if (age === null) {
+    const raw = (formValues as any).age
+    age = (typeof raw === 'number' && !isNaN(raw)) ? raw : null
+  }
+  if (age === null) return ''
+  if (age < 18 || age > 90) {
+    return language.value?.startsWith('en')
+      ? `Note: The model was trained exclusively on adults (\u2265\u202f18\u202fyears, \u2264\u202f90\u202fyears) \u2013 predictions outside this age range may not be reliable. (Patient age: ${age})`
+      : `Hinweis: Das Modell wurde ausschlie\u00dflich an Erwachsenen (\u2265\u202f18\u202fJahre, \u2264\u202f90\u202fJahre) trainiert \u2013 Vorhersagen au\u00dferhalb dieses Altersbereichs sind nicht zuverl\u00e4ssig. (Patientenalter: ${age})`
+  }
+  return ''
+})
 
 // Single source of truth for field-level error messages shown in the UI.
 // Populated synchronously on submit, cleared per-field when the user edits.
