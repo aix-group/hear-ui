@@ -163,7 +163,7 @@
 
 
 <script lang="ts" setup>
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import {VCheckbox, VCombobox, VSelect, VTextField} from 'vuetify/components'
 import {useForm} from 'vee-validate'
 import i18next from 'i18next'
@@ -175,6 +175,11 @@ import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
 const language = ref(i18next.language)
 i18next.on('languageChanged', (lng) => {
   language.value = lng
+})
+
+// Reload feature labels AND section names whenever the user switches UI language
+watch(language, (lng) => {
+  void featureDefinitionsStore.loadLabels(lng)
 })
 
 const route = useRoute()
@@ -413,6 +418,23 @@ const validationSchema = computed(() => {
           if (!allAllowed) return requiredMessageFor(def)
         } else if (!allowed.includes(value as any)) {
           return requiredMessageFor(def)
+        }
+      }
+      // Hard age-range check: model was trained only on adults aged 18–90
+      if (def.normalized === 'age' && !isEmptyValue(value, def)) {
+        const numAge = typeof value === 'number' ? value : Number(value)
+        if (Number.isFinite(numAge) && (numAge < 18 || numAge > 90)) {
+          return language.value?.startsWith('en')
+            ? `Age ${numAge} is outside the model's training range (18–90 years).`
+            : `Alter ${numAge} liegt außerhalb des Trainingsbereichs des Modells (18–90 Jahre).`
+        }
+      }
+      if (def.normalized === 'birth_date' && typeof value === 'string' && value.length === 10) {
+        const calcAge = calculateAgeFromDate(value)
+        if (calcAge !== null && (calcAge < 18 || calcAge > 90)) {
+          return language.value?.startsWith('en')
+            ? `Date of birth implies age ${calcAge} – outside the model's training range (18–90 years).`
+            : `Geburtsdatum ergibt Alter ${calcAge} – außerhalb des Trainingsbereichs (18–90 Jahre).`
         }
       }
       return true
@@ -839,6 +861,25 @@ const submit = async () => {
 
   if (Object.keys(newErrors).length > 0) {
     showError(i18next.t('form.error.fix_fields'))
+    return
+  }
+
+  // Hard block: age out of model training range (18–90) — patient CANNOT be saved
+  const ageVal = (values as any).age
+  const bdVal = (values as any).birth_date
+  let effectiveAge: number | null = null
+  if (typeof bdVal === 'string' && bdVal.length === 10) {
+    effectiveAge = calculateAgeFromDate(bdVal)
+  }
+  if (effectiveAge === null && typeof ageVal === 'number' && Number.isFinite(ageVal)) {
+    effectiveAge = ageVal
+  }
+  if (effectiveAge !== null && (effectiveAge < 18 || effectiveAge > 90)) {
+    const ageErrMsg = language.value?.startsWith('en')
+      ? `Cannot save: patient age ${effectiveAge} is outside the model's training range (18–90 years).`
+      : `Speichern nicht möglich: Patientenalter ${effectiveAge} liegt außerhalb des Trainingsbereichs (18–90 Jahre).`
+    manualErrors.value = { ...manualErrors.value, age: ageErrMsg }
+    showError(ageErrMsg)
     return
   }
 

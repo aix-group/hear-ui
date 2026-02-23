@@ -183,7 +183,8 @@
             <v-card v-if="whatIfOpen" variant="outlined" color="primary" class="pa-4">
               <div class="text-body-2 text-medium-emphasis mb-4">{{ $t('prediction.whatif.description') }}</div>
 
-              <!-- Feature overrides -->
+              <!-- Feature overrides: wrap in form with autocomplete=off to suppress browser suggestion bubbles -->
+              <form autocomplete="off" @submit.prevent="">
               <v-row dense>
                 <v-col
                   v-for="feat in whatIfFeatures"
@@ -219,8 +220,7 @@
                       variant="outlined"
                       hide-details
                       class="mb-2"
-                      autocomplete="new-password"
-                      :name="'whatif-field-' + feat.rawKey"
+                      autocomplete="off"
                       no-filter
                       :menu-props="{ closeOnContentClick: true }"
                       @update:model-value="onWhatIfChange"
@@ -228,6 +228,7 @@
                   </template>
                 </v-col>
               </v-row>
+              </form>
 
               <!-- Result comparison -->
               <v-divider class="my-4" />
