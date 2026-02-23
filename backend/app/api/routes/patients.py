@@ -627,18 +627,6 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
                     f"Patient ist {int(patient_age)} Jahre alt – der Trainingsbereich des Modells liegt "
                     "typischerweise unter 90 Jahren. Die Vorhersage mit Vorsicht interpretieren."
                 )
-        # Warn if critical fields are missing
-        missing_critical = []
-        if not input_features.get("Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)..."):
-            missing_critical.append("Beginn der Hörminderung")
-        if not input_features.get("Diagnose.Höranamnese.Ursache....Ursache..."):
-            missing_critical.append("Ursache der Hörminderung")
-        if missing_critical:
-            missing_str = ", ".join(missing_critical)
-            warnings.append(
-                f"Fehlende Schlüsselmerkmale: {missing_str}. "
-                "Die Vorhersagequalität kann dadurch eingeschränkt sein."
-            )
         # ──────────────────────────────────────────────────────────────────
 
         return ShapVisualizationResponse(

@@ -120,9 +120,14 @@ watch(search, (newValue) => {
             birthDate: p.birth_date ?? null,
           })).filter((p) => p.id)
             .sort((a, b) => {
-              // Sort by last name (part before comma in "Nachname, Vorname" format)
               const lastNameA = (a.name.split(',')[0] ?? a.name).trim().toLowerCase()
               const lastNameB = (b.name.split(',')[0] ?? b.name).trim().toLowerCase()
+              const q = newValue.trim().toLowerCase()
+              // Priority: last names that start with the query appear first;
+              // within each group, sort alphabetically by last name.
+              const aPrefix = lastNameA.startsWith(q) ? 0 : 1
+              const bPrefix = lastNameB.startsWith(q) ? 0 : 1
+              if (aPrefix !== bPrefix) return aPrefix - bPrefix
               return lastNameA.localeCompare(lastNameB, 'de')
             })
           : [];

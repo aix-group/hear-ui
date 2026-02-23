@@ -674,20 +674,21 @@ function renderExplanationPlot() {
     font: { size: 11 },
   }))
 
-  // Add section header annotations
+  // Add section header annotations – placed just outside the paper domain
+  // (x > 1) so Plotly renders them in the right margin area without clipping.
   sectionBoundaries.value.forEach(({ yStart, label, isPositive }) => {
     annotations.push({
       xref: 'paper',
       yref: 'y',
-      x: 1,
+      x: 1.02,
       xanchor: 'left',
-      xshift: 6,
+      xshift: 0,
       y: yStart,
       text: `<b>${label}</b>`,
       showarrow: false,
       align: 'left',
       valign: 'middle',
-      font: { size: 10, color: isPositive ? '#DD054A' : '#2196F3' },
+      font: { size: 11, color: isPositive ? '#DD054A' : '#2196F3' },
     })
   })
 
@@ -717,10 +718,11 @@ function renderExplanationPlot() {
           )) * 7
         )
       ),
-      // Dynamic right margin so section header labels are fully visible
+      // Dynamic right margin so section header labels are fully visible.
+      // Each char ≈ 8 px at font-size 11; add 32 px buffer; min 160, max 280.
       r: sectionBoundaries.value.length
-        ? Math.max(120, Math.min(220, Math.max(...sectionBoundaries.value.map((b) => b.label.length)) * 8 + 20))
-        : 30,
+        ? Math.max(160, Math.min(280, Math.max(...sectionBoundaries.value.map((b) => b.label.length)) * 8 + 32))
+        : 40,
       t: 10,
       b: 40,
     },
