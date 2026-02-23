@@ -717,7 +717,10 @@ function renderExplanationPlot() {
           )) * 7
         )
       ),
-      r: 24,
+      // Dynamic right margin so section header labels are fully visible
+      r: sectionBoundaries.value.length
+        ? Math.max(120, Math.min(220, Math.max(...sectionBoundaries.value.map((b) => b.label.length)) * 8 + 20))
+        : 30,
       t: 10,
       b: 40,
     },
