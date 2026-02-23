@@ -516,6 +516,7 @@ const whatIfFeatures = computed(() => {
         const numVal = currentVal !== undefined && currentVal !== null ? Number(currentVal) : 0
         return {
           rawKey: f.rawKey,
+          normalized: def?.normalized,
           label,
           inputType: 'number' as const,
           options: null,
@@ -531,6 +532,7 @@ const whatIfFeatures = computed(() => {
       if (def?.options?.length > 0) {
         return {
           rawKey: f.rawKey,
+          normalized: def?.normalized,
           label,
           inputType: 'select' as const,
           options: (def.options as any[]).map((opt: any) => ({
@@ -553,6 +555,24 @@ const whatIfFeatures = computed(() => {
       sliderMin: number; sliderMax: number; sliderStep: number;
       defaultVal: any;
     }>
+    // Remove gender from the controls and prioritise specific features
+    .filter((item: any) => item.normalized !== 'gender')
+    .sort((a: any, b: any) => {
+      const preferred = [
+        'duration_severe_hl',
+        'hearing_loss_onset',
+        'hl_operated_ear',
+        'imaging_findings_preop',
+        'ci_implant_type',
+        'age'
+      ]
+      const ia = preferred.indexOf(a.normalized ?? '')
+      const ib = preferred.indexOf(b.normalized ?? '')
+      if (ia === -1 && ib === -1) return 0
+      if (ia === -1) return 1
+      if (ib === -1) return -1
+      return ia - ib
+    })
 })
 
 watch(whatIfFeatures, (feats) => {
