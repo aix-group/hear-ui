@@ -21,19 +21,20 @@ test.describe('Navigation', () => {
     expect(page.url()).toContain('/home')
   })
 
-  test('home page has three navigation cards', async ({ page }) => {
+  test('home page has CTA button to predictions', async ({ page }) => {
     await page.goto('/home')
-    const cards = page.locator('.home-card')
-    await expect(cards).toHaveCount(3)
+    // Home page was redesigned: uses a CTA button instead of navigation cards
+    const ctaBtn = page.locator('a.v-btn, .v-btn').filter({ hasText: /Predictions|Vorhersage/i })
+    await expect(ctaBtn.first()).toBeVisible()
   })
 
-  test('clicking search card navigates to search patients', async ({ page }) => {
+  test('CTA button navigates to prediction-home', async ({ page }) => {
     await page.goto('/home')
-    // Click on the first card (search patients)
-    const searchCard = page.locator('.home-card').first()
-    await searchCard.click()
-    await page.waitForURL('**/search-patients')
-    expect(page.url()).toContain('/search-patients')
+    // Click the main CTA button that links to PredictionsHome
+    const ctaBtn = page.locator('.v-btn').filter({ hasText: /Predictions|Vorhersage/i })
+    await ctaBtn.first().click()
+    await page.waitForURL('**/prediction-home')
+    expect(page.url()).toContain('/prediction-home')
   })
 
   test('sidebar navigation works', async ({ page }) => {
