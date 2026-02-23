@@ -708,6 +708,7 @@ async def predict_override_api(
 
 
 @router.get("/{patient_id}/validate")
+def validate_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
     """Validate stored patient `input_features` against expected model inputs.
 
     Returns a JSON object with `ok: bool` and `missing_features: list`.
