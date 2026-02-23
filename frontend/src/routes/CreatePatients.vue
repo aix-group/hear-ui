@@ -926,14 +926,20 @@ onMounted(async () => {
 }
 
 /* Prominent red outline when a required field is empty after submit */
-.required-empty :deep(.v-field__outline),
-.required-empty .v-field__outline {
-  border-color: rgb(var(--v-theme-error)) !important;
+/* Vuetify 3 outlined fields use 'color' on .v-field__outline (SVG stroke) */
+.required-empty :deep(.v-field__outline) {
+  color: rgb(var(--v-theme-error)) !important;
   box-shadow: 0 0 0 3px rgba(var(--v-theme-error), 0.18);
 }
 
-.required-empty :deep(.v-label),
-.required-empty .v-label {
+.required-empty :deep(.v-label) {
   color: rgb(var(--v-theme-error)) !important;
+}
+
+/* Force error-color on the field container itself so inner borders render red */
+.required-empty :deep(.v-field) {
+  --v-field-border-color: rgb(var(--v-theme-error));
+  --v-theme-primary: var(--v-theme-error);
+  color: rgb(var(--v-theme-error));
 }
 </style>

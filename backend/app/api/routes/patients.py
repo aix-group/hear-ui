@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
@@ -205,27 +206,26 @@ def search_patients_api(
     inspecting their `input_features`. For very large datasets a dedicated
     DB-side JSON query should be implemented.
     """
-    # keys that may contain a person's name inside the `input_features` JSON
-    name_keys = ["name", "Name", "Vorname", "Nachname", "full_name", "fullname"]
-
+    # "Nachname" comes first so last-name search takes priority in the fallback path.
     q_lower = q.lower()
 
-    def _word_start_match(query_lower: str, text: str) -> bool:
-        """Match if the last-name token starts with query.
+    def _build_candidate(input_features: dict) -> str | None:
+        """Build a display candidate preferring 'Nachname, Vorname' format."""
+        nachname = input_features.get("Nachname") or input_features.get("last_name")
+        vorname = input_features.get("Vorname") or input_features.get("first_name")
+        if nachname and vorname:
+            return f"{nachname}, {vorname}"
+        for k in ["Nachname", "last_name", "Vorname", "first_name", "Name", "name", "full_name", "fullname"]:
+            v = input_features.get(k)
+            if v:
+                return str(v)
+        return None
 
-        Supports two formats:
-        - "Lastname, Firstname" (comma format used by display_name) → only match last name
-        - "Firstname Lastname" (space-separated, no comma) → match any word
-        """
-        if "," in text:
-            # Comma format: part before comma is the last name
-            last_name = text.split(",")[0].strip()
-            return last_name.lower().startswith(query_lower)
-        else:
-            # Space-separated: match any word that starts with query
-            return any(
-                tok.lower().startswith(query_lower) for tok in text.split() if tok
-            )
+    def _word_start_match(query_lower: str, text: str) -> bool:
+        """Match if any name token (first OR last name) starts with query."""
+        # Remove commas so 'Müller, Anna' → ['Müller', 'Anna']
+        tokens = [tok for tok in text.replace(",", " ").split() if tok]
+        return any(tok.lower().startswith(query_lower) for tok in tokens)
 
     patients = crud.list_patients(session=session, limit=limit, offset=offset)
     # Prefer DB-side search if available (faster for production with Postgres)
@@ -253,19 +253,11 @@ def search_patients_api(
         if not getattr(p, "input_features", None):
             continue
         input_features = p.input_features or {}
-        candidate = None
-        for k in name_keys:
-            v = input_features.get(k)
-            if v:
-                candidate = str(v)
-                break
-        # Some datasets might store a single combined `name` under other keys
-        # so as a fallback, join string values from input_features and search
+        candidate = _build_candidate(input_features)
         if not candidate:
-            # try to find any string-like value that looks like a name
+            # last resort: take the first non-empty string value
             for val in input_features.values():
                 if isinstance(val, str) and len(val) > 0:
-                    # take the first string-ish value as a fallback candidate
                     candidate = val
                     break
 
@@ -600,6 +592,55 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
 
         from app.api.routes.explainer import ShapVisualizationResponse
 
+        # ── Out-of-scope warnings ──────────────────────────────────────────
+        from datetime import date as _date
+        warnings: list[str] = []
+        patient_age: float | None = None
+        bd = input_features.get("Geburtsdatum") or ""
+        if bd and isinstance(bd, str):
+            try:
+                bd = bd.strip()
+                if len(bd) == 10 and bd[2] == ".":  # DD.MM.YYYY
+                    yr = int(bd[6:10])
+                elif len(bd) >= 4 and (bd[4] == "-" or len(bd) == 4):  # YYYY-MM-DD or YYYY
+                    yr = int(bd[:4])
+                else:
+                    yr = None
+                if yr:
+                    patient_age = float(_date.today().year - yr)
+            except (ValueError, TypeError):
+                pass
+        if patient_age is None:
+            raw_age = input_features.get("Alter [J]") or input_features.get("age")
+            try:
+                patient_age = float(raw_age) if raw_age is not None else None
+            except (ValueError, TypeError):
+                pass
+        if patient_age is not None:
+            if patient_age < 18:
+                warnings.append(
+                    f"Patient ist {int(patient_age)} Jahre alt – das Modell wurde ausschließlich "
+                    "an Erwachsenen (≥18 Jahre) trainiert. Die Vorhersage ist möglicherweise nicht valide."
+                )
+            elif patient_age > 90:
+                warnings.append(
+                    f"Patient ist {int(patient_age)} Jahre alt – der Trainingsbereich des Modells liegt "
+                    "typischerweise unter 90 Jahren. Die Vorhersage mit Vorsicht interpretieren."
+                )
+        # Warn if critical fields are missing
+        missing_critical = []
+        if not input_features.get("Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)..."):
+            missing_critical.append("Beginn der Hörminderung")
+        if not input_features.get("Diagnose.Höranamnese.Ursache....Ursache..."):
+            missing_critical.append("Ursache der Hörminderung")
+        if missing_critical:
+            missing_str = ", ".join(missing_critical)
+            warnings.append(
+                f"Fehlende Schlüsselmerkmale: {missing_str}. "
+                "Die Vorhersagequalität kann dadurch eingeschränkt sein."
+            )
+        # ──────────────────────────────────────────────────────────────────
+
         return ShapVisualizationResponse(
             prediction=prediction,
             feature_importance=feature_importance,
@@ -608,6 +649,7 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
             base_value=base_value,
             plot_base64=None,
             top_features=top_features,
+            warnings=warnings,
         )
 
     except HTTPException:
@@ -617,8 +659,55 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
         raise HTTPException(status_code=500, detail=f"SHAP explanation failed: {exc}")
 
 
+# ---------------------------------------------------------------------------
+# What-if / predict-override endpoint
+# ---------------------------------------------------------------------------
+
+class _WhatIfRequest(BaseModel):
+    """Overrides to apply on top of a patient's stored input_features."""
+    overrides: dict[str, Any] = {}
+
+
+@router.post("/{patient_id}/predict-override")
+async def predict_override_api(
+    patient_id: UUID,
+    body: _WhatIfRequest,
+    session: Session = Depends(get_db),
+):
+    """Return a new prediction for a patient with some features overridden.
+
+    Merges the patient's stored input_features with the supplied `overrides`
+    dict and runs the model. Useful for interactive 'what-if' analysis in the
+    frontend without modifying the stored patient record.
+    """
+    p = crud.get_patient(session=session, patient_id=patient_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    merged = {**(p.input_features or {}), **body.overrides}
+
+    try:
+        from app.main import app as fastapi_app
+        wrapper = getattr(fastapi_app.state, "model_wrapper", None)
+    except Exception:
+        wrapper = None
+
+    if not wrapper or not wrapper.is_loaded():
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    try:
+        model_res = wrapper.predict(merged, clip=True)
+        try:
+            prediction = float(model_res[0])
+        except (TypeError, IndexError):
+            prediction = float(model_res)
+        return {"prediction": prediction, "overrides": body.overrides}
+    except Exception as exc:
+        logger.exception("predict-override failed for patient %s", patient_id)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @router.get("/{patient_id}/validate")
-def validate_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
     """Validate stored patient `input_features` against expected model inputs.
 
     Returns a JSON object with `ok: bool` and `missing_features: list`.

@@ -18,6 +18,24 @@
         class="my-6"
       />
 
+      <!-- Out-of-scope / data-quality warnings -->
+      <v-row v-if="predictionWarnings.length > 0" class="mb-4" no-gutters>
+        <v-col cols="12">
+          <v-alert
+            v-for="(warn, i) in predictionWarnings"
+            :key="i"
+            type="warning"
+            variant="tonal"
+            density="compact"
+            class="mb-2"
+            icon="mdi-alert-circle-outline"
+            border="start"
+          >
+            {{ warn }}
+          </v-alert>
+        </v-col>
+      </v-row>
+
       <!-- Results -->
       <v-row
         justify="start"
@@ -147,6 +165,105 @@
         </v-col>
       </v-row>
 
+      <!-- What-If Analysis Panel -->
+      <v-row class="mt-2" no-gutters>
+        <v-col cols="12">
+          <v-btn
+            :prepend-icon="whatIfOpen ? 'mdi-chevron-up' : 'mdi-flask-outline'"
+            color="primary"
+            variant="tonal"
+            size="small"
+            class="mb-3"
+            @click="whatIfOpen = !whatIfOpen"
+          >
+            {{ $t('prediction.whatif.toggle') }}
+          </v-btn>
+
+          <v-expand-transition>
+            <v-card v-if="whatIfOpen" variant="outlined" color="primary" class="pa-4">
+              <div class="text-body-2 text-medium-emphasis mb-4">{{ $t('prediction.whatif.description') }}</div>
+
+              <!-- Feature overrides -->
+              <v-row dense>
+                <v-col
+                  v-for="feat in whatIfFeatures"
+                  :key="feat.rawKey"
+                  cols="12"
+                  sm="6"
+                  md="4"
+                >
+                  <!-- Numeric slider -->
+                  <template v-if="feat.inputType === 'number'">
+                    <div class="text-caption mb-1">{{ feat.label }}</div>
+                    <v-slider
+                      v-model="whatIfValues[feat.rawKey]"
+                      :min="feat.sliderMin"
+                      :max="feat.sliderMax"
+                      :step="feat.sliderStep"
+                      thumb-label
+                      color="primary"
+                      density="compact"
+                      hide-details
+                      @update:model-value="onWhatIfChange"
+                    />
+                  </template>
+                  <!-- Categorical select -->
+                  <template v-else-if="feat.options">
+                    <v-select
+                      v-model="whatIfValues[feat.rawKey]"
+                      :label="feat.label"
+                      :items="feat.options"
+                      item-title="title"
+                      item-value="value"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="mb-2"
+                      @update:model-value="onWhatIfChange"
+                    />
+                  </template>
+                </v-col>
+              </v-row>
+
+              <!-- Result comparison -->
+              <v-divider class="my-4" />
+              <div class="d-flex align-center ga-6 flex-wrap">
+                <div class="text-center">
+                  <div class="text-caption text-medium-emphasis">{{ $t('prediction.whatif.original') }}</div>
+                  <div class="text-h5 font-weight-bold" :class="recommended ? 'text-success' : 'text-error'">
+                    {{ (predictionResult * 100).toFixed(0) }}%
+                  </div>
+                </div>
+                <v-icon size="32" color="grey">mdi-arrow-right</v-icon>
+                <div class="text-center">
+                  <div class="text-caption text-medium-emphasis">{{ $t('prediction.whatif.modified') }}</div>
+                  <div v-if="whatIfLoading" class="text-h5">
+                    <v-progress-circular indeterminate size="28" width="2" color="primary"/>
+                  </div>
+                  <div
+                    v-else-if="whatIfPrediction !== null"
+                    class="text-h5 font-weight-bold"
+                    :class="whatIfPrediction > (threshold ?? 0.5) ? 'text-success' : 'text-error'"
+                  >
+                    {{ (whatIfPrediction * 100).toFixed(0) }}%
+                  </div>
+                  <div v-else class="text-h5 text-grey">—</div>
+                </div>
+                <div v-if="whatIfPrediction !== null" class="text-body-2">
+                  <v-chip
+                    :color="whatIfDelta > 0 ? 'success' : whatIfDelta < 0 ? 'error' : 'default'"
+                    size="small"
+                    variant="tonal"
+                  >
+                    {{ whatIfDelta > 0 ? '+' : '' }}{{ (whatIfDelta * 100).toFixed(1) }} Pp
+                  </v-chip>
+                </div>
+              </div>
+            </v-card>
+          </v-expand-transition>
+        </v-col>
+      </v-row>
+
 
       <v-divider
         class=" my-6
@@ -232,6 +349,17 @@ const prediction = ref<{
 const patientInputFeatures = ref<Record<string, unknown>>({})
 const loading = ref(true)
 const error = ref<string | null>(null)
+const predictionWarnings = ref<string[]>([])
+
+// What-if analysis state
+const whatIfOpen = ref(false)
+const whatIfValues = ref<Record<string, any>>({})
+const whatIfPrediction = ref<number | null>(null)
+const whatIfLoading = ref(false)
+let whatIfDebounce: ReturnType<typeof setTimeout> | null = null
+const whatIfDelta = computed(() =>
+  whatIfPrediction.value !== null ? whatIfPrediction.value - predictionResult.value : 0
+)
 
 if (!patient_id.value) {
   router.replace({name: "NotFound"})
@@ -330,12 +458,16 @@ const matchedFeatures = computed(() => {
     })
   }
 
-  // Sort: positive factors (descending by importance) first, then negative (ascending by importance)
+  // Sort: positive factors (descending) first → grouped by section,
+  // then negative factors (ascending) → grouped by section.
   features.sort((a, b) => {
     const aPos = a.importance >= 0 ? 0 : 1
     const bPos = b.importance >= 0 ? 0 : 1
     if (aPos !== bPos) return aPos - bPos
-    // Within same sign group, sort by absolute importance descending
+    // Within same sign group: sort by section name, then abs importance desc
+    const secA = a.section ?? ''
+    const secB = b.section ?? ''
+    if (secA !== secB) return secA.localeCompare(secB, 'de')
     return Math.abs(b.importance) - Math.abs(a.importance)
   })
 
@@ -343,6 +475,112 @@ const matchedFeatures = computed(() => {
 })
 
 const featureImportances = computed(() => matchedFeatures.value.map((f) => f.importance))
+
+// Section boundary annotations for the Plotly chart
+const sectionBoundaries = computed(() => {
+  const boundaries: Array<{yStart: number; label: string; isPositive: boolean}> = []
+  let lastKey = ''
+  matchedFeatures.value.forEach((f, i) => {
+    const sign = f.importance >= 0 ? '+' : '-'
+    const key = `${sign}|${f.section ?? ''}`
+    if (key !== lastKey) {
+      boundaries.push({
+        yStart: i,
+        label: (f.importance >= 0 ? '⬆ ' : '⬇ ') + (f.section ?? 'Weitere'),
+        isPositive: f.importance >= 0,
+      })
+      lastKey = key
+    }
+  })
+  return boundaries
+})
+
+// What-if feature list: top N features from SHAP that are adjustable
+const whatIfFeatures = computed(() => {
+  const defs = definitions.value ?? []
+  const defMap = Object.fromEntries(defs.map((d: any) => [d.raw, d]))
+
+  return matchedFeatures.value
+    .slice(0, 8)
+    .map((f) => {
+      const def = defMap[f.rawKey]
+      const currentVal = patientInputFeatures.value?.[f.rawKey]
+      const label = labelFor(f.normalizedKey, f.rawKey)
+
+      if (def?.input_type === 'number') {
+        const numVal = currentVal !== undefined && currentVal !== null ? Number(currentVal) : 0
+        return {
+          rawKey: f.rawKey,
+          label,
+          inputType: 'number' as const,
+          options: null,
+          sliderMin: 0,
+          sliderMax: f.rawKey.toLowerCase().includes('alter') || f.rawKey === 'Alter [J]' ? 100
+            : f.rawKey.toLowerCase().includes('dauer') ? 60
+            : f.rawKey.toLowerCase().includes('measure') || f.rawKey.toLowerCase().includes('messung') ? 100
+            : 50,
+          sliderStep: 1,
+          defaultVal: numVal,
+        }
+      }
+      if (def?.options?.length > 0) {
+        return {
+          rawKey: f.rawKey,
+          label,
+          inputType: 'select' as const,
+          options: (def.options as any[]).map((opt: any) => ({
+            title: opt.label ?? opt.value,
+            value: opt.value,
+          })),
+          sliderMin: 0, sliderMax: 1, sliderStep: 1,
+          defaultVal: currentVal ?? null,
+        }
+      }
+      return null
+    })
+    .filter(Boolean) as Array<{
+      rawKey: string; label: string; inputType: string;
+      options: Array<{title: string; value: any}> | null;
+      sliderMin: number; sliderMax: number; sliderStep: number;
+      defaultVal: any;
+    }>
+})
+
+watch(whatIfFeatures, (feats) => {
+  // Initialise whatIfValues from current patient data when features load
+  if (feats.length > 0 && Object.keys(whatIfValues.value).length === 0) {
+    const init: Record<string, any> = {}
+    feats.forEach((f) => { init[f.rawKey] = f.defaultVal })
+    whatIfValues.value = init
+  }
+})
+
+async function callWhatIf() {
+  if (!patient_id.value) return
+  whatIfLoading.value = true
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/v1/patients/${encodeURIComponent(patient_id.value)}/predict-override`,
+      {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', accept: 'application/json'},
+        body: JSON.stringify({overrides: whatIfValues.value}),
+      }
+    )
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    whatIfPrediction.value = data.prediction ?? null
+  } catch (e) {
+    console.error('what-if failed', e)
+  } finally {
+    whatIfLoading.value = false
+  }
+}
+
+function onWhatIfChange() {
+  if (whatIfDebounce) clearTimeout(whatIfDebounce)
+  whatIfDebounce = setTimeout(() => callWhatIf(), 400)
+}
 
 const formatFeatureValue = (value: number) => {
   if (!Number.isFinite(value)) return String(value)
@@ -435,6 +673,23 @@ function renderExplanationPlot() {
     valign: "middle",
     font: { size: 11 },
   }))
+
+  // Add section header annotations
+  sectionBoundaries.value.forEach(({ yStart, label, isPositive }) => {
+    annotations.push({
+      xref: 'paper',
+      yref: 'y',
+      x: 1,
+      xanchor: 'left',
+      xshift: 6,
+      y: yStart,
+      text: `<b>${label}</b>`,
+      showarrow: false,
+      align: 'left',
+      valign: 'middle',
+      font: { size: 10, color: isPositive ? '#DD054A' : '#2196F3' },
+    })
+  })
 
   const layout: Partial<Plotly.Layout> = {
     height: explanationPlotHeight.value, // uses your computed height
@@ -547,6 +802,7 @@ onMounted(async () => {
       params: filteredImportance,
       feature_values: filteredValues
     };
+    predictionWarnings.value = Array.isArray(data.warnings) ? data.warnings : [];
     renderExplanationPlot()
 
     const response2 = await fetch(

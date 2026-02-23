@@ -104,8 +104,9 @@ def search_patients_by_name(
 
     Requires the `display_name` column to be present on the `patient` table.
     """
-    # Only match at the very start of display_name (= last name)
-    stmt = select(Patient).where(Patient.display_name.ilike(f"{q}%"))
+    # Substring search in display_name – matches both last-name (start) and
+    # first-name (after the comma) so users can search by either.
+    stmt = select(Patient).where(Patient.display_name.ilike(f"%{q}%"))
     stmt = stmt.offset(offset).limit(limit)
     return session.exec(stmt).all()
 

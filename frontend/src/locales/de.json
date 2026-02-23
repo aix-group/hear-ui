@@ -134,7 +134,13 @@
       },
       "explanations": {
         "title": "Faktoren, die die Vorhersage beeinflussen",
-        "subtitle": "Sortiert nach positiven und negativen Einflussfaktoren, gruppiert nach Kategorie (z.\u00a0B. Demografie, Bildgebung). Rot = erh\u00f6ht die Wahrscheinlichkeit, Blau = verringert die Wahrscheinlichkeit."
+        "subtitle": "Sortiert nach positiven und negativen Einflussfaktoren, gruppiert nach Kategorie (z.\u00a0B. Demografie, Bildgebung). Rot\u00a0= erhöht die Wahrscheinlichkeit, Blau\u00a0= verringert die Wahrscheinlichkeit."
+      },
+      "whatif": {
+        "toggle": "Was-wäre-wenn-Analyse",
+        "description": "Passen Sie einzelne Merkmale an und sehen Sie, wie sich die Vorhersage ändert – ohne die gespeicherten Patientendaten zu verändern.",
+        "original": "Original",
+        "modified": "Modifiziert"
       },
       "feedback": {
         "question": "Stimmen Sie der KI-Vorhersage zu?",
