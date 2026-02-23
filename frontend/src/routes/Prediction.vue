@@ -219,6 +219,10 @@
                       variant="outlined"
                       hide-details
                       class="mb-2"
+                      autocomplete="new-password"
+                      :name="'whatif-field-' + feat.rawKey"
+                      no-filter
+                      :menu-props="{ closeOnContentClick: true }"
                       @update:model-value="onWhatIfChange"
                     />
                   </template>
@@ -529,7 +533,11 @@ const whatIfFeatures = computed(() => {
           label,
           inputType: 'select' as const,
           options: (def.options as any[]).map((opt: any) => ({
-            title: opt.label ?? opt.value,
+            // Feature option definitions provide localized `labels` (de/en).
+            // Prefer current UI language label, fall back to the english/de or raw value.
+            title:
+              (opt.labels && (opt.labels.de && i18next.language?.startsWith('de') ? opt.labels.de : opt.labels.en))
+                ?? opt.value,
             value: opt.value,
           })),
           sliderMin: 0, sliderMax: 1, sliderStep: 1,
@@ -601,8 +609,7 @@ const featureLabels = computed(() =>
         : typeof feature.rawValue === "number"
           ? formatFeatureValue(feature.rawValue)
           : String(feature.rawValue)
-    const sectionLabel = feature.section ? `[${feature.section}] ` : ''
-    return `${sectionLabel}${label}: ${rawDisplay}`
+    return `${label}  ·  ${rawDisplay}`
   })
 )
 
@@ -642,20 +649,34 @@ function renderExplanationPlot() {
   }
 
   const yVals = featureLabels.value.map((_, i) => i)
-  const wrapped = featureLabels.value.map((l) => wrapLabel(l, 48))
+  const wrapped = featureLabels.value.map((l) => wrapLabel(l, 44))
+
+  // Split into positive (red) and negative (blue) trace for cleaner legend
+  const posIdx = featureImportances.value.map((v, i) => v >= 0 ? i : -1).filter(i => i >= 0)
+  const negIdx = featureImportances.value.map((v, i) => v < 0 ? i : -1).filter(i => i >= 0)
 
   const data: Plotly.Data[] = [
     {
       type: "bar",
       orientation: "h",
-      x: featureImportances.value,
-      y: yVals,
-      marker: {
-        color: featureImportances.value.map((v) => (v >= 0 ? "#DD054A" : "#2196F3")),
-      },
-      // show full unwrapped label on hover
-      customdata: featureLabels.value,
-      hovertemplate: "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>",
+      name: "⬆ Erhöht Wahrscheinlichkeit",
+      x: posIdx.map(i => featureImportances.value[i]),
+      y: posIdx.map(i => yVals[i]),
+      marker: { color: 'rgba(221, 5, 74, 0.78)', line: { width: 0 } },
+      customdata: posIdx.map(i => featureLabels.value[i]),
+      hovertemplate: "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
+      showlegend: true,
+    },
+    {
+      type: "bar",
+      orientation: "h",
+      name: "⬇ Senkt Wahrscheinlichkeit",
+      x: negIdx.map(i => featureImportances.value[i]),
+      y: negIdx.map(i => yVals[i]),
+      marker: { color: 'rgba(33, 150, 243, 0.78)', line: { width: 0 } },
+      customdata: negIdx.map(i => featureLabels.value[i]),
+      hovertemplate: "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
+      showlegend: true,
     },
   ]
 
@@ -671,11 +692,10 @@ function renderExplanationPlot() {
     showarrow: false,
     align: "left",
     valign: "middle",
-    font: { size: 11 },
+    font: { size: 11, color: '#333' },
   }))
 
-  // Add section header annotations – placed just outside the paper domain
-  // (x > 1) so Plotly renders them in the right margin area without clipping.
+  // Section header annotations on the right side outside chart area
   sectionBoundaries.value.forEach(({ yStart, label, isPositive }) => {
     annotations.push({
       xref: 'paper',
@@ -688,21 +708,37 @@ function renderExplanationPlot() {
       showarrow: false,
       align: 'left',
       valign: 'middle',
-      font: { size: 11, color: isPositive ? '#DD054A' : '#2196F3' },
+      font: { size: 12, color: isPositive ? '#DD054A' : '#2196F3', family: 'Inter, Roboto, system-ui' },
+      // Make the label visually distinct: add a lightly shaded background and border
+      bgcolor: isPositive ? 'rgba(221,5,74,0.06)' : 'rgba(33,150,243,0.06)',
+      bordercolor: isPositive ? '#DD054A' : '#2196F3',
+      borderwidth: 1,
+      borderpad: 6,
     })
   })
 
   const layout: Partial<Plotly.Layout> = {
-    height: explanationPlotHeight.value, // uses your computed height
+    height: explanationPlotHeight.value,
     xaxis: {
-      title: "Contribution to prediction",
+      title: { text: "Beitrag zur Vorhersage", font: { size: 12, color: '#666' } },
       automargin: true,
       zeroline: true,
-      zerolinewidth: 1,
+      zerolinewidth: 2,
+      zerolinecolor: '#999',
+      gridcolor: '#eee',
+      gridwidth: 1,
     },
     yaxis: {
-      showticklabels: false, // IMPORTANT: no tick labels
+      showticklabels: false,
       automargin: false,
+    },
+    legend: {
+      orientation: 'h',
+      yanchor: 'bottom',
+      y: 1.02,
+      xanchor: 'left',
+      x: 0,
+      font: { size: 11 },
     },
     annotations,
     margin: {

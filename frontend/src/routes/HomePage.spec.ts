@@ -12,42 +12,15 @@ describe('HomePage.vue', () => {
   })
 
   it('renders three navigation cards', async () => {
+    // Updated design: navigation cards were replaced by a central CTA.
     const wrapper = await mountWithRouter(HomePage, { initialRoute: '/home' })
-    const cards = wrapper.findAll('.home-card')
-    expect(cards.length).toBe(3)
+    const cta = wrapper.find('a[href="/prediction-home"]')
+    expect(cta.exists()).toBe(true)
   })
 
-  it('has a card linking to SearchPatients', async () => {
+  it('renders CTA button text (uses i18n key)', async () => {
     const wrapper = await mountWithRouter(HomePage, { initialRoute: '/home' })
-    const html = wrapper.html()
-    expect(html).toContain('/search-patients')
-  })
-
-  it('has a card linking to CreatePatient', async () => {
-    const wrapper = await mountWithRouter(HomePage, { initialRoute: '/home' })
-    const html = wrapper.html()
-    expect(html).toContain('/create-patient')
-  })
-
-  it('has a card linking to PredictionsHome', async () => {
-    const wrapper = await mountWithRouter(HomePage, { initialRoute: '/home' })
-    const html = wrapper.html()
-    expect(html).toContain('/prediction-home')
-  })
-
-  it('displays search patients card text', async () => {
-    const wrapper = await mountWithRouter(HomePage, { initialRoute: '/home' })
-    expect(wrapper.text()).toContain('Patienten suchen')
-  })
-
-  it('displays create patient card text', async () => {
-    const wrapper = await mountWithRouter(HomePage, { initialRoute: '/home' })
-    expect(wrapper.text()).toContain('Patient erstellen')
-  })
-
-  it('displays predictions card text', async () => {
-    const wrapper = await mountWithRouter(HomePage, { initialRoute: '/home' })
-    // The third card uses homepage.prediction_title key
-    expect(wrapper.text()).toContain('Vorhersagen')
+    // The button renders the i18n key in tests; assert the key is present
+    expect(wrapper.html()).toContain('homepage.goto_predictions')
   })
 })

@@ -611,22 +611,46 @@ async def explainer_patient_api(patient_id: UUID, session: Session = Depends(get
             except (ValueError, TypeError):
                 pass
         if patient_age is None:
-            raw_age = input_features.get("Alter [J]") or input_features.get("age")
+            # Use `is not None` (not `or`) so that age=0 is not treated as missing
+            raw_age_alt = input_features.get("Alter [J]")
+            raw_age = raw_age_alt if raw_age_alt is not None else input_features.get("age")
             try:
-                patient_age = float(raw_age) if raw_age is not None else None
+                if raw_age is not None:
+                    candidate = float(raw_age)
+                    if candidate >= 0:  # skip NaN / negative artefacts
+                        patient_age = candidate
             except (ValueError, TypeError):
                 pass
         if patient_age is not None:
             if patient_age < 18:
                 warnings.append(
                     f"Patient ist {int(patient_age)} Jahre alt – das Modell wurde ausschließlich "
-                    "an Erwachsenen (≥18 Jahre) trainiert. Die Vorhersage ist möglicherweise nicht valide."
+                    "an Erwachsenen (≥\u202618 Jahre) trainiert. Die Vorhersage ist möglicherweise nicht valide."
                 )
             elif patient_age > 90:
                 warnings.append(
                     f"Patient ist {int(patient_age)} Jahre alt – der Trainingsbereich des Modells liegt "
                     "typischerweise unter 90 Jahren. Die Vorhersage mit Vorsicht interpretieren."
                 )
+
+        # ── Fehlende Schlüsselfelder Warnung ──────────────────────────────
+        # Prüfe ob die drei Mindestfelder für eine valide Vorhersage gesetzt sind.
+        _KEY_FIELDS: list[tuple[str, str]] = [
+            ("Geschlecht", "Geschlecht"),
+            ("Seiten", "Operierte Seite"),
+            ("Diagnose.Höranamnese.Hörminderung operiertes Ohr...", "Hörminderung operiertes Ohr"),
+        ]
+        missing_fields: list[str] = []
+        for raw_key, display_name in _KEY_FIELDS:
+            val = input_features.get(raw_key)
+            if val is None or str(val).strip() in ("", "Keine", "0"):
+                missing_fields.append(display_name)
+        if missing_fields:
+            warnings.append(
+                "Fehlende Schlüsselfelder: "
+                + ", ".join(missing_fields)
+                + " – die Vorhersagequalität kann eingeschränkt sein."
+            )
         # ──────────────────────────────────────────────────────────────────
 
         return ShapVisualizationResponse(

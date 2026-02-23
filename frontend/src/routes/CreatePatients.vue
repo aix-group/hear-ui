@@ -925,21 +925,56 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* Prominent red outline when a required field is empty after submit */
-/* Vuetify 3 outlined fields use 'color' on .v-field__outline (SVG stroke) */
+/* ── Required-empty: red outline for Vuetify 3 outlined fields ──────────────
+ *
+ * Root cause: Vuetify 3 outlined variant renders borders via
+ *   `border-color: currentColor`
+ * on .v-field__outline__start / __end / __notch::before / ::after.
+ * `currentColor` inherits from the nearest ancestor that carries a `color`
+ * value — which is .v-field itself.
+ *
+ * Fix: set `color` (not `border-color`) on .v-field, then also explicitly set
+ * border-color on every segment as belt-and-suspenders.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+/* Step 1 – The field container carries the "accent" color that currentColor
+   resolves to inside every child outline segment. */
+.required-empty :deep(.v-field) {
+  color: rgb(var(--v-theme-error)) !important;
+  --v-field-border-opacity: 1 !important;
+  box-shadow: 0 0 0 1px rgba(var(--v-theme-error), 0.28) !important;
+}
+
+/* Step 2 – Outline wrapper: propagate color downward explicitly */
 .required-empty :deep(.v-field__outline) {
   color: rgb(var(--v-theme-error)) !important;
-  box-shadow: 0 0 0 3px rgba(var(--v-theme-error), 0.18);
+  opacity: 1 !important;
 }
 
+/* Step 3 – Left and right border bars */
+.required-empty :deep(.v-field__outline__start),
+.required-empty :deep(.v-field__outline__end) {
+  border-color: rgb(var(--v-theme-error)) !important;
+  border-width: 2px !important;
+  opacity: 1 !important;
+}
+
+/* Step 4 – Notch (label gap): color on the element so ::before/::after inherit */
+.required-empty :deep(.v-field__outline__notch) {
+  color: rgb(var(--v-theme-error)) !important;
+  border-color: rgb(var(--v-theme-error)) !important;
+}
+
+/* Step 5 – Notch pseudo-elements draw the top-border lines beside the label */
+.required-empty :deep(.v-field__outline__notch::before),
+.required-empty :deep(.v-field__outline__notch::after) {
+  border-top-color: rgb(var(--v-theme-error)) !important;
+  border-width: 2px !important;
+}
+
+/* Step 6 – Red label text */
 .required-empty :deep(.v-label) {
   color: rgb(var(--v-theme-error)) !important;
-}
-
-/* Force error-color on the field container itself so inner borders render red */
-.required-empty :deep(.v-field) {
-  --v-field-border-color: rgb(var(--v-theme-error));
-  --v-theme-primary: var(--v-theme-error);
-  color: rgb(var(--v-theme-error));
+  opacity: 1 !important;
 }
 </style>
