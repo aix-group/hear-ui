@@ -25,7 +25,7 @@
       <v-row justify="start" no-gutters>
         <h1>
           {{ $t('patient_details.title') }}
-          <span class="text-primary">{{ displayName }}</span>
+          <span class="text-primary">{{ displayName }}</span><span v-if="formattedBirthDate" class="text-primary">, {{ formattedBirthDate }}</span>
         </h1>
 
       </v-row>
@@ -195,6 +195,16 @@ const updateSuccessOpen = ref(false);
 const createSuccessOpen = ref(false);
 
 const displayName = computed(() => patient.value?.name ?? patient.value?.display_name ?? "Patient");
+
+const formattedBirthDate = computed(() => {
+  const raw = patient.value?.input_features?.['Geburtsdatum']
+  if (!raw) return null
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [y, m, d] = raw.split('-')
+    return `${d}.${m}.${y}`
+  }
+  return raw
+})
 
 // Computes which ear the OTHER form should be for (flips R↔L)
 const otherEar = computed<string | null>(() => {

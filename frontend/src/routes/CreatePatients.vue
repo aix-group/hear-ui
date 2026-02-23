@@ -44,10 +44,11 @@
                   @update:model-value="(val: any) => updateDateField(field.normalized, val)"
                   :label="field.label"
                   placeholder="TT.MM.JJJJ"
-                  :error-messages="fieldErrorMap[field.normalized] ?? []"
-                  :error="!!(fieldErrorMap[field.normalized]?.length)"
+                  :error-messages="[]"
+                  :error="(submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field)) || !!(fieldErrorMap[field.normalized]?.length)"
+                  :class="{ 'required-empty': submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field) }"
                   color="primary"
-                  hide-details="auto"
+                  hide-details
                   variant="outlined"
                   maxlength="10"
                   autocomplete="off"
@@ -61,8 +62,9 @@
                   item-title="title"
                   item-value="value"
                   :label="field.label"
-                  :error-messages="fieldErrorMap[field.normalized] ?? []"
-                  :error="!!(fieldErrorMap[field.normalized]?.length)"
+                  :error-messages="[]"
+                  :error="(submitAttempted && field.isRequired && isFieldEmpty(field.normalized, field)) || !!(fieldErrorMap[field.normalized]?.length)"
+                  :class="{ 'required-empty': submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field) }"
                   :type="field.inputType"
                   :multiple="field.multiple"
                   :chips="field.multiple"
@@ -71,7 +73,7 @@
                   :true-value="field.trueValue"
                   :false-value="field.falseValue"
                   color="primary"
-                  hide-details="auto"
+                  hide-details
                   variant="outlined"
                   autocomplete="off"
                 />
@@ -85,10 +87,10 @@
                   :model-value="formValues[field.otherField]"
                   @update:model-value="(val: any) => updateField(field.otherField, val)"
                   :label="field.otherLabel"
-                  :error-messages="fieldErrorMap[field.otherField] ?? []"
+                  :error-messages="[]"
                   :error="!!(fieldErrorMap[field.otherField]?.length)"
                   color="primary"
-                  hide-details="auto"
+                  hide-details
                   variant="outlined"
                 />
               </v-col>
@@ -319,6 +321,8 @@ const sectionedDefinitions = computed(() => {
         return {
         normalized: def.normalized,
         label: isRequired ? `${baseLabel} *` : baseLabel,
+        isRequired,
+        isCheckbox: isCheckboxField(def),
         component: getFieldComponent(def),
         inputType: def.input_type === 'number' ? 'number' : undefined,
         isDateMasked: def.input_type === 'date',
@@ -337,6 +341,18 @@ const sectionedDefinitions = computed(() => {
       }})
     }))
 })
+
+  // Helper used by the template to determine if a field is empty
+  const isFieldEmpty = (name: string, field: any) => {
+    const val = (formValues as any)[name]
+    if (field?.multiple) return !Array.isArray(val) || val.length === 0
+    if (field?.inputType === 'number') {
+      if (val === undefined || val === null || val === '') return true
+      const numeric = typeof val === 'number' ? val : Number(val)
+      return !Number.isFinite(numeric)
+    }
+    return val === undefined || val === null || val === ''
+  }
 
 const validationSchema = computed(() => {
   // Read language.value to register it as a reactive dependency so the schema
@@ -771,17 +787,16 @@ const submit = async () => {
   const fallbackMsg = i18next.t('form.error.required_field')
   for (const def of defs) {
     if (!def?.required || !def?.normalized) continue
-    // Checkbox fields (rendered as VCheckbox) always carry true-value or false-value — never empty.
-    // All other required fields (VTextField, VSelect, VCombobox) must be validated.
-    if (isCheckboxField(def)) continue
+    // VCheckbox fields always carry trueValue/falseValue – never empty.
+    // We still skip them here because they can never be "empty" in the required sense.
+    // All other fields (VTextField, VSelect, VCombobox, date) are validated.
     const val = (values as any)[def.normalized]
     const isEmpty = def.multiple
       ? !Array.isArray(val) || val.length === 0
       : def.input_type === 'number'
         ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
         : val === undefined || val === null || val === ''
-    if (isEmpty) {
-      // Use a field-specific error message when available, otherwise the generic "Pflichtfeld"
+    if (isEmpty && !isCheckboxField(def)) {
       const fieldKey = `form.error.${def.normalized}`
       const fieldMsg = i18next.t(fieldKey)
       newErrors[def.normalized] = fieldMsg !== fieldKey ? fieldMsg : fallbackMsg
@@ -891,5 +906,34 @@ onMounted(async () => {
   margin-top: 16px;
   display: flex;
   gap: 8px;
+}
+
+/* Prominent red border for unfilled required fields after submit attempt */
+:deep(.v-field--error .v-field__outline) {
+  --v-field-border-width: 2px;
+  color: rgb(var(--v-theme-error)) !important;
+}
+
+:deep(.v-field--error) {
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-error), 0.35);
+}
+
+/* Red asterisk for required field labels */
+:deep(.v-field--error .v-label) {
+  color: rgb(var(--v-theme-error)) !important;
+  font-weight: 600;
+}
+
+/* Prominent red outline when a required field is empty after submit */
+.required-empty :deep(.v-field__outline),
+.required-empty .v-field__outline {
+  border-color: rgb(var(--v-theme-error)) !important;
+  box-shadow: 0 0 0 3px rgba(var(--v-theme-error), 0.18);
+}
+
+.required-empty :deep(.v-label),
+.required-empty .v-label {
+  color: rgb(var(--v-theme-error)) !important;
 }
 </style>
