@@ -18,6 +18,7 @@
           prepend-inner-icon="mdi-magnify"
           rounded="lg"
           variant="solo"
+          autocomplete="off"
       />
     </v-row>
 
@@ -118,6 +119,12 @@ watch(search, (newValue) => {
             birthYear: p.birth_year ?? null,
             birthDate: p.birth_date ?? null,
           })).filter((p) => p.id)
+            .sort((a, b) => {
+              // Sort by last name (part before comma in "Nachname, Vorname" format)
+              const lastNameA = (a.name.split(',')[0] ?? a.name).trim().toLowerCase()
+              const lastNameB = (b.name.split(',')[0] ?? b.name).trim().toLowerCase()
+              return lastNameA.localeCompare(lastNameB, 'de')
+            })
           : [];
 
     } catch (err) {

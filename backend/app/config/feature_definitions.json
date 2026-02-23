@@ -33,7 +33,7 @@
       "normalized": "birth_date",
       "description": "Date of birth",
       "type": "string",
-      "required": false,
+      "required": true,
       "section": "Demografie",
       "input_type": "date"
     },
@@ -42,7 +42,7 @@
       "normalized": "age",
       "description": "Age (years)",
       "type": "number",
-      "required": true,
+      "required": false,
       "validation": {
         "type": "number_range",
         "min": 0,

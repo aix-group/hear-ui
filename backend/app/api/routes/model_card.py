@@ -281,7 +281,7 @@ def _render_model_card_markdown_en() -> str:
     model_description += (
         "- **Training Data:** Pseudonymized example patient data (not real patients)\n"
     )
-    model_description += "- **Dataset Size:** N=137 sample datasets\n"
+    model_description += "- **Dataset Size:** N=137 patients\n"
     model_description += "- **Train/Test Split:** 80/20 (stratified)\n"
 
     # Translate intended use

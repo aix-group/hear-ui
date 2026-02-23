@@ -8,9 +8,29 @@ updates:
       interval: weekly
     commit-message:
       prefix: "deps"
-  # Python
+  # Python (backend)
   - package-ecosystem: pip
     directory: /backend
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps"
+  # Node.js (frontend)
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps"
+  # Docker
+  - package-ecosystem: docker
+    directory: /backend
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps"
+  - package-ecosystem: docker
+    directory: /frontend
     schedule:
       interval: weekly
     commit-message:

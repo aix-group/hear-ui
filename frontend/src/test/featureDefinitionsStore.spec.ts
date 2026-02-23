@@ -1,11 +1,13 @@
 /**
  * Unit tests for the featureDefinitionsStore reactive store.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
 import { featureDefinitionsStore } from '@/lib/featureDefinitionsStore'
 
+const globalWithFetch = globalThis as typeof globalThis & { fetch: typeof fetch }
+
 describe('featureDefinitionsStore', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>
+  let fetchSpy: MockInstance<Parameters<typeof fetch>, Promise<Response>>
 
   beforeEach(() => {
     // Reset store state
@@ -16,7 +18,7 @@ describe('featureDefinitionsStore', () => {
     featureDefinitionsStore.error.value = null
     featureDefinitionsStore.loading.value = false
 
-    fetchSpy = vi.spyOn(globalThis, 'fetch')
+    fetchSpy = vi.spyOn(globalWithFetch, 'fetch')
   })
 
   afterEach(() => {

@@ -1,7 +1,9 @@
 /**
  * Unit tests for the FeedbackForm component.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
+
+const globalWithFetch = globalThis as typeof globalThis & { fetch: typeof fetch }
 import { mount } from '@vue/test-utils'
 import FeedbackForm from './FeedbackForm.vue'
 
@@ -18,10 +20,10 @@ describe('FeedbackForm.vue', () => {
     },
   }
 
-  let fetchSpy: ReturnType<typeof vi.spyOn>
+  let fetchSpy: MockInstance<Parameters<typeof fetch>, Promise<Response>>
 
   beforeEach(() => {
-    fetchSpy = vi.spyOn(globalThis, 'fetch')
+    fetchSpy = vi.spyOn(globalWithFetch, 'fetch')
   })
 
   afterEach(() => {

@@ -26,54 +26,24 @@
     },
     "form": {
       "title": "Neuen Patienten anlegen",
+      "title_edit": "Patientendaten aktualisieren",
+      "title_copy_left": "Linkes Ohr anlegen",
+      "title_copy_right": "Rechtes Ohr anlegen",
       "back": "Zurück zu den Patienten",
       "submit": "Speichern",
       "reset": "Zurücksetzen",
       "error": {
-        "name": "Name muss mindestens 2 Zeichen lang sein",
-        "age": "Alter zwischen 0 und 130 angeben",
-        "gender": "Geschlecht wählen",
-        "operated_side": "Seite des operierten Ohrs wählen",
-        "primary_language": "Primäre Sprache eintragen",
-        "other_languages": "Weitere Sprachen eintragen",
-        "german_language_barrier": "Deutschkenntnisse angeben",
-        "non_verbal": "Verbalfähigkeit angeben",
-        "parent_hearing_loss": "Hörminderung der Eltern angeben",
-        "sibling_hearing_loss": "Hörminderung der Geschwister angeben",
-        "tinnitus_preop": "Tinnitusstatus angeben",
-        "vertigo_preop": "Schwindelstatus angeben",
-        "otorrhea_preop": "Otorrhoestatus angeben",
-        "headache_preop": "Kopfschmerzstatus angeben",
-        "taste_preop": "Geschmacksstatus angeben",
-        "oae_status": "OAE-Messung eintragen",
-        "ll_status": "LL-Messung eintragen",
-        "hz4k_status": "4000 Hz-Messung eintragen",
-        "hl_operated_ear": "Hörminderung (operiertes Ohr) wählen",
-        "hl_contra_ear": "Hörminderung (Gegenohr) wählen",
-        "imaging_type_preop": "Bitte mindestens eine Bildgebung auswählen",
-        "hearing_loss_onset": "Zeitpunkt des Hörverlusts angeben",
-        "hearing_loss_start": "Beginn des Hörverlusts angeben",
-        "duration_severe_hl": "Dauer des schweren Verlusts wählen",
-        "etiology": "Ursache eintragen",
-        "ci_implant_type": "CI-Implantation wählen",
-        "ci_implant_other": "CI-Implantation (sonstige) eintragen",
-        "hl_operated_other": "Hörminderung (operiertes Ohr) – sonstige eintragen",
-        "amplification_operated_other": "Versorgung (operiertes Ohr) – sonstige eintragen",
-        "hearing_disorder_other": "Hörstörungstyp – sonstige eintragen",
-        "pre_measure": "Freiburger prä-OP eintragen",
-        "post12_measure": "Freiburger 12 Monate eintragen",
-        "post24_measure": "Freiburger 24 Monate eintragen",
-        "interval_days": "Abstand in Tagen eintragen",
         "submit_failed": "Patient konnte nicht erstellt werden. Bitte erneut versuchen.",
-        "fix_fields": "Bitte korrigieren Sie die markierten Felder und versuchen Sie es erneut."
+        "required_field": "Pflichtfeld",
+        "fix_fields": "Bitte die rot umkreisten Felder ausfüllen."
       },
       "success": {
         "created_with_id": "Patient wurde erstellt (ID: {{id}})"
       },
-      "minimum_fields_title": "Pflichtfelder für Vorhersage",
-      "minimum_fields_hint": "Geschlecht, Alter und Hörminderung (operiertes Ohr) müssen ausgefüllt sein, damit eine Vorhersage berechnet werden kann. Weitere klinische Felder verbessern die Vorhersagequalität.",
-      "minimum_fields_error": "Für eine Vorhersage werden mindestens Geschlecht, Alter und Hörminderung (operiertes Ohr) benötigt. Bitte diese Felder ausfüllen.",
-      "required_fields_error": "Pflichtfelder fehlen. Bitte alle erforderlichen Felder ausfüllen (Alter, Geschlecht, Hörminderung, Beginn der Hörminderung, Art der Hörstörung, Bildgebung: Befund, Ursache).",
+      "minimum_fields_title": "Pflichtfelder",
+      "minimum_fields_hint": "Alle mit * gekennzeichneten Felder sind Pflichtfelder und müssen ausgefüllt werden: Vorname, Nachname, Geburtsdatum, Geschlecht, operierte Seite, Primäre Sprache, Präoperative Symptome (Geschmack, Tinnitus, Schwindel, Otorrhoe, Kopfschmerzen), Bildgebung (Typ und Befund), Objektive Messungen (OAE, LL, 4000 Hz), Hörminderung (operiertes Ohr und Gegenohr), Versorgung (operiertes Ohr und Gegenohr), Zeitpunkt und Beginn des Hörverlusts, Dauer der schweren Hörminderung, Erwerbsart, Ursache und Art der Hörstörung.",
+      "minimum_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
+      "required_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
       "hints": {
         "objective_oae": "Messung der Otoakustischen Emissionen",
         "objective_ll": "Messung des Lautstärkepegels",
@@ -162,7 +132,8 @@
         }
       },
       "explanations": {
-        "title": "Faktoren, die die Vorhersage beeinflussen"
+        "title": "Faktoren, die die Vorhersage beeinflussen",
+        "subtitle": "Sortiert nach positiven und negativen Einflussfaktoren, gruppiert nach Kategorie (z.\u00a0B. Demografie, Bildgebung). Rot = erh\u00f6ht die Wahrscheinlichkeit, Blau = verringert die Wahrscheinlichkeit."
       },
       "feedback": {
         "question": "Stimmen Sie der KI-Vorhersage zu?",
@@ -191,6 +162,7 @@
       "update_success": "Patient aktualisiert",
       "create_success": "Patient erstellt",
       "change_patient": "Patientendaten aktualisieren",
+      "add_other_ear": "Anderes Ohr anlegen",
       "sections": {
         "demographics": "Demografie",
         "language": "Sprache & Kommunikation",

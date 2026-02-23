@@ -25,7 +25,7 @@
       <v-row justify="start" no-gutters>
         <h1>
           {{ $t('patient_details.title') }}
-          <span class="text-primary">{{ displayName }}</span>
+          <span class="text-primary">{{ displayName }}</span><span v-if="formattedBirthDate" class="text-primary">, {{ formattedBirthDate }}</span>
         </h1>
 
       </v-row>
@@ -64,51 +64,55 @@
       />
 
       <!-- Actions -->
-      <div class="d-flex justify-space-between align-center mb-4">
-        <v-row class="ms-4">
+      <div class="patient-actions">
 
-          <!-- TODO: redirect to create patient form but with the values filled out -->
+        <!-- Left group -->
+        <div class="patient-actions__group">
           <v-btn
-              class="me-4"
+              class="patient-action-btn"
               color="warning"
-              variant="flat"
+              variant="tonal"
+              prepend-icon="mdi-pencil"
               :to="{ name: 'UpdatePatient', params: { id: patient_id } }"
           >
             {{ $t('patient_details.change_patient') }}
           </v-btn>
 
-          <!-- Copy to other ear -->
           <v-btn
               v-if="otherEar"
-              class="me-4"
+              class="patient-action-btn"
               color="primary"
               variant="tonal"
-              prepend-icon="mdi-content-copy"
-              :to="{ name: 'CreatePatient', query: { copyFrom: patient_id } }"
+              prepend-icon="mdi-ear-hearing"
+              :to="{ name: 'CreatePatient', query: { copyFrom: patient_id, ear: otherEar } }"
           >
-            Anderes Ohr ({{ otherEar }}) anlegen
+            {{ $t('patient_details.add_other_ear') }} ({{ otherEar }})
           </v-btn>
+        </div>
 
-          <!-- TODO: implement patient deletion if needed for MVP -->
+        <!-- Right group -->
+        <div class="patient-actions__group">
           <v-btn
-              class="me-4"
+              class="patient-action-btn"
               color="error"
-              variant="flat"
+              variant="outlined"
+              prepend-icon="mdi-delete-outline"
               :disabled="!patient_id"
               @click="openDeleteDialog"
           >
             {{ $t('patient_details.delete_patient') }}
           </v-btn>
-        </v-row>
-        <v-btn
-            class="me-4"
-            color="success"
-            variant="flat"
-            :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
-        >
-          {{ $t('patient_details.generate_prediction') }}
-        </v-btn>
 
+          <v-btn
+              class="patient-action-btn"
+              color="success"
+              variant="flat"
+              prepend-icon="mdi-chart-bar"
+              :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
+          >
+            {{ $t('patient_details.generate_prediction') }}
+          </v-btn>
+        </div>
       </div>
 
       <v-snackbar
@@ -191,6 +195,16 @@ const updateSuccessOpen = ref(false);
 const createSuccessOpen = ref(false);
 
 const displayName = computed(() => patient.value?.name ?? patient.value?.display_name ?? "Patient");
+
+const formattedBirthDate = computed(() => {
+  const raw = patient.value?.input_features?.['Geburtsdatum']
+  if (!raw) return null
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [y, m, d] = raw.split('-')
+    return `${d}.${m}.${y}`
+  }
+  return raw
+})
 
 // Computes which ear the OTHER form should be for (flips R↔L)
 const otherEar = computed<string | null>(() => {
@@ -355,6 +369,40 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ── Action bar ─────────────────────────────────────────── */
+.patient-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: nowrap;
+}
+
+.patient-actions__group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-action-btn {
+  height: 40px !important;
+  min-width: 160px;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 768px) {
+  .patient-actions {
+    flex-wrap: wrap;
+  }
+  .patient-action-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
+/* ── Existing styles ────────────────────────────────────── */
 .patient-sheet {
   padding: 32px;
   border-width: 2px;

@@ -1,7 +1,5 @@
 # Docker Compose - Schnellreferenz
 
-Nach der Reorganisation liegen die Docker-Dateien im `docker/` Ordner. Die `.env` Datei bleibt im Projekt-Root.
-
 ## Grundlegende Befehle
 
 **WICHTIG:** Alle Befehle aus dem Projekt-Root (`hear-ui/`) ausführen!

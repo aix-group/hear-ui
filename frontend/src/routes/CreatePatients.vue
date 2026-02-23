@@ -18,20 +18,19 @@
         {{ $t('form.back') }}
       </v-btn>
       <v-spacer/>
-      <h1>{{ $t('form.title') }}</h1>
+      <h1>{{ isEdit ? $t('form.title_edit') : copyEarParam === 'L' ? $t('form.title_copy_left') : copyEarParam === 'R' ? $t('form.title_copy_right') : $t('form.title') }}</h1>
       <v-spacer/>
       <form v-if="definitionsReady" class="new-patient-form" autocomplete="off" @submit.prevent="submit">
         <!-- Required-fields info banner -->
         <v-alert
-          v-if="!isEdit"
           type="info"
           variant="tonal"
           density="compact"
           class="mb-4"
           icon="mdi-information-outline"
         >
-          <strong>{{ $t('form.minimum_fields_title', { defaultValue: 'Pflichtfelder für Vorhersage' }) }}:</strong>
-          {{ $t('form.minimum_fields_hint', { defaultValue: 'Geschlecht, Alter und Hörminderung (operiertes Ohr) müssen ausgefüllt sein, damit eine Vorhersage berechnet werden kann. Weitere klinische Felder verbessern die Vorhersagequalität.' }) }}
+          <strong>{{ $t('form.minimum_fields_title') }}:</strong>
+          {{ $t('form.minimum_fields_hint') }}
         </v-alert>
 
         <template v-for="section in sectionedDefinitions" :key="section.name">
@@ -45,10 +44,11 @@
                   @update:model-value="(val: any) => updateDateField(field.normalized, val)"
                   :label="field.label"
                   placeholder="TT.MM.JJJJ"
-                  :error-messages="fieldErrorMap[field.normalized] ?? []"
-                  :error="!!(fieldErrorMap[field.normalized]?.length)"
+                  :error-messages="[]"
+                  :error="(submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field)) || !!(fieldErrorMap[field.normalized]?.length)"
+                  :class="{ 'required-empty': submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field) }"
                   color="primary"
-                  hide-details="auto"
+                  hide-details
                   variant="outlined"
                   maxlength="10"
                   autocomplete="off"
@@ -62,8 +62,9 @@
                   item-title="title"
                   item-value="value"
                   :label="field.label"
-                  :error-messages="fieldErrorMap[field.normalized] ?? []"
-                  :error="!!(fieldErrorMap[field.normalized]?.length)"
+                  :error-messages="[]"
+                  :error="(submitAttempted && field.isRequired && isFieldEmpty(field.normalized, field)) || !!(fieldErrorMap[field.normalized]?.length)"
+                  :class="{ 'required-empty': submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field) }"
                   :type="field.inputType"
                   :multiple="field.multiple"
                   :chips="field.multiple"
@@ -72,7 +73,7 @@
                   :true-value="field.trueValue"
                   :false-value="field.falseValue"
                   color="primary"
-                  hide-details="auto"
+                  hide-details
                   variant="outlined"
                   autocomplete="off"
                 />
@@ -86,10 +87,10 @@
                   :model-value="formValues[field.otherField]"
                   @update:model-value="(val: any) => updateField(field.otherField, val)"
                   :label="field.otherLabel"
-                  :error-messages="fieldErrorMap[field.otherField] ?? []"
+                  :error-messages="[]"
                   :error="!!(fieldErrorMap[field.otherField]?.length)"
                   color="primary"
-                  hide-details="auto"
+                  hide-details
                   variant="outlined"
                 />
               </v-col>
@@ -172,6 +173,10 @@ const isEdit = computed(() => Boolean(patientId.value))
 const copyFromId = computed<string | null>(() => {
   const q = route.query.copyFrom
   return typeof q === 'string' && q ? q : null
+})
+const copyEarParam = computed<string | null>(() => {
+  const q = route.query.ear
+  return typeof q === 'string' && (q === 'L' || q === 'R') ? q : null
 })
 const backTarget = computed(() =>
   isEdit.value ? {name: 'PatientDetail', params: {id: patientId.value}} : {name: 'SearchPatients'}
@@ -310,9 +315,14 @@ const sectionedDefinitions = computed(() => {
   return visibleSections.map((section) => ({
       name: section,
       label: sectionLabelFor(section),
-      fields: (grouped[section] ?? []).map((def: any) => ({
+      fields: (grouped[section] ?? []).map((def: any) => {
+        const isRequired = def.required === true
+        const baseLabel = labelFor(def.normalized, def.description ?? def.raw)
+        return {
         normalized: def.normalized,
-        label: labelFor(def.normalized, def.description ?? def.raw),
+        label: isRequired ? `${baseLabel} *` : baseLabel,
+        isRequired,
+        isCheckbox: isCheckboxField(def),
         component: getFieldComponent(def),
         inputType: def.input_type === 'number' ? 'number' : undefined,
         isDateMasked: def.input_type === 'date',
@@ -328,16 +338,34 @@ const sectionedDefinitions = computed(() => {
           : getOptionValueByRole(def.normalized, 'false', 'Keine'),
         otherField: def.other_field,
         otherLabel: def.other_field ? labelFor(def.other_field, def.other_field) : undefined,
-      }))
+      }})
     }))
 })
 
+  // Helper used by the template to determine if a field is empty
+  const isFieldEmpty = (name: string, field: any) => {
+    const val = (formValues as any)[name]
+    if (field?.multiple) return !Array.isArray(val) || val.length === 0
+    if (field?.inputType === 'number') {
+      if (val === undefined || val === null || val === '') return true
+      const numeric = typeof val === 'number' ? val : Number(val)
+      return !Number.isFinite(numeric)
+    }
+    return val === undefined || val === null || val === ''
+  }
+
 const validationSchema = computed(() => {
-  const _lang = language.value
+  // Read language.value to register it as a reactive dependency so the schema
+  // re-evaluates when the UI language switches (e.g. DE ↔ EN).
+  void language.value
   const defs = definitions.value ?? []
   const schema: Record<string, any> = {}
 
-  const requiredMessage = () => i18next.t('form.error.name')
+  const requiredMessageFor = (def: any) => {
+    const key = `form.error.${def?.normalized}`
+    const msg = i18next.t(key)
+    return msg !== key ? msg : i18next.t('form.error.required_field')
+  }
 
   const isEmptyValue = (value: unknown, def: any) => {
     if (def?.multiple) return !Array.isArray(value) || value.length === 0
@@ -363,15 +391,16 @@ const validationSchema = computed(() => {
     if (!def?.normalized) continue
     const allowed = getAllowedValues(def)
 
-    schema[def.normalized] = (value: unknown, ctx: any) => {
-      if (def.required && isEmptyValue(value, def)) return requiredMessage()
+    schema[def.normalized] = (value: unknown) => {
+      // Enum/select fields always receive a fallback via withDefault on submit; skip required-empty check
+      if (def.required && isEmptyValue(value, def)) return requiredMessageFor(def)
       if (!isEmptyValue(value, def) && allowed.length > 0) {
         if (def.multiple && Array.isArray(value)) {
           const normalized = normalizeImagingValue(value)
           const allAllowed = normalized.every((entry) => allowed.includes(entry))
-          if (!allAllowed) return requiredMessage()
+          if (!allAllowed) return requiredMessageFor(def)
         } else if (!allowed.includes(value as any)) {
-          return requiredMessage()
+          return requiredMessageFor(def)
         }
       }
       return true
@@ -380,7 +409,7 @@ const validationSchema = computed(() => {
     if (def.other_field) {
       schema[def.other_field] = (value: unknown, ctx: any) => {
         if (isOtherSelected(def.normalized, ctx?.form?.[def.normalized])) {
-          if (value === undefined || value === null || value === '') return requiredMessage()
+          if (value === undefined || value === null || value === '') return requiredMessageFor(def)
         }
         return true
       }
@@ -407,6 +436,44 @@ const clearManualError = (name: string) => {
     delete copy[name]
     manualErrors.value = copy
   }
+}
+
+// The three minimum fields that the backend requires for a prediction
+const MINIMUM_PREDICTION_FIELDS = ['gender', 'age', 'hl_operated_ear']
+
+const highlightEmptyMinimumFields = () => {
+  const fallback = i18next.t('form.error.required_field')
+  const errs = { ...manualErrors.value }
+  for (const name of MINIMUM_PREDICTION_FIELDS) {
+    const val = (values as any)[name]
+    const empty = val === undefined || val === null || val === ''
+    if (empty) {
+      const key = `form.error.${name}`
+      const msg = i18next.t(key)
+      errs[name] = msg !== key ? msg : fallback
+    }
+  }
+  manualErrors.value = errs
+}
+
+const highlightEmptyRequiredFields = () => {
+  const defs = definitions.value ?? []
+  const fallback = i18next.t('form.error.required_field')
+  const errs = { ...manualErrors.value }
+  for (const def of defs) {
+    if (!def?.required || !def?.normalized) continue
+    if (isCheckboxField(def)) continue
+    const val = (values as any)[def.normalized]
+    const empty = def.multiple
+      ? !Array.isArray(val) || val.length === 0
+      : val === undefined || val === null || val === ''
+    if (empty) {
+      const key = `form.error.${def.normalized}`
+      const msg = i18next.t(key)
+      errs[def.normalized] = msg !== key ? msg : fallback
+    }
+  }
+  manualErrors.value = errs
 }
 
 const updateField = (name: string, value: any) => {
@@ -471,11 +538,6 @@ const normalizeImagingValue = (val: unknown): string[] => {
 const formFieldNames = computed(() => Object.keys(definitionsByNormalized.value ?? {}))
 
 
-const resolveOther = (value: unknown, other: unknown, triggers: string[]) => {
-  if (typeof value === 'string' && triggers.includes(value)) return other
-  return value
-}
-
 const withDefault = (value: any, fallback = 'Keine') => {
   if (Array.isArray(value)) return value.length ? value : fallback
   if (value === undefined || value === null || value === '') return fallback
@@ -483,7 +545,7 @@ const withDefault = (value: any, fallback = 'Keine') => {
 }
 
 
-const normalizeErrors = (errors: Record<string, unknown>) => {
+const normalizeErrors = (errors: object | null | undefined) => {
   const toMessage = (err: unknown): string | undefined => {
     if (!err) return undefined
     if (typeof err === 'string') return err
@@ -557,14 +619,20 @@ const buildInputFeatures = (values: Record<string, any>) => {
 
     if (def.multiple) {
       const normalized = normalizeImagingValue(value)
-      value = withDefault(normalized.join(', '))
+      value = normalized.join(', ')
     } else if (def.input_type === 'number') {
       value = Number(value)
     } else if (typeof value === 'boolean') {
       value = getOptionValueByRole(def.normalized, value ? 'true' : 'false', value ? 'Vorhanden' : 'Keine')
+    } else if (Array.isArray(def.options)) {
+      // For enum fields, only use a fallback that is actually a valid option value
+      const optionValues = def.options.map((opt: any) => opt.value)
+      if (value === undefined || value === null || value === '') {
+        const roleFallback = getOptionValueByRole(def.normalized, 'false', '')
+        value = optionValues.includes(roleFallback) ? roleFallback : ''
+      }
     } else {
-      const fallback = getOptionValueByRole(def.normalized, 'false', 'Keine')
-      value = withDefault(value, fallback)
+      value = value ?? ''
     }
 
     input_features[def.raw] = value
@@ -602,7 +670,10 @@ const populateFormForEdit = (patient: any) => {
     const rawValue = input?.[def.raw]
 
     if (def.multiple) {
-      setFieldValue(def.normalized, splitImagingTypes(rawValue))
+      const split = splitImagingTypes(rawValue)
+      const optionValues = (def.options ?? []).map((opt: any) => opt.value)
+      const filtered = optionValues.length > 0 ? split.filter((v: string) => optionValues.includes(v)) : split
+      setFieldValue(def.normalized, filtered)
       continue
     }
 
@@ -610,7 +681,7 @@ const populateFormForEdit = (patient: any) => {
       const optionValues = def.options.map((opt: any) => opt.value)
       if (optionValues.includes(rawValue)) {
         setFieldValue(def.normalized, rawValue)
-      } else if (def.other_field && rawValue !== undefined && rawValue !== null && rawValue !== '') {
+      } else if (def.other_field && rawValue !== undefined && rawValue !== null && rawValue !== '' && rawValue !== 'Keine') {
         const otherOptions = getOtherValues(def.normalized).value
         if (otherOptions.length) {
           setFieldValue(def.normalized, otherOptions[0])
@@ -619,12 +690,15 @@ const populateFormForEdit = (patient: any) => {
           setFieldValue(def.normalized, rawValue)
         }
       } else {
-        setFieldValue(def.normalized, rawValue ?? '')
+        // Clear invalid values like 'Keine' that aren't actual option values
+        setFieldValue(def.normalized, '')
       }
       continue
     }
 
-    setFieldValue(def.normalized, rawValue ?? '')
+    // For non-enum text fields, treat stored 'Keine' as empty in edit mode
+    const cleanValue = rawValue === 'Keine' ? '' : (rawValue ?? '')
+    setFieldValue(def.normalized, cleanValue)
   }
 
   initialSnapshot.value = stableStringify(buildSnapshot(values as Record<string, any>))
@@ -667,8 +741,12 @@ const onSubmit = handleSubmit(
             // Translate minimum-fields backend error to current UI language
             if (rawDetail && rawDetail.includes('Mindestfelder')) {
               errorMessage = i18next.t('form.minimum_fields_error')
+              // Highlight the minimum prediction fields that are empty
+              highlightEmptyMinimumFields()
             } else if (rawDetail && rawDetail.includes('Pflichtfelder')) {
               errorMessage = i18next.t('form.required_fields_error')
+              // Highlight all empty required fields
+              highlightEmptyRequiredFields()
             } else {
               errorMessage = rawDetail
             }
@@ -694,9 +772,9 @@ const onSubmit = handleSubmit(
       showError(err?.message ?? i18next.t('form.error.submit_failed'))
     }
   },
-  (errors) => {
-    formFieldNames.value.forEach(name => setFieldTouched(name, true, true))
-    const messages = normalizeErrors(errors)
+  (ctx) => {
+    formFieldNames.value.forEach(name => setFieldTouched(name, true))
+    const messages = normalizeErrors(ctx as object)
     showError(messages.length ? messages.join('\n') : i18next.t('form.error.fix_fields'))
   }
 )
@@ -706,16 +784,23 @@ const submit = async () => {
   // This avoids all async timing issues with vee-validate error propagation.
   const defs = definitions.value ?? []
   const newErrors: Record<string, string> = {}
-  const errMsg = i18next.t('form.error.name')
+  const fallbackMsg = i18next.t('form.error.required_field')
   for (const def of defs) {
     if (!def?.required || !def?.normalized) continue
+    // VCheckbox fields always carry trueValue/falseValue – never empty.
+    // We still skip them here because they can never be "empty" in the required sense.
+    // All other fields (VTextField, VSelect, VCombobox, date) are validated.
     const val = (values as any)[def.normalized]
     const isEmpty = def.multiple
       ? !Array.isArray(val) || val.length === 0
       : def.input_type === 'number'
         ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
         : val === undefined || val === null || val === ''
-    if (isEmpty) newErrors[def.normalized] = errMsg
+    if (isEmpty && !isCheckboxField(def)) {
+      const fieldKey = `form.error.${def.normalized}`
+      const fieldMsg = i18next.t(fieldKey)
+      newErrors[def.normalized] = fieldMsg !== fieldKey ? fieldMsg : fallbackMsg
+    }
   }
   manualErrors.value = newErrors
   submitAttempted.value = true
@@ -821,5 +906,34 @@ onMounted(async () => {
   margin-top: 16px;
   display: flex;
   gap: 8px;
+}
+
+/* Prominent red border for unfilled required fields after submit attempt */
+:deep(.v-field--error .v-field__outline) {
+  --v-field-border-width: 2px;
+  color: rgb(var(--v-theme-error)) !important;
+}
+
+:deep(.v-field--error) {
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-error), 0.35);
+}
+
+/* Red asterisk for required field labels */
+:deep(.v-field--error .v-label) {
+  color: rgb(var(--v-theme-error)) !important;
+  font-weight: 600;
+}
+
+/* Prominent red outline when a required field is empty after submit */
+.required-empty :deep(.v-field__outline),
+.required-empty .v-field__outline {
+  border-color: rgb(var(--v-theme-error)) !important;
+  box-shadow: 0 0 0 3px rgba(var(--v-theme-error), 0.18);
+}
+
+.required-empty :deep(.v-label),
+.required-empty .v-label {
+  color: rgb(var(--v-theme-error)) !important;
 }
 </style>

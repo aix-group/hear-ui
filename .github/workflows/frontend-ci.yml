@@ -182,12 +182,16 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-chromium-1.57.0
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('frontend/pnpm-lock.yaml') }}
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         working-directory: ./frontend
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
+
+      - name: Install Playwright system dependencies
+        working-directory: ./frontend
+        run: npx playwright install-deps chromium
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -211,7 +215,7 @@ jobs:
 
       - name: Run Playwright UI tests
         working-directory: ./frontend
-        run: npx playwright test --project=chromium --reporter=list
+        run: npx playwright test --project=chromium --reporter=list,html
 
       - name: Upload Playwright report
         if: always()
@@ -220,6 +224,7 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: E2E Test Summary
         if: always()
@@ -252,7 +257,8 @@ jobs:
       - name: Fail if critical jobs failed
         if: |
           needs.unit-tests.result == 'failure' ||
-          needs.build.result == 'failure'
+          needs.build.result == 'failure' ||
+          needs.e2e-tests.result == 'failure'
         run: |
           echo "Critical CI jobs failed!"
           exit 1

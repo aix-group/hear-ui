@@ -1,8 +1,0 @@
-# Files that ESLint should not check (caches, generated builds).
-
-node_modules
-dist
-.vite
-.output
-.idea
-*.log

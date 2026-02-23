@@ -15,6 +15,7 @@ export type FeatureDefinition = {
   description?: string
   section?: string
   type?: string
+  required?: boolean
   options?: FeatureOption[]
   input_type?: string
   multiple?: boolean

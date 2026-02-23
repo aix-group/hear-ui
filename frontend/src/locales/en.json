@@ -26,54 +26,24 @@
     },
     "form": {
       "title": "Add new patient",
+      "title_edit": "Update patient data",
+      "title_copy_left": "Add left ear",
+      "title_copy_right": "Add right ear",
       "back": "Back to patients",
       "submit": "Submit",
       "reset": "Reset",
       "error": {
-        "name": "Name must be at least 2 characters",
-        "age": "Enter an age between 0 and 130",
-        "gender": "Select a gender",
-        "operated_side": "Select the operated ear side",
-        "primary_language": "Enter a primary language",
-        "other_languages": "Enter other languages",
-        "german_language_barrier": "Confirm German language barrier",
-        "non_verbal": "Confirm verbal status",
-        "parent_hearing_loss": "Specify parents' hearing loss",
-        "sibling_hearing_loss": "Specify siblings' hearing loss",
-        "tinnitus_preop": "Confirm tinnitus status",
-        "vertigo_preop": "Confirm vertigo status",
-        "otorrhea_preop": "Confirm otorrhea status",
-        "headache_preop": "Confirm headache status",
-        "taste_preop": "Confirm taste status",
-        "oae_status": "Provide OAE measurement",
-        "ll_status": "Provide LL measurement",
-        "hz4k_status": "Provide 4000 Hz measurement",
-        "hl_operated_ear": "Select hearing loss (operated ear)",
-        "hl_contra_ear": "Select hearing loss (contralateral ear)",
-        "imaging_type_preop": "Select at least one imaging type",
-        "hearing_loss_onset": "Provide time of hearing loss",
-        "hearing_loss_start": "Provide start of hearing loss",
-        "duration_severe_hl": "Select duration of severe loss",
-        "etiology": "Enter etiology",
-        "ci_implant_type": "Select CI implantation type",
-        "ci_implant_other": "Enter CI implantation (other)",
-        "hl_operated_other": "Enter hearing loss (operated ear) – other",
-        "amplification_operated_other": "Enter amplification (operated ear) – other",
-        "hearing_disorder_other": "Enter hearing disorder type – other",
-        "pre_measure": "Enter Freiburger pre-op value",
-        "post12_measure": "Enter Freiburger 12 months value",
-        "post24_measure": "Enter Freiburger 24 months value",
-        "interval_days": "Enter interval in days",
         "submit_failed": "Failed to create patient. Please try again.",
-        "fix_fields": "Please fix the highlighted fields and try again."
+        "required_field": "Required field",
+        "fix_fields": "Please fill in the red-highlighted fields."
       },
       "success": {
         "created_with_id": "Patient created with id: {{id}}"
       },
-      "minimum_fields_title": "Required fields for prediction",
-      "minimum_fields_hint": "Gender, age and hearing loss (operated ear) must be filled in for a prediction to be calculated. Further clinical fields improve prediction quality.",
-      "minimum_fields_error": "A prediction requires at least gender, age and hearing loss (operated ear). Please fill in these fields.",
-      "required_fields_error": "Required fields are missing. Please fill in all mandatory fields (Age, Gender, Hearing Loss, Onset of Hearing Loss, Type of Hearing Disorder, Imaging: Findings, Etiology).",
+      "minimum_fields_title": "Required fields",
+      "minimum_fields_hint": "All fields marked with * are required: First name, Last name, Date of birth, Gender, Operated side, Primary language, Pre-operative symptoms (Taste, Tinnitus, Vertigo, Otorrhea, Headache), Imaging (Type and Findings), Objective measurements (OAE, LL, 4000 Hz), Hearing loss (operated and contralateral ear), Amplification (operated and contralateral ear), Hearing loss onset and start, Duration of severe hearing loss, Acquisition type, Etiology and Hearing disorder type.",
+      "minimum_fields_error": "Please fill in the red-highlighted fields.",
+      "required_fields_error": "Please fill in the red-highlighted fields.",
       "hints": {
         "objective_oae": "Otoacoustic emissions measurement",
         "objective_ll": "Loudness level measurement",
@@ -162,7 +132,8 @@
         }
       },
       "explanations": {
-        "title": "Factors influencing the prediction"
+        "title": "Factors influencing the prediction",
+        "subtitle": "Sorted by positive and negative influencing factors, grouped by category (e.g. Demographics, Imaging). Red = increases probability, Blue = decreases probability."
       },
       "feedback": {
         "question": "Do you agree with the AI prediction?",
@@ -191,6 +162,7 @@
       "update_success": "Patient updated",
       "create_success": "Patient created",
       "change_patient": "Update patient data",
+      "add_other_ear": "Create other ear",
       "sections": {
         "demographics": "Demographics",
         "language": "Language & Communication",

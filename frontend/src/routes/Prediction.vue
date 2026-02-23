@@ -10,7 +10,7 @@
       <v-row justify="start" no-gutters>
         <h1>
           {{ $t('prediction.title') }}
-          <span class="text-primary">{{ patient_name }}</span>
+          <span class="text-primary">{{ patient_name }}</span><span v-if="patient_birth_date" class="text-primary">, {{ patient_birth_date }}</span>
         </h1>
 
       </v-row>
@@ -132,9 +132,12 @@
         no-gutters
       >
         <v-col cols="12">
-          <h2 class="mb-4">
+          <h2 class="mb-2">
             {{ $t('prediction.explanations.title') }}
           </h2>
+          <p class="text-body-2 text-medium-emphasis mb-4">
+            {{ $t('prediction.explanations.subtitle') }}
+          </p>
 
           <!-- Plotly SHAP-style bar chart -->
           <div
@@ -202,7 +205,7 @@
 <script lang="ts" setup>
 import {useRoute, useRouter} from 'vue-router'
 import {computed, onMounted, onBeforeUnmount, ref, watch} from 'vue'
-import Plotly from 'plotly.js-dist-min'
+import * as Plotly from 'plotly.js-dist-min'
 import {API_BASE} from "@/lib/api";
 import i18next from 'i18next'
 import FeedbackForm from '@/components/FeedbackForm.vue'
@@ -212,6 +215,7 @@ import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
 const route = useRoute()
 const router = useRouter()
 const patient_name = ref("")
+const patient_birth_date = ref<string | null>(null)
 const rawId = route.params.patient_id
 const showFeedback = ref(false)
 
@@ -285,6 +289,7 @@ const matchedFeatures = computed(() => {
     rawKey: string
     normalizedKey: string
     description?: string
+    section?: string
     featureKey: string
     importance: number
     rawValue: unknown
@@ -318,11 +323,21 @@ const matchedFeatures = computed(() => {
       rawKey,
       normalizedKey: def.normalized as string,
       description: def.description,
+      section: def.section ?? 'Weitere',
       featureKey,
       importance: byKey[featureKey],
       rawValue
     })
   }
+
+  // Sort: positive factors (descending by importance) first, then negative (ascending by importance)
+  features.sort((a, b) => {
+    const aPos = a.importance >= 0 ? 0 : 1
+    const bPos = b.importance >= 0 ? 0 : 1
+    if (aPos !== bPos) return aPos - bPos
+    // Within same sign group, sort by absolute importance descending
+    return Math.abs(b.importance) - Math.abs(a.importance)
+  })
 
   return features
 })
@@ -348,7 +363,8 @@ const featureLabels = computed(() =>
         : typeof feature.rawValue === "number"
           ? formatFeatureValue(feature.rawValue)
           : String(feature.rawValue)
-    return `${label}: ${rawDisplay}`
+    const sectionLabel = feature.section ? `[${feature.section}] ` : ''
+    return `${sectionLabel}${label}: ${rawDisplay}`
   })
 )
 
@@ -552,6 +568,17 @@ onMounted(async () => {
     const data2 = await response2.json();
 
     patient_name.value = data2.display_name
+    // Extract and format birth date for display
+    const rawBirthDate = data2.input_features?.['Geburtsdatum'] ?? null
+    if (rawBirthDate) {
+      // Convert YYYY-MM-DD to DD.MM.YYYY if needed
+      if (/^\d{4}-\d{2}-\d{2}$/.test(rawBirthDate)) {
+        const [y, m, d] = rawBirthDate.split('-')
+        patient_birth_date.value = `${d}.${m}.${y}`
+      } else {
+        patient_birth_date.value = rawBirthDate
+      }
+    }
     patientInputFeatures.value = data2.input_features ?? {}
 
   } catch (err: any) {

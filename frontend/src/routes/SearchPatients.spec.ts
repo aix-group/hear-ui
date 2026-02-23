@@ -1,15 +1,17 @@
 /**
  * Unit tests for the SearchPatients component.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
 import { mountWithRouter } from '../test/helpers'
 import SearchPatients from './SearchPatients.vue'
 
+const globalWithFetch = globalThis as typeof globalThis & { fetch: typeof fetch }
+
 describe('SearchPatients.vue', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>
+  let fetchSpy: MockInstance<Parameters<typeof fetch>, Promise<Response>>
 
   beforeEach(() => {
-    fetchSpy = vi.spyOn(globalThis, 'fetch')
+    fetchSpy = vi.spyOn(globalWithFetch, 'fetch')
     vi.useFakeTimers()
   })
 
