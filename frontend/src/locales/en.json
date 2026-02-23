@@ -42,6 +42,7 @@
         "created_with_id": "Patient created with id: {{id}}"
       },
       "minimum_fields_title": "Required fields",
+      "minimum_fields_banner": "Please fill in all required fields — this improves the accuracy of the prediction.",
       "minimum_fields_hint": "All fields marked with * are required: First name, Last name, Date of birth, Gender, Operated side, Primary language, Pre-operative symptoms (Taste, Tinnitus, Vertigo, Otorrhea, Headache), Imaging (Type and Findings), Objective measurements (OAE, LL, 4000 Hz), Hearing loss (operated and contralateral ear), Amplification (operated and contralateral ear), Hearing loss onset and start, Duration of severe hearing loss, Acquisition type, Etiology and Hearing disorder type.",
       "minimum_fields_error": "Please fill in the red-highlighted fields.",
       "required_fields_error": "Please fill in the red-highlighted fields.",

@@ -30,12 +30,7 @@
           icon="mdi-information-outline"
         >
           <strong>{{ $t('form.minimum_fields_title') }}:</strong>
-          <span v-if="language && language.startsWith('de')">
-            Bitte füllen Sie alle Pflichtfelder aus — das verbessert die Genauigkeit der Vorhersage.
-          </span>
-          <span v-else>
-            Please fill in all required fields — this improves the accuracy of the prediction.
-          </span>
+          {{ $t('form.minimum_fields_banner') }}
         </v-alert>
 
         <!-- Age out-of-scope warning (shown immediately when age < 18 or > 90) -->
