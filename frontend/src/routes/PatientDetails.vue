@@ -176,11 +176,16 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
+import i18next from "i18next";
 import {API_BASE} from "@/lib/api";
 import {useFeatureDefinitions} from "@/lib/featureDefinitions";
 import {featureDefinitionsStore} from "@/lib/featureDefinitionsStore";
+
+const language = ref(i18next.language)
+i18next.on('languageChanged', (lng) => { language.value = lng })
+watch(language, (lng) => { void featureDefinitionsStore.loadLabels(lng) })
 
 const route = useRoute();
 const router = useRouter();
@@ -224,9 +229,26 @@ const sectionLabelFor = (name: string) => {
   return sections.value?.[name] ?? name
 }
 
-const formatValue = (value: unknown) => {
+const resolveOptionLabel = (opt: any) => {
+  const lang = language.value?.startsWith('de') ? 'de' : 'en'
+  return opt?.labels?.[lang] ?? opt?.label ?? opt?.value
+}
+
+const formatValue = (value: unknown, def?: any) => {
   if (value === undefined || value === null || value === "") return "—"
-  if (Array.isArray(value)) return value.filter(Boolean).join(", ") || "—"
+  if (Array.isArray(value)) {
+    return value.filter(Boolean).map(entry => {
+      if (def?.options) {
+        const opt = def.options.find((o: any) => String(o.value) === String(entry))
+        if (opt) return resolveOptionLabel(opt)
+      }
+      return String(entry)
+    }).join(", ") || "—"
+  }
+  if (def?.options) {
+    const opt = def.options.find((o: any) => String(o.value) === String(value))
+    if (opt) return resolveOptionLabel(opt)
+  }
   return String(value)
 }
 
@@ -242,7 +264,8 @@ const detailSections = computed(() => {
     const value = input?.[def.raw]
     const label = labelFor(def.normalized, def.description ?? def.raw)
     itemsBySection[section] = itemsBySection[section] ?? []
-    itemsBySection[section].push({label, value: formatValue(value)})
+    // Pass def so formatValue can resolve option labels in the current UI language
+    itemsBySection[section].push({label, value: formatValue(value, def)})
   }
 
   const defaultOrder: string[] = []

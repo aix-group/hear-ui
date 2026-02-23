@@ -375,7 +375,7 @@ const onLanguageChanged = (lng: string) => {
   language.value = lng
 }
 i18next.on('languageChanged', onLanguageChanged)
-const {definitions, labels} = useFeatureDefinitions()
+const {definitions, labels, sections} = useFeatureDefinitions()
 
 const threshold = ref<number | null>(null)
 const thresholdPercent = computed(() => {
@@ -491,7 +491,7 @@ const sectionBoundaries = computed(() => {
     if (key !== lastKey) {
       boundaries.push({
         yStart: i,
-        label: (f.importance >= 0 ? '⬆ ' : '⬇ ') + (f.section ?? (language.value?.startsWith('en') ? 'Other' : 'Weitere')),
+        label: (f.importance >= 0 ? '⬆ ' : '⬇ ') + (sections.value?.[f.section ?? ''] ?? f.section ?? (language.value?.startsWith('en') ? 'Other' : 'Weitere')),
         isPositive: f.importance >= 0,
       })
       lastKey = key
@@ -505,8 +505,8 @@ const whatIfFeatures = computed(() => {
   const defs = definitions.value ?? []
   const defMap = Object.fromEntries(defs.map((d: any) => [d.raw, d]))
 
+  // All SHAP-matched features that are adjustable (options or numeric) – sorted by |importance| descending
   return matchedFeatures.value
-    .slice(0, 8)
     .map((f) => {
       const def = defMap[f.rawKey]
       const currentVal = patientInputFeatures.value?.[f.rawKey]
