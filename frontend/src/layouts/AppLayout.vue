@@ -14,31 +14,35 @@
           class="drawer-list"
       >
         <v-list-item
-            :to="{ name: 'Home' }"
-            class="text-white text-body-1 nav-item"
-            prepend-icon="mdi-home-outline"
-            :title="$t('navbar.homepage')"
+          :to="{ name: 'Home' }"
+          class="text-white text-body-1 nav-item"
+          prepend-icon="mdi-home-outline"
+          :title="$t('navbar.homepage')"
+          @click="drawer = false"
         />
 
         <v-list-item
-            :to="{ name: 'SearchPatients' }"
-            class="text-white text-body-1 nav-item"
-            prepend-icon="mdi-magnify"
-            :title="$t('navbar.search_patients')"
+          :to="{ name: 'SearchPatients' }"
+          class="text-white text-body-1 nav-item"
+          prepend-icon="mdi-magnify"
+          :title="$t('navbar.search_patients')"
+          @click="drawer = false"
         />
 
         <v-list-item
-            :to="{ name: 'CreatePatient' }"
-            class="text-white text-body-1 nav-item"
-            prepend-icon="mdi-account-plus"
-            :title="$t('navbar.create_patient')"
+          :to="{ name: 'CreatePatient' }"
+          class="text-white text-body-1 nav-item"
+          prepend-icon="mdi-account-plus"
+          :title="$t('navbar.create_patient')"
+          @click="drawer = false"
         />
 
         <v-list-item
-            :to="{ name: 'PredictionsHome' }"
-            class="text-white text-body-1 nav-item"
-            prepend-icon="mdi-trending-up"
-            :title="$t('navbar.predictions')"
+          :to="{ name: 'PredictionsHome' }"
+          class="text-white text-body-1 nav-item"
+          prepend-icon="mdi-trending-up"
+          :title="$t('navbar.predictions')"
+          @click="drawer = false"
         />
       </v-list>
     </v-navigation-drawer>
