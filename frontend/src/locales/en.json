@@ -140,7 +140,8 @@
         "toggle": "What-If Analysis",
         "description": "Adjust individual features to see how the prediction changes – without modifying the stored patient data.",
         "original": "Original",
-        "modified": "Modified"
+        "modified": "Modified",
+        "reset_all": "Reset all"
       },      "feedback": {
         "question": "Do you agree with the AI prediction?",
         "agree": "Agree",

@@ -278,7 +278,7 @@
               </div>
               <!-- Reset all overrides button (bottom-right) -->
               <div class="whatif-reset-all">
-                <v-btn small color="secondary" variant="tonal" @click="clearAllWhatIf">
+                <v-btn small color="error" variant="tonal" @click="clearAllWhatIf">
                   <v-icon left>mdi-backspace-outline</v-icon>
                   {{ $t('prediction.whatif.reset_all') }}
                 </v-btn>
