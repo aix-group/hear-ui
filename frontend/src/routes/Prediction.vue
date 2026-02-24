@@ -196,7 +196,7 @@
                   <!-- Numeric slider -->
                   <template v-if="feat.inputType === 'number'">
                     <div class="text-caption mb-1">{{ feat.label }}</div>
-                    <div style="display:flex; align-items:center; gap:8px">
+                    <div class="whatif-control">
                       <v-slider
                         v-model="whatIfValues[feat.rawKey]"
                         :min="feat.sliderMin"
@@ -210,13 +210,13 @@
                         @update:model-value="onWhatIfChange"
                       />
                       <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
-                        <v-icon class="whatif-reset-icon" size="16">mdi-close</v-icon>
+                        <v-icon class="whatif-reset-icon" size="14">mdi-close</v-icon>
                       </v-btn>
                     </div>
                   </template>
                   <!-- Categorical select -->
                   <template v-else-if="feat.options">
-                    <div style="display:flex; align-items:center; gap:8px">
+                    <div class="whatif-control">
                       <v-select
                         v-model="whatIfValues[feat.rawKey]"
                         :label="feat.label"
@@ -234,7 +234,7 @@
                         @update:model-value="onWhatIfChange"
                       />
                       <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
-                        <v-icon class="whatif-reset-icon" size="16">mdi-close</v-icon>
+                        <v-icon class="whatif-reset-icon" size="14">mdi-close</v-icon>
                       </v-btn>
                     </div>
                   </template>
@@ -1106,6 +1106,28 @@ onBeforeUnmount(() => {
   position: absolute;
   right: 12px;
   bottom: 12px;
+}
+
+/* Inline control wrapper so reset button appears inside the input/slider */
+.whatif-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.whatif-control .whatif-reset-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 20px;
+  width: 20px;
+  height: 20px;
+}
+.whatif-control v-select,
+.whatif-control .v-select,
+.whatif-control .v-field {
+  padding-right: 36px; /* leave space for the overlayed button */
 }
 
 
