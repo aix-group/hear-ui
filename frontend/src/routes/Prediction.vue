@@ -360,6 +360,7 @@ const predictionWarnings = ref<string[]>([])
 // What-if analysis state
 const whatIfOpen = ref(false)
 const whatIfValues = ref<Record<string, any>>({})
+const initialWhatIfValues = ref<Record<string, any>>({})
 const whatIfPrediction = ref<number | null>(null)
 const whatIfLoading = ref(false)
 let whatIfDebounce: ReturnType<typeof setTimeout> | null = null
@@ -583,6 +584,9 @@ watch(whatIfFeatures, (feats) => {
     const init: Record<string, any> = {}
     feats.forEach((f) => { init[f.rawKey] = f.defaultVal })
     whatIfValues.value = init
+    // Keep a copy of the initial defaults so we can detect when the user
+    // has reverted all changes and clear the modified prediction accordingly.
+    initialWhatIfValues.value = { ...init }
   }
 })
 
@@ -609,6 +613,26 @@ async function callWhatIf() {
 }
 
 function onWhatIfChange() {
+  // If overrides exactly match the initial defaults, clear the modified prediction
+  const keys = Object.keys(initialWhatIfValues.value)
+  let allEqual = true
+  for (const k of keys) {
+    const a = initialWhatIfValues.value[k]
+    const b = whatIfValues.value[k]
+    // treat arrays and objects by JSON stringification for simple deep-equality
+    if (Array.isArray(a) || typeof a === 'object') {
+      if (JSON.stringify(a) !== JSON.stringify(b)) { allEqual = false; break }
+    } else {
+      if (String(a) !== String(b)) { allEqual = false; break }
+    }
+  }
+  if (allEqual) {
+    if (whatIfDebounce) clearTimeout(whatIfDebounce)
+    whatIfPrediction.value = null
+    whatIfLoading.value = false
+    return
+  }
+
   if (whatIfDebounce) clearTimeout(whatIfDebounce)
   whatIfDebounce = setTimeout(() => callWhatIf(), 400)
 }
