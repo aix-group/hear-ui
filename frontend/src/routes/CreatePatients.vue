@@ -55,7 +55,7 @@
                   :model-value="formValues[field.normalized]"
                   @update:model-value="(val: any) => updateDateField(field.normalized, val)"
                   :label="field.label"
-                  placeholder="TT.MM.JJJJ"
+                  :placeholder="language.startsWith('en') ? 'MM/DD/YYYY' : 'TT.MM.JJJJ'"
                   :error-messages="[]"
                   :error="(submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field)) || !!(fieldErrorMap[field.normalized]?.length)"
                   :class="{ 'required-empty': submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field) }"
@@ -537,20 +537,51 @@ const updateField = (name: string, value: any) => {
 
 const formatDateInput = (raw: string): string => {
   const digits = raw.replace(/\D/g, '').slice(0, 8)
+  if (language.value?.startsWith('en')) {
+    // MM/DD/YYYY
+    if (digits.length <= 2) return digits
+    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+  }
+  // Default: DD.MM.YYYY
   if (digits.length <= 2) return digits
   if (digits.length <= 4) return `${digits.slice(0, 2)}.${digits.slice(2)}`
   return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`
 }
 
 const calculateAgeFromDate = (dateStr: string): number | null => {
-  // Expects DD.MM.YYYY format
-  const parts = dateStr.split('.')
-  if (parts.length !== 3 || parts[2].length !== 4) return null
-  const day = parseInt(parts[0], 10)
-  const month = parseInt(parts[1], 10) - 1
-  const year = parseInt(parts[2], 10)
-  if (isNaN(day) || isNaN(month) || isNaN(year)) return null
-  const birth = new Date(year, month, day)
+  // Accepts DD.MM.YYYY, MM/DD/YYYY, or YYYY-MM-DD
+  if (!dateStr || typeof dateStr !== 'string') return null
+  let day: number | null = null
+  let month: number | null = null
+  let year: number | null = null
+
+  if (dateStr.includes('/')) {
+    // MM/DD/YYYY
+    const parts = dateStr.split('/')
+    if (parts.length !== 3 || parts[2].length !== 4) return null
+    month = parseInt(parts[0], 10) - 1
+    day = parseInt(parts[1], 10)
+    year = parseInt(parts[2], 10)
+  } else if (dateStr.includes('.')) {
+    // DD.MM.YYYY
+    const parts = dateStr.split('.')
+    if (parts.length !== 3 || parts[2].length !== 4) return null
+    day = parseInt(parts[0], 10)
+    month = parseInt(parts[1], 10) - 1
+    year = parseInt(parts[2], 10)
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    // YYYY-MM-DD
+    const parts = dateStr.split('-')
+    year = parseInt(parts[0], 10)
+    month = parseInt(parts[1], 10) - 1
+    day = parseInt(parts[2], 10)
+  } else {
+    return null
+  }
+
+  if ([day, month, year].some((v) => v === null || isNaN(v as number))) return null
+  const birth = new Date(year as number, month as number, day as number)
   if (isNaN(birth.getTime())) return null
   const today = new Date()
   let age = today.getFullYear() - birth.getFullYear()
@@ -689,7 +720,22 @@ const buildInputFeatures = (values: Record<string, any>) => {
       value = value ?? ''
     }
 
-    input_features[def.raw] = value
+    // If this is the birth date field and user entered MM/DD/YYYY (English UI),
+    // convert to ISO YYYY-MM-DD for storage/submission so backend accepts it.
+    if ((def.normalized === 'birth_date' || def.raw === 'Geburtsdatum') && typeof value === 'string') {
+      const v = value.trim()
+      const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+      if (m) {
+        const mm = m[1].padStart(2, '0')
+        const dd = m[2].padStart(2, '0')
+        const yyyy = m[3]
+        input_features[def.raw] = `${yyyy}-${mm}-${dd}`
+      } else {
+        input_features[def.raw] = value
+      }
+    } else {
+      input_features[def.raw] = value
+    }
   }
 
   return input_features

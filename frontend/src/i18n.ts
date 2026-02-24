@@ -8,17 +8,18 @@ import en from './locales/en.json';
 // am besten erstmal frontend-i18n.md lesen
 
 i18next
-    // detect user language
-    // learn more: https://github.com/i18next/i18next-browser-languageDetector
+    // detect user language (will read from localStorage if present)
     .use(LanguageDetector)
     // init i18next
     // for all options read: https://www.i18next.com/overview/configuration-options
     .init({
         debug: false,
-        lng: 'de',
+        // Do NOT force a default `lng` here — allow the detector to restore
+        // the user's previously selected language (cached in localStorage).
         fallbackLng: 'de',
         detection: {
-            order: ['localStorage'],
+            // prefer an explicit saved value in localStorage, then browser settings
+            order: ['localStorage', 'navigator'],
             caches: ['localStorage']
         },
         defaultNS: 'translation',

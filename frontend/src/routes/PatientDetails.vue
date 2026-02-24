@@ -182,6 +182,7 @@ import i18next from "i18next";
 import {API_BASE} from "@/lib/api";
 import {useFeatureDefinitions} from "@/lib/featureDefinitions";
 import {featureDefinitionsStore} from "@/lib/featureDefinitionsStore";
+import {formatBirthDateLocale} from "@/utils";
 
 const language = ref(i18next.language)
 i18next.on('languageChanged', (lng) => { language.value = lng })
@@ -203,12 +204,7 @@ const displayName = computed(() => patient.value?.name ?? patient.value?.display
 
 const formattedBirthDate = computed(() => {
   const raw = patient.value?.input_features?.['Geburtsdatum']
-  if (!raw) return null
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const [y, m, d] = raw.split('-')
-    return `${d}.${m}.${y}`
-  }
-  return raw
+  return formatBirthDateLocale(raw, language.value)
 })
 
 // Computes which ear the OTHER form should be for (flips R↔L)
@@ -264,8 +260,15 @@ const detailSections = computed(() => {
     const value = input?.[def.raw]
     const label = labelFor(def.normalized, def.description ?? def.raw)
     itemsBySection[section] = itemsBySection[section] ?? []
-    // Pass def so formatValue can resolve option labels in the current UI language
-    itemsBySection[section].push({label, value: formatValue(value, def)})
+    // Format birth date specially so it follows the UI locale (e.g. American when English)
+    let displayValue: string
+    if (def.normalized === 'birth_date' || def.raw === 'Geburtsdatum') {
+      displayValue = formatBirthDateLocale(String(value ?? ''), language.value) ?? '—'
+    } else {
+      // Pass def so formatValue can resolve option labels in the current UI language
+      displayValue = formatValue(value, def)
+    }
+    itemsBySection[section].push({label, value: displayValue})
   }
 
   const defaultOrder: string[] = []

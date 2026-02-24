@@ -333,11 +333,12 @@ import i18next from 'i18next'
 import FeedbackForm from '@/components/FeedbackForm.vue'
 import {useFeatureDefinitions} from '@/lib/featureDefinitions'
 import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
+import {formatBirthDateLocale} from '@/utils'
 
 const route = useRoute()
 const router = useRouter()
 const patient_name = ref("")
-const patient_birth_date = ref<string | null>(null)
+const rawBirthDate = ref<string | null>(null)
 const rawId = route.params.patient_id
 const showFeedback = ref(false)
 
@@ -375,6 +376,9 @@ const onLanguageChanged = (lng: string) => {
   language.value = lng
 }
 i18next.on('languageChanged', onLanguageChanged)
+
+// Computed birth date — re-formats automatically when language changes
+const patient_birth_date = computed(() => formatBirthDateLocale(rawBirthDate.value, language.value))
 const {definitions, labels, sections} = useFeatureDefinitions()
 
 const threshold = ref<number | null>(null)
@@ -884,17 +888,8 @@ onMounted(async () => {
     const data2 = await response2.json();
 
     patient_name.value = data2.display_name
-    // Extract and format birth date for display
-    const rawBirthDate = data2.input_features?.['Geburtsdatum'] ?? null
-    if (rawBirthDate) {
-      // Convert YYYY-MM-DD to DD.MM.YYYY if needed
-      if (/^\d{4}-\d{2}-\d{2}$/.test(rawBirthDate)) {
-        const [y, m, d] = rawBirthDate.split('-')
-        patient_birth_date.value = `${d}.${m}.${y}`
-      } else {
-        patient_birth_date.value = rawBirthDate
-      }
-    }
+    // Store raw birth date; the computed patient_birth_date formats it per locale
+    rawBirthDate.value = data2.input_features?.['Geburtsdatum'] ?? null
     patientInputFeatures.value = data2.input_features ?? {}
 
   } catch (err: any) {

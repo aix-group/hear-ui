@@ -71,22 +71,18 @@
 <script lang="ts" setup>
 import {ref, watch} from "vue";
 import {API_BASE} from "@/lib/api";
+import i18next from 'i18next';
+import {formatBirthDateLocale} from '@/utils';
 
 const search = ref("");
+const language = ref(i18next.language)
+i18next.on('languageChanged', (lng) => { language.value = lng })
 
 const filteredData = ref<Array<{ id: string; name: string; birthYear?: number | null; birthDate?: string | null }>>([])
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 const formatBirthDate = (raw: string | null | undefined): string | null => {
-  if (!raw) return null
-  // already DD.MM.YYYY
-  if (/^\d{2}\.\d{2}\.\d{4}$/.test(raw)) return raw
-  // YYYY-MM-DD (HTML date input)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const [y, m, d] = raw.split('-')
-    return `${d}.${m}.${y}`
-  }
-  return raw
+  return formatBirthDateLocale(raw, language.value)
 }
 
 watch(search, (newValue) => {
