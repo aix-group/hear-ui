@@ -142,7 +142,7 @@
         "description": "Passen Sie einzelne Merkmale an und sehen Sie, wie sich die Vorhersage ändert – ohne die gespeicherten Patientendaten zu verändern.",
         "original": "Original",
         "modified": "Modifiziert",
-        "reset_all": "Alle zurücksetzen"
+        "reset_all": "Alles zurücksetzen"
       },
       "feedback": {
         "question": "Stimmen Sie der KI-Vorhersage zu?",
