@@ -196,35 +196,47 @@
                   <!-- Numeric slider -->
                   <template v-if="feat.inputType === 'number'">
                     <div class="text-caption mb-1">{{ feat.label }}</div>
-                    <v-slider
-                      v-model="whatIfValues[feat.rawKey]"
-                      :min="feat.sliderMin"
-                      :max="feat.sliderMax"
-                      :step="feat.sliderStep"
-                      thumb-label
-                      color="primary"
-                      density="compact"
-                      hide-details
-                      @update:model-value="onWhatIfChange"
-                    />
+                    <div style="display:flex; align-items:center; gap:8px">
+                      <v-slider
+                        v-model="whatIfValues[feat.rawKey]"
+                        :min="feat.sliderMin"
+                        :max="feat.sliderMax"
+                        :step="feat.sliderStep"
+                        thumb-label
+                        color="primary"
+                        density="compact"
+                        hide-details
+                        style="flex:1"
+                        @update:model-value="onWhatIfChange"
+                      />
+                      <v-btn icon size="small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-remove-icon">mdi-close</v-icon>
+                      </v-btn>
+                    </div>
                   </template>
                   <!-- Categorical select -->
                   <template v-else-if="feat.options">
-                    <v-select
-                      v-model="whatIfValues[feat.rawKey]"
-                      :label="feat.label"
-                      :items="feat.options"
-                      item-title="title"
-                      item-value="value"
-                      density="compact"
-                      variant="outlined"
-                      hide-details
-                      class="mb-2"
-                      autocomplete="off"
-                      no-filter
-                      :menu-props="{ closeOnContentClick: true }"
-                      @update:model-value="onWhatIfChange"
-                    />
+                    <div style="display:flex; align-items:center; gap:8px">
+                      <v-select
+                        v-model="whatIfValues[feat.rawKey]"
+                        :label="feat.label"
+                        :items="feat.options"
+                        item-title="title"
+                        item-value="value"
+                        density="compact"
+                        variant="outlined"
+                        hide-details
+                        class="mb-2"
+                        autocomplete="off"
+                        no-filter
+                        style="flex:1"
+                        :menu-props="{ closeOnContentClick: true }"
+                        @update:model-value="onWhatIfChange"
+                      />
+                      <v-btn icon size="small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-remove-icon">mdi-close</v-icon>
+                      </v-btn>
+                    </div>
                   </template>
                 </v-col>
               </v-row>
@@ -637,6 +649,20 @@ function onWhatIfChange() {
   whatIfDebounce = setTimeout(() => callWhatIf(), 400)
 }
 
+function clearWhatIf(key: string) {
+  // Reset this override to the initial default value
+  const copy: Record<string, any> = { ...whatIfValues.value }
+  if (initialWhatIfValues.value && Object.prototype.hasOwnProperty.call(initialWhatIfValues.value, key)) {
+    copy[key] = initialWhatIfValues.value[key]
+  } else {
+    // Fallback: delete the key
+    delete copy[key]
+  }
+  whatIfValues.value = copy
+  // Trigger recalculation / possible reset
+  onWhatIfChange()
+}
+
 const formatFeatureValue = (value: number) => {
   if (!Number.isFinite(value)) return String(value)
   if (Number.isInteger(value)) return value.toString()
@@ -1029,6 +1055,20 @@ onBeforeUnmount(() => {
   color: #666;
   padding: 0 2px;
   margin-bottom: 4px;
+}
+
+/* Muted remove button for What-If overrides (less aggressive than error color) */
+.whatif-remove-btn {
+  color: rgba(0, 0, 0, 0.54);
+  --v-btn-size: 32px;
+}
+.whatif-remove-icon {
+  color: rgba(0, 0, 0, 0.54);
+  opacity: 0.85;
+}
+.whatif-remove-btn:hover .whatif-remove-icon {
+  color: rgba(0, 0, 0, 0.8);
+  opacity: 1;
 }
 
 
