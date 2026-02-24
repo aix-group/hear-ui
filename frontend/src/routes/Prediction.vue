@@ -209,8 +209,8 @@
                         style="flex:1"
                         @update:model-value="onWhatIfChange"
                       />
-                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
-                        <v-icon class="whatif-remove-icon" size="16">mdi-close</v-icon>
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-reset-icon" size="16">mdi-close</v-icon>
                       </v-btn>
                     </div>
                   </template>
@@ -233,8 +233,8 @@
                         :menu-props="{ closeOnContentClick: true }"
                         @update:model-value="onWhatIfChange"
                       />
-                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
-                        <v-icon class="whatif-remove-icon" size="16">mdi-close</v-icon>
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-reset-icon" size="16">mdi-close</v-icon>
                       </v-btn>
                     </div>
                   </template>
@@ -1058,22 +1058,28 @@ onBeforeUnmount(() => {
 }
 
 /* Muted remove button for What-If overrides (less aggressive than error color) */
-.whatif-remove-btn {
-  color: rgba(0, 0, 0, 0.54);
-  min-width: 28px;
-  width: 28px;
-  height: 28px;
+.whatif-reset-btn {
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
   padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0,0,0,0.04);
+  transition: background-color 120ms ease-in-out;
 }
-.whatif-remove-icon {
-  color: rgba(0, 0, 0, 0.54);
-  opacity: 0.85;
-  font-size: 16px;
-  line-height: 28px;
+.whatif-reset-icon {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  line-height: 14px;
 }
-.whatif-remove-btn:hover .whatif-remove-icon {
-  color: rgba(0, 0, 0, 0.8);
-  opacity: 1;
+.whatif-reset-btn:hover {
+  background-color: rgba(0,0,0,0.08);
+}
+.whatif-reset-btn:active .whatif-reset-icon {
+  color: rgba(0,0,0,0.8);
 }
 
 
