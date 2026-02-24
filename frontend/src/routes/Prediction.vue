@@ -209,7 +209,7 @@
                         style="flex:1"
                         @update:model-value="onWhatIfChange"
                       />
-                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="small" variant="plain" class="v-field__clear whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
                         <v-icon class="whatif-reset-icon" size="14">mdi-close</v-icon>
                       </v-btn>
                     </div>
@@ -233,7 +233,7 @@
                         :menu-props="{ closeOnContentClick: true }"
                         @update:model-value="onWhatIfChange"
                       />
-                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="small" variant="plain" class="v-field__clear whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
                         <v-icon class="whatif-reset-icon" size="14">mdi-close</v-icon>
                       </v-btn>
                     </div>
