@@ -209,8 +209,8 @@
                         style="flex:1"
                         @update:model-value="onWhatIfChange"
                       />
-                      <v-btn icon size="small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
-                        <v-icon class="whatif-remove-icon">mdi-close</v-icon>
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-remove-icon" size="16">mdi-close</v-icon>
                       </v-btn>
                     </div>
                   </template>
@@ -233,8 +233,8 @@
                         :menu-props="{ closeOnContentClick: true }"
                         @update:model-value="onWhatIfChange"
                       />
-                      <v-btn icon size="small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
-                        <v-icon class="whatif-remove-icon">mdi-close</v-icon>
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" class="whatif-remove-btn" title="Remove override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-remove-icon" size="16">mdi-close</v-icon>
                       </v-btn>
                     </div>
                   </template>
@@ -1060,11 +1060,16 @@ onBeforeUnmount(() => {
 /* Muted remove button for What-If overrides (less aggressive than error color) */
 .whatif-remove-btn {
   color: rgba(0, 0, 0, 0.54);
-  --v-btn-size: 32px;
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
 }
 .whatif-remove-icon {
   color: rgba(0, 0, 0, 0.54);
   opacity: 0.85;
+  font-size: 16px;
+  line-height: 28px;
 }
 .whatif-remove-btn:hover .whatif-remove-icon {
   color: rgba(0, 0, 0, 0.8);
