@@ -180,7 +180,7 @@
           </v-btn>
 
           <v-expand-transition>
-            <v-card v-if="whatIfOpen" variant="outlined" color="primary" class="pa-4">
+            <v-card v-if="whatIfOpen" variant="outlined" color="primary" class="pa-4 whatif-card">
               <div class="text-body-2 text-medium-emphasis mb-4">{{ $t('prediction.whatif.description') }}</div>
 
               <!-- Feature overrides: wrap in form with autocomplete=off to suppress browser suggestion bubbles -->
@@ -275,6 +275,13 @@
                     {{ whatIfDelta > 0 ? '+' : '' }}{{ (whatIfDelta * 100).toFixed(1) }} Pp
                   </v-chip>
                 </div>
+              </div>
+              <!-- Reset all overrides button (bottom-right) -->
+              <div class="whatif-reset-all">
+                <v-btn small color="secondary" variant="tonal" @click="clearAllWhatIf">
+                  <v-icon left>mdi-backspace-outline</v-icon>
+                  {{ $t('prediction.whatif.reset_all') }}
+                </v-btn>
               </div>
             </v-card>
           </v-expand-transition>
@@ -659,6 +666,16 @@ function clearWhatIf(key: string) {
     delete copy[key]
   }
   whatIfValues.value = copy
+  // Trigger recalculation / possible reset
+  onWhatIfChange()
+}
+
+function clearAllWhatIf() {
+  if (initialWhatIfValues.value && Object.keys(initialWhatIfValues.value).length > 0) {
+    whatIfValues.value = { ...initialWhatIfValues.value }
+  } else {
+    whatIfValues.value = {}
+  }
   // Trigger recalculation / possible reset
   onWhatIfChange()
 }
@@ -1080,6 +1097,16 @@ onBeforeUnmount(() => {
 }
 .whatif-reset-btn:active .whatif-reset-icon {
   color: rgba(0,0,0,0.8);
+}
+
+/* Positioning and style for Reset-All button */
+.whatif-card {
+  position: relative;
+}
+.whatif-reset-all {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
 }
 
 
