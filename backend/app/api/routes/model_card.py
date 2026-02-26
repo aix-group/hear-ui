@@ -109,22 +109,26 @@ def _render_model_card_markdown_de() -> str:
         dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
-        metrics_section += f"**Trainings-/Test-Set:** 80/20 Split ({ds_label}) | **Metriken auf Testdaten:**\n\n"
+        # Keep the label and the list on the same line: append an inline HTML ordered list
+        metrics_section += f"**Trainings-/Test-Set:** 80/20 Split ({ds_label}) | **Metriken auf Testdaten:** "
 
-        # Render metrics inline (side-by-side) instead of as a vertical numbered list
-        parts: list[str] = []
+        items: list[str] = []
         if card.metrics.accuracy is not None:
-            parts.append(f"Accuracy: {card.metrics.accuracy:.2%}")
+            items.append(f"<li>Accuracy: {card.metrics.accuracy:.2%}</li>")
         if card.metrics.roc_auc is not None:
-            parts.append(f"ROC-AUC: {card.metrics.roc_auc:.2f}")
+            items.append(f"<li>ROC-AUC: {card.metrics.roc_auc:.2f}</li>")
         if card.metrics.recall is not None:
-            parts.append(f"Sensitivität (Recall): {card.metrics.recall:.2%}")
+            items.append(f"<li>Sensitivität (Recall): {card.metrics.recall:.2%}</li>")
         if card.metrics.precision is not None:
-            parts.append(f"Spezifität (Precision): {card.metrics.precision:.2%}")
+            items.append(f"<li>Spezifität (Precision): {card.metrics.precision:.2%}</li>")
         if card.metrics.f1_score is not None:
-            parts.append(f"F1-Score: {card.metrics.f1_score:.2f}")
+            items.append(f"<li>F1-Score: {card.metrics.f1_score:.2f}</li>")
 
-        metrics_section += " | ".join(parts) + "\n\n"
+        ol_html = "<ol style=\"display:inline-block;margin:0 0 0 0.6rem;vertical-align:middle;\">"
+        ol_html += "".join(items)
+        ol_html += "</ol>\n\n"
+
+        metrics_section += ol_html
         metrics_section += "\n> **Hinweis:** Zahlen dienen zur Orientierung, nicht zur alleinigen Entscheidungsfindung.\n"
 
     # Group features
@@ -222,22 +226,25 @@ def _render_model_card_markdown_en() -> str:
         dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
-        metrics_section += f"**Training/Test Set:** 80/20 split ({ds_label}) | **Metrics on test data:**\n\n"
+        metrics_section += f"**Training/Test Set:** 80/20 split ({ds_label}) | **Metrics on test data:** "
 
-        # Render metrics inline (side-by-side) instead of as a vertical numbered list
-        parts_en: list[str] = []
+        items_en: list[str] = []
         if card.metrics.accuracy is not None:
-            parts_en.append(f"Accuracy: {card.metrics.accuracy:.2%}")
+            items_en.append(f"<li>Accuracy: {card.metrics.accuracy:.2%}</li>")
         if card.metrics.roc_auc is not None:
-            parts_en.append(f"ROC-AUC: {card.metrics.roc_auc:.2f}")
+            items_en.append(f"<li>ROC-AUC: {card.metrics.roc_auc:.2f}</li>")
         if card.metrics.recall is not None:
-            parts_en.append(f"Sensitivity (Recall): {card.metrics.recall:.2%}")
+            items_en.append(f"<li>Sensitivity (Recall): {card.metrics.recall:.2%}</li>")
         if card.metrics.precision is not None:
-            parts_en.append(f"Specificity (Precision): {card.metrics.precision:.2%}")
+            items_en.append(f"<li>Specificity (Precision): {card.metrics.precision:.2%}</li>")
         if card.metrics.f1_score is not None:
-            parts_en.append(f"F1-Score: {card.metrics.f1_score:.2f}")
+            items_en.append(f"<li>F1-Score: {card.metrics.f1_score:.2f}</li>")
 
-        metrics_section += " | ".join(parts_en) + "\n\n"
+        ol_html_en = "<ol style=\"display:inline-block;margin:0 0 0 0.6rem;vertical-align:middle;\">"
+        ol_html_en += "".join(items_en)
+        ol_html_en += "</ol>\n\n"
+
+        metrics_section += ol_html_en
         metrics_section += "\n> **Note:** These figures are for guidance only and should not be used as the sole basis for decision-making.\n"
 
     # Group features
