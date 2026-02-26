@@ -114,15 +114,15 @@ def _render_model_card_markdown_de() -> str:
 
         parts: list[str] = []
         if card.metrics.accuracy is not None:
-            parts.append(f"Accuracy: {card.metrics.accuracy:.2%}")
+            parts.append(f"<strong class=\"text-primary\">Genauigkeit:</strong> {card.metrics.accuracy:.2%}")
         if card.metrics.roc_auc is not None:
-            parts.append(f"ROC-AUC: {card.metrics.roc_auc:.2f}")
+            parts.append(f"**ROC-AUC:** {card.metrics.roc_auc:.2f}")
         if card.metrics.recall is not None:
-            parts.append(f"Sensitivität (Recall): {card.metrics.recall:.2%}")
+            parts.append(f"**Sensitivität (Recall):** {card.metrics.recall:.2%}")
         if card.metrics.precision is not None:
-            parts.append(f"Spezifität (Precision): {card.metrics.precision:.2%}")
+            parts.append(f"**Spezifität (Precision):** {card.metrics.precision:.2%}")
         if card.metrics.f1_score is not None:
-            parts.append(f"F1-Score: {card.metrics.f1_score:.2f}")
+            parts.append(f"<strong class=\"text-primary\">F1-Score:</strong> {card.metrics.f1_score:.2f}")
 
         metrics_combined = " | ".join(parts) if parts else "Metriken nicht verfügbar"
         metrics_section += f"2. {metrics_combined}\n\n"
@@ -228,15 +228,15 @@ def _render_model_card_markdown_en() -> str:
 
         parts_en: list[str] = []
         if card.metrics.accuracy is not None:
-            parts_en.append(f"Accuracy: {card.metrics.accuracy:.2%}")
+            parts_en.append(f"<strong class=\"text-primary\">Accuracy:</strong> {card.metrics.accuracy:.2%}")
         if card.metrics.roc_auc is not None:
-            parts_en.append(f"ROC-AUC: {card.metrics.roc_auc:.2f}")
+            parts_en.append(f"**ROC-AUC:** {card.metrics.roc_auc:.2f}")
         if card.metrics.recall is not None:
-            parts_en.append(f"Sensitivity (Recall): {card.metrics.recall:.2%}")
+            parts_en.append(f"**Sensitivity (Recall):** {card.metrics.recall:.2%}")
         if card.metrics.precision is not None:
-            parts_en.append(f"Specificity (Precision): {card.metrics.precision:.2%}")
+            parts_en.append(f"**Specificity (Precision):** {card.metrics.precision:.2%}")
         if card.metrics.f1_score is not None:
-            parts_en.append(f"F1-Score: {card.metrics.f1_score:.2f}")
+            parts_en.append(f"<strong class=\"text-primary\">F1-Score:</strong> {card.metrics.f1_score:.2f}")
 
         metrics_combined_en = " | ".join(parts_en) if parts_en else "Metrics not available"
         metrics_section += f"2. {metrics_combined_en}\n\n"
