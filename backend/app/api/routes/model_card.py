@@ -106,15 +106,21 @@ def _render_model_card_markdown_de() -> str:
             card.metrics.roc_auc,
         ]
     ):
-        dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
+        dataset_size = (
+            card.metadata.get("dataset_size")
+            if getattr(card, "metadata", None)
+            else None
+        )
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
         # Render as a vertical numbered list: 1) Train/Test set, 2) Metrics combined
-        metrics_section += f"1. <strong class=\"text-primary\">Trainings-/Test-Set:</strong> 80/20 Split ({ds_label})\n"
+        metrics_section += f'1. <strong class="text-primary">Trainings-/Test-Set:</strong> 80/20 Split ({ds_label})\n'
 
         parts: list[str] = []
         if card.metrics.accuracy is not None:
-            parts.append(f"<strong class=\"text-primary\">Genauigkeit:</strong> {card.metrics.accuracy:.2%}")
+            parts.append(
+                f'<strong class="text-primary">Genauigkeit:</strong> {card.metrics.accuracy:.2%}'
+            )
         if card.metrics.roc_auc is not None:
             parts.append(f"**ROC-AUC:** {card.metrics.roc_auc:.2f}")
         if card.metrics.recall is not None:
@@ -122,7 +128,9 @@ def _render_model_card_markdown_de() -> str:
         if card.metrics.precision is not None:
             parts.append(f"**Spezifität (Precision):** {card.metrics.precision:.2%}")
         if card.metrics.f1_score is not None:
-            parts.append(f"<strong class=\"text-primary\">F1-Score:</strong> {card.metrics.f1_score:.2f}")
+            parts.append(
+                f'<strong class="text-primary">F1-Score:</strong> {card.metrics.f1_score:.2f}'
+            )
 
         metrics_combined = " | ".join(parts) if parts else "Metriken nicht verfügbar"
         metrics_section += f"2. {metrics_combined}\n\n"
@@ -220,25 +228,37 @@ def _render_model_card_markdown_en() -> str:
             card.metrics.roc_auc,
         ]
     ):
-        dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
+        dataset_size = (
+            card.metadata.get("dataset_size")
+            if getattr(card, "metadata", None)
+            else None
+        )
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
         # Render as vertical numbered list: 1) Train/Test set, 2) Metrics combined
-        metrics_section += f"1. <strong class=\"text-primary\">Training/Test Set:</strong> 80/20 split ({ds_label})\n\n"
+        metrics_section += f'1. <strong class="text-primary">Training/Test Set:</strong> 80/20 split ({ds_label})\n\n'
 
         parts_en: list[str] = []
         if card.metrics.accuracy is not None:
-            parts_en.append(f"<strong class=\"text-primary\">Accuracy:</strong> {card.metrics.accuracy:.2%}")
+            parts_en.append(
+                f'<strong class="text-primary">Accuracy:</strong> {card.metrics.accuracy:.2%}'
+            )
         if card.metrics.roc_auc is not None:
             parts_en.append(f"**ROC-AUC:** {card.metrics.roc_auc:.2f}")
         if card.metrics.recall is not None:
             parts_en.append(f"**Sensitivity (Recall):** {card.metrics.recall:.2%}")
         if card.metrics.precision is not None:
-            parts_en.append(f"**Specificity (Precision):** {card.metrics.precision:.2%}")
+            parts_en.append(
+                f"**Specificity (Precision):** {card.metrics.precision:.2%}"
+            )
         if card.metrics.f1_score is not None:
-            parts_en.append(f"<strong class=\"text-primary\">F1-Score:</strong> {card.metrics.f1_score:.2f}")
+            parts_en.append(
+                f'<strong class="text-primary">F1-Score:</strong> {card.metrics.f1_score:.2f}'
+            )
 
-        metrics_combined_en = " | ".join(parts_en) if parts_en else "Metrics not available"
+        metrics_combined_en = (
+            " | ".join(parts_en) if parts_en else "Metrics not available"
+        )
         metrics_section += f"2. {metrics_combined_en}\n\n"
         metrics_section += "\n> **Note:** These figures are for guidance only and should not be used as the sole basis for decision-making.\n"
 
@@ -302,7 +322,7 @@ def _render_model_card_markdown_en() -> str:
     ]
 
     # Use dataset size where possible; fall back to a generic phrasing
-    ds = dataset_size if dataset_size is not None else '??'
+    ds = dataset_size if dataset_size is not None else "??"
     limitations_en = [
         f"Model is based on a limited dataset (N={ds})",
         "Not validated outside the training population (University Hospital Essen)",

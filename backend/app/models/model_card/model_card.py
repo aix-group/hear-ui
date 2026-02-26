@@ -121,7 +121,9 @@ def load_model_card() -> ModelCard:
         metadata={
             "dataset_size": cfg.get("training", {}).get("dataset_size"),
             "features_count": cfg.get("training", {}).get("features_count"),
-            "training_description": cfg.get("ethical_considerations", {}).get("privacy"),
+            "training_description": cfg.get("ethical_considerations", {}).get(
+                "privacy"
+            ),
             "config_file": config_path.name,
         },
     )
