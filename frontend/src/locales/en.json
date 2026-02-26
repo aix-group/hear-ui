@@ -287,7 +287,7 @@
           "title": "Model Description",
           "description": "Random Forest Classifier: Ensemble of decision trees, non-linear, robust predictions for heterogeneous patient characteristics",
           "training_data": "Training Data",
-          "training_data_value": "Anonymized patient data",
+          "training_data_value": "Anonymized real patient data (for ethical considerations, only dummy patients are displayed in the UI)",
           "train_test_split": "Train/Test Split",
           "features": "Features",
           "features_value": "See feature list below"
@@ -306,7 +306,7 @@
         },
         "limitations": {
           "title": "Limitations",
-          "item_1": "Model based on limited dataset (N=137)",
+          "item_1": "Model based on limited dataset (N=235)",
           "item_2": "Not validated outside training population (University Hospital Essen)",
           "item_3": "Predictions are supportive evidence, not deterministic outcomes",
           "item_4": "Possible biases regarding age groups, gender, and type of hearing loss",
@@ -324,7 +324,7 @@
         },
         "performance": {
           "title": "Performance / Evaluation",
-          "dataset": "Training/Test Set: 80/20 Split (N=137)",
+          "dataset": "Training/Test Set: 80/20 Split (N=235)",
           "metrics_title": "Metrics (on test data)",
           "accuracy": "Accuracy",
           "roc_auc": "ROC-AUC",

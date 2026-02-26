@@ -271,7 +271,7 @@
           "title": "Modellbeschreibung",
           "description": "Random Forest Classifier: Ensemble von Entscheidungsbäumen, nicht-linear, robuste Vorhersagen bei heterogenen Patient:innenmerkmalen",
           "training_data": "Trainingsdaten",
-          "training_data_value": "Anonymisierte Patientendaten",
+          "training_data_value": "Anonymisierte echte Patient:innendaten (aus ethischen Gründen werden in der UI nur Beispieldaten angezeigt)",
           "train_test_split": "Train/Test Split",
           "features": "Features",
           "features_value": "Siehe Feature-Liste unten"
@@ -290,7 +290,7 @@
         },
         "limitations": {
           "title": "Limitations",
-          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=137)",
+          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=235)",
           "item_2": "Nicht validiert außerhalb der Trainingspopulation (Universitätsklinikum Essen)",
           "item_3": "Vorhersagen sind unterstützende Hinweise, keine deterministischen Ergebnisse",
           "item_4": "Mögliche Biases in Bezug auf Altersgruppen, Geschlecht und Art des Hörverlusts",
@@ -308,7 +308,7 @@
         },
         "performance": {
           "title": "Performance / Evaluation",
-          "dataset": "Trainings-/Test-Set: 80/20 Split (N=137)",
+          "dataset": "Trainings-/Test-Set: 80/20 Split (N=235)",
           "metrics_title": "Metriken (auf Testdaten)",
           "accuracy": "Accuracy",
           "roc_auc": "ROC-AUC",
