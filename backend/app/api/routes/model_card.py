@@ -109,8 +109,8 @@ def _render_model_card_markdown_de() -> str:
         dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
-        # Keep the label and the list on the same line: append an inline HTML ordered list
-        metrics_section += f"**Trainings-/Test-Set:** 80/20 Split ({ds_label}) | **Metriken auf Testdaten:** "
+        # Render as a vertical numbered list: 1) Train/Test set, 2) Metrics combined
+        metrics_section += f"1. **Trainings-/Test-Set:** 80/20 Split ({ds_label})\n"
 
         parts: list[str] = []
         if card.metrics.accuracy is not None:
@@ -124,7 +124,8 @@ def _render_model_card_markdown_de() -> str:
         if card.metrics.f1_score is not None:
             parts.append(f"F1-Score: {card.metrics.f1_score:.2f}")
 
-        metrics_section += " | ".join(parts) + "\n\n"
+        metrics_combined = " | ".join(parts) if parts else "Metriken nicht verfügbar"
+        metrics_section += f"2. {metrics_combined}\n\n"
         metrics_section += "\n> **Hinweis:** Zahlen dienen zur Orientierung, nicht zur alleinigen Entscheidungsfindung.\n"
 
     # Group features
@@ -222,7 +223,8 @@ def _render_model_card_markdown_en() -> str:
         dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
-        metrics_section += f"**Training/Test Set:** 80/20 split ({ds_label}) | **Metrics on test data:** "
+        # Render as vertical numbered list: 1) Train/Test set, 2) Metrics combined
+        metrics_section += f"1. **Training/Test Set:** 80/20 split ({ds_label})\n\n"
 
         parts_en: list[str] = []
         if card.metrics.accuracy is not None:
@@ -236,7 +238,8 @@ def _render_model_card_markdown_en() -> str:
         if card.metrics.f1_score is not None:
             parts_en.append(f"F1-Score: {card.metrics.f1_score:.2f}")
 
-        metrics_section += " | ".join(parts_en) + "\n\n"
+        metrics_combined_en = " | ".join(parts_en) if parts_en else "Metrics not available"
+        metrics_section += f"2. {metrics_combined_en}\n\n"
         metrics_section += "\n> **Note:** These figures are for guidance only and should not be used as the sole basis for decision-making.\n"
 
     # Group features
