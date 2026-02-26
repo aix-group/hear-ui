@@ -110,7 +110,7 @@ def _render_model_card_markdown_de() -> str:
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
         # Render as a vertical numbered list: 1) Train/Test set, 2) Metrics combined
-        metrics_section += f"1. **Trainings-/Test-Set:** 80/20 Split ({ds_label})\n"
+        metrics_section += f"1. <strong class=\"text-primary\">Trainings-/Test-Set:</strong> 80/20 Split ({ds_label})\n"
 
         parts: list[str] = []
         if card.metrics.accuracy is not None:
@@ -224,7 +224,7 @@ def _render_model_card_markdown_en() -> str:
         ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
         # Render as vertical numbered list: 1) Train/Test set, 2) Metrics combined
-        metrics_section += f"1. **Training/Test Set:** 80/20 split ({ds_label})\n\n"
+        metrics_section += f"1. <strong class=\"text-primary\">Training/Test Set:</strong> 80/20 split ({ds_label})\n\n"
 
         parts_en: list[str] = []
         if card.metrics.accuracy is not None:
