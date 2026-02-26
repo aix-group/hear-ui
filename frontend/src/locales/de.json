@@ -262,7 +262,7 @@
           "title": "Modellbeschreibung",
           "description": "Random Forest Classifier: Ensemble von Entscheidungsbäumen, nicht-linear, robuste Vorhersagen bei heterogenen Patient:innenmerkmalen",
           "training_data": "Trainingsdaten",
-          "training_data_value": "Pseudonymisierte Beispieldaten (keine echten Patient:innen)",
+          "training_data_value": "Anonymisierte Patientendaten",
           "train_test_split": "Train/Test Split",
           "features": "Features",
           "features_value": "Siehe Feature-Liste unten"
