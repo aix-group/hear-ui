@@ -111,26 +111,20 @@ def _render_model_card_markdown_de() -> str:
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
         metrics_section += f"**Trainings-/Test-Set:** 80/20 Split ({ds_label}) | **Metriken auf Testdaten:**\n\n"
 
-        idx = 1
-        if card.metrics.accuracy:
-            metrics_section += f"{idx}. Accuracy: {card.metrics.accuracy:.2%}\n"
-            idx += 1
-        if card.metrics.roc_auc:
-            metrics_section += f"{idx}. ROC-AUC: {card.metrics.roc_auc:.2f}\n"
-            idx += 1
-        if card.metrics.recall:
-            metrics_section += (
-                f"{idx}. Sensitivität (Recall): {card.metrics.recall:.2%}\n"
-            )
-            idx += 1
-        if card.metrics.precision:
-            metrics_section += (
-                f"{idx}. Spezifität (Precision): {card.metrics.precision:.2%}\n"
-            )
-            idx += 1
-        if card.metrics.f1_score:
-            metrics_section += f"{idx}. F1-Score: {card.metrics.f1_score:.2f}\n"
+        # Render metrics inline (side-by-side) instead of as a vertical numbered list
+        parts: list[str] = []
+        if card.metrics.accuracy is not None:
+            parts.append(f"Accuracy: {card.metrics.accuracy:.2%}")
+        if card.metrics.roc_auc is not None:
+            parts.append(f"ROC-AUC: {card.metrics.roc_auc:.2f}")
+        if card.metrics.recall is not None:
+            parts.append(f"Sensitivität (Recall): {card.metrics.recall:.2%}")
+        if card.metrics.precision is not None:
+            parts.append(f"Spezifität (Precision): {card.metrics.precision:.2%}")
+        if card.metrics.f1_score is not None:
+            parts.append(f"F1-Score: {card.metrics.f1_score:.2f}")
 
+        metrics_section += " | ".join(parts) + "\n\n"
         metrics_section += "\n> **Hinweis:** Zahlen dienen zur Orientierung, nicht zur alleinigen Entscheidungsfindung.\n"
 
     # Group features
@@ -230,26 +224,20 @@ def _render_model_card_markdown_en() -> str:
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
         metrics_section += f"**Training/Test Set:** 80/20 split ({ds_label}) | **Metrics on test data:**\n\n"
 
-        idx = 1
-        if card.metrics.accuracy:
-            metrics_section += f"{idx}. Accuracy: {card.metrics.accuracy:.2%}\n"
-            idx += 1
-        if card.metrics.roc_auc:
-            metrics_section += f"{idx}. ROC-AUC: {card.metrics.roc_auc:.2f}\n"
-            idx += 1
-        if card.metrics.recall:
-            metrics_section += (
-                f"{idx}. Sensitivity (Recall): {card.metrics.recall:.2%}\n"
-            )
-            idx += 1
-        if card.metrics.precision:
-            metrics_section += (
-                f"{idx}. Specificity (Precision): {card.metrics.precision:.2%}\n"
-            )
-            idx += 1
-        if card.metrics.f1_score:
-            metrics_section += f"{idx}. F1-Score: {card.metrics.f1_score:.2f}\n"
+        # Render metrics inline (side-by-side) instead of as a vertical numbered list
+        parts_en: list[str] = []
+        if card.metrics.accuracy is not None:
+            parts_en.append(f"Accuracy: {card.metrics.accuracy:.2%}")
+        if card.metrics.roc_auc is not None:
+            parts_en.append(f"ROC-AUC: {card.metrics.roc_auc:.2f}")
+        if card.metrics.recall is not None:
+            parts_en.append(f"Sensitivity (Recall): {card.metrics.recall:.2%}")
+        if card.metrics.precision is not None:
+            parts_en.append(f"Specificity (Precision): {card.metrics.precision:.2%}")
+        if card.metrics.f1_score is not None:
+            parts_en.append(f"F1-Score: {card.metrics.f1_score:.2f}")
 
+        metrics_section += " | ".join(parts_en) + "\n\n"
         metrics_section += "\n> **Note:** These figures are for guidance only and should not be used as the sole basis for decision-making.\n"
 
     # Group features
