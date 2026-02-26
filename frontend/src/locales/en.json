@@ -287,7 +287,7 @@
           "title": "Model Description",
           "description": "Random Forest Classifier: Ensemble of decision trees, non-linear, robust predictions for heterogeneous patient characteristics",
           "training_data": "Training Data",
-          "training_data_value": "Pseudonymized example data (not real patients)",
+          "training_data_value": "Anonymized patient data",
           "train_test_split": "Train/Test Split",
           "features": "Features",
           "features_value": "See feature list below"

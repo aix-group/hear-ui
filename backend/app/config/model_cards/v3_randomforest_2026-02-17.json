@@ -6,13 +6,13 @@
   "status": "active",
 
   "training": {
-    "dataset_size": 137,
+    "dataset_size": 235,
     "features_count": 39,
     "training_date": "2026-02-15",
     "hyperparameters": {
       "n_estimators": 150,
-      "max_depth": 12,
-      "min_samples_split": 4,
+      "max_depth": 15,
+      "min_samples_split": 5,
       "class_weight": "balanced",
       "random_state": 42
     },
@@ -21,11 +21,8 @@
 
   "metrics": {
     "test_set": {
-      "accuracy": 0.76,
-      "f1_score": 0.73,
-      "precision": 0.71,
-      "recall": 0.76,
-      "roc_auc": 0.81
+      "accuracy": 0.62,
+      "f1_score": 0.55
     }
   },
 
@@ -43,7 +40,7 @@
   ],
 
   "limitations": [
-    "Modell basiert auf einem begrenzten Datensatz (N=137)",
+    "Modell basiert auf einem begrenzten Datensatz (N=235)",
     "Nicht validiert außerhalb der Trainingspopulation",
     "Vorhersagen sind unterstützende Hinweise, keine deterministischen Ergebnisse",
     "Mögliche Biases in Bezug auf Altersgruppen, Geschlecht und Art des Hörverlusts",
