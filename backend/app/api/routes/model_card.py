@@ -106,8 +106,10 @@ def _render_model_card_markdown_de() -> str:
             card.metrics.roc_auc,
         ]
     ):
+        dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
+        ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
-        metrics_section += "**Trainings-/Test-Set:** 80/20 Split (N=137) | **Metriken auf Testdaten:**\n\n"
+        metrics_section += f"**Trainings-/Test-Set:** 80/20 Split ({ds_label}) | **Metriken auf Testdaten:**\n\n"
 
         idx = 1
         if card.metrics.accuracy:
@@ -152,8 +154,15 @@ def _render_model_card_markdown_de() -> str:
     # Build model description section
     model_description = "\n## 🤖 Modellbeschreibung\n\n"
     model_description += "**Random Forest Classifier:** Ensemble von Entscheidungsbäumen, nicht-linear, robust gegenüber Ausreißern und geeignet für heterogene Patient:innenmerkmale\n\n"
-    model_description += "- **Trainingsdaten:** Pseudonymisierte Beispiel-Patient:innendaten (keine echten Patient:innen)\n"
-    model_description += "- **Datensatzgröße:** N=137 Beispieldatensätze\n"
+    # Use training description and dataset size from JSON metadata when available
+    training_desc = None
+    dataset_size = None
+    if getattr(card, "metadata", None):
+        training_desc = card.metadata.get("training_description")
+        dataset_size = card.metadata.get("dataset_size")
+
+    model_description += f"- **Trainingsdaten:** {training_desc or 'Pseudonymisierte Beispiel-Patient:innendaten (keine echten Patient:innen)'}\n"
+    model_description += f"- **Datensatzgröße:** N={dataset_size if dataset_size is not None else '??'}\n"
     model_description += "- **Train/Test Split:** 80/20 (stratifiziert)\n"
 
     return f"""\
@@ -216,10 +225,10 @@ def _render_model_card_markdown_en() -> str:
             card.metrics.roc_auc,
         ]
     ):
+        dataset_size = card.metadata.get("dataset_size") if getattr(card, "metadata", None) else None
+        ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
-        metrics_section += (
-            "**Training/Test Set:** 80/20 split (N=137) | **Metrics on test data:**\n\n"
-        )
+        metrics_section += f"**Training/Test Set:** 80/20 split ({ds_label}) | **Metrics on test data:**\n\n"
 
         idx = 1
         if card.metrics.accuracy:
@@ -278,10 +287,14 @@ def _render_model_card_markdown_en() -> str:
     # Build model description section
     model_description = "\n## 🤖 Model Description\n\n"
     model_description += "**Random Forest Classifier:** Ensemble of decision trees, non-linear, robust to outliers and suitable for heterogeneous patient characteristics\n\n"
-    model_description += (
-        "- **Training Data:** Pseudonymized example patient data (not real patients)\n"
-    )
-    model_description += "- **Dataset Size:** N=137 patients\n"
+    training_desc = None
+    dataset_size = None
+    if getattr(card, "metadata", None):
+        training_desc = card.metadata.get("training_description")
+        dataset_size = card.metadata.get("dataset_size")
+
+    model_description += f"- **Training Data:** {training_desc or 'Pseudonymized example patient data (not real patients)'}\n"
+    model_description += f"- **Dataset Size:** N={dataset_size if dataset_size is not None else '??'} patients\n"
     model_description += "- **Train/Test Split:** 80/20 (stratified)\n"
 
     # Translate intended use
