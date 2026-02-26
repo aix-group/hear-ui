@@ -311,8 +311,10 @@ def _render_model_card_markdown_en() -> str:
         "Patients under 18 years of age",
     ]
 
+    # Use dataset size where possible; fall back to a generic phrasing
+    ds = dataset_size if dataset_size is not None else '??'
     limitations_en = [
-        "Model is based on a limited dataset (N=137)",
+        f"Model is based on a limited dataset (N={ds})",
         "Not validated outside the training population (University Hospital Essen)",
         "Predictions are supportive indicators, not deterministic results",
         "Possible biases regarding age groups, gender, and type of hearing loss",
