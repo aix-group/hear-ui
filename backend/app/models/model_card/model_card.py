@@ -124,6 +124,10 @@ def load_model_card() -> ModelCard:
             "training_description": cfg.get("ethical_considerations", {}).get(
                 "privacy"
             ),
+            "training_description_en": cfg.get("ethical_considerations", {}).get(
+                "privacy_en"
+            ),
+            "hyperparameters": cfg.get("training", {}).get("hyperparameters", {}),
             "config_file": config_path.name,
         },
     )

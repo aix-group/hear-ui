@@ -22,7 +22,6 @@
       "prediction_subtitle": "Run and inspect model predictions.",
       "prediction_text": "Explore risk scores, model outputs and performance for your patients.",
       "prediction_image_alt": "Illustration representing risk prediction and analytics.",
-      "goto_predictions": "Go to Predictions",
       "welcome_text": "Welcome to Hear-UI, a project for predicting hearing loss."
     },
     "form": {
@@ -42,7 +41,6 @@
         "created_with_id": "Patient created with id: {{id}}"
       },
       "minimum_fields_title": "Required fields",
-      "minimum_fields_banner": "Please fill in all required fields — this improves the accuracy of the prediction.",
       "minimum_fields_hint": "All fields marked with * are required: First name, Last name, Date of birth, Gender, Operated side, Primary language, Pre-operative symptoms (Taste, Tinnitus, Vertigo, Otorrhea, Headache), Imaging (Type and Findings), Objective measurements (OAE, LL, 4000 Hz), Hearing loss (operated and contralateral ear), Amplification (operated and contralateral ear), Hearing loss onset and start, Duration of severe hearing loss, Acquisition type, Etiology and Hearing disorder type.",
       "minimum_fields_error": "Please fill in the red-highlighted fields.",
       "required_fields_error": "Please fill in the red-highlighted fields.",
@@ -135,14 +133,9 @@
       },
       "explanations": {
         "title": "Factors influencing the prediction",
-        "subtitle": "Sorted by positive and negative influencing factors, grouped by category (e.g. Demographics, Imaging)."
-      },      "whatif": {
-        "toggle": "What-If Analysis",
-        "description": "Adjust individual features to see how the prediction changes – without modifying the stored patient data.",
-        "original": "Original",
-        "modified": "Modified",
-        "reset_all": "Reset all"
-      },      "feedback": {
+        "subtitle": "Sorted by positive and negative influencing factors, grouped by category (e.g. Demographics, Imaging). Red = increases probability, Blue = decreases probability."
+      },
+      "feedback": {
         "question": "Do you agree with the AI prediction?",
         "agree": "Agree",
         "disagree": "Disagree",
@@ -287,7 +280,7 @@
           "title": "Model Description",
           "description": "Random Forest Classifier: Ensemble of decision trees, non-linear, robust predictions for heterogeneous patient characteristics",
           "training_data": "Training Data",
-          "training_data_value": "Anonymized real patient data (for ethical considerations, only dummy patients are displayed in the UI)",
+          "training_data_value": "Anonymized patient data",
           "train_test_split": "Train/Test Split",
           "features": "Features",
           "features_value": "See feature list below"
@@ -306,7 +299,7 @@
         },
         "limitations": {
           "title": "Limitations",
-          "item_1": "Model based on limited dataset (N=235)",
+          "item_1": "Model based on limited dataset (N=137)",
           "item_2": "Not validated outside training population (University Hospital Essen)",
           "item_3": "Predictions are supportive evidence, not deterministic outcomes",
           "item_4": "Possible biases regarding age groups, gender, and type of hearing loss",
@@ -324,7 +317,7 @@
         },
         "performance": {
           "title": "Performance / Evaluation",
-          "dataset": "Training/Test Set: 80/20 Split (N=235)",
+          "dataset": "Training/Test Set: 80/20 Split (N=137)",
           "metrics_title": "Metrics (on test data)",
           "accuracy": "Accuracy",
           "roc_auc": "ROC-AUC",
@@ -363,6 +356,58 @@
           "important_factors": "Most important factors: Age, onset of hearing loss, CI type, imaging findings, hearing loss operated ear",
           "visualization": "Visualization: Interactive waterfall and force plots in the frontend enable traceability and critical evaluation of each prediction"
         },
+        "hyperparameters": {
+          "title": "Hyperparameters",
+          "summary": "n_estimators=100 · max_depth=unlimited · max_features=log2 · min_samples_split=10 · min_samples_leaf=2",
+          "labels": {
+            "n_estimators": "Number of Trees",
+            "max_depth": "Maximum Tree Depth",
+            "max_features": "Features per Split",
+            "min_samples_split": "Min. Samples to Split",
+            "min_samples_leaf": "Min. Samples per Leaf",
+            "class_weight": "Class Weighting",
+            "random_state": "Random Seed"
+          },
+          "descs": {
+            "n_estimators": "Number of decision trees in the ensemble – more trees improves stability",
+            "max_depth": "Maximum depth of each tree (unlimited = fully grown, no early stopping)",
+            "max_features": "Randomly selected features per split (log2 of total feature count)",
+            "min_samples_split": "Minimum data points required to split an internal node",
+            "min_samples_leaf": "Minimum data points required in a leaf (end) node",
+            "class_weight": "Automatic weighting for class imbalance – rare classes receive higher weight",
+            "random_state": "Random seed for fully reproducible results on every training run"
+          }
+        },
+        "deployed": "Deployed",
+        "stats": {
+          "patients": "Patients",
+          "features": "Features",
+          "training_date": "Training Date",
+          "validation": "Validation"
+        },
+        "metrics_hint": "Test set metrics · Values are for guidance only, not the sole basis for decisions.",
+        "tabs": {
+          "use": "Usage",
+          "limits": "Limitations",
+          "recs": "Recommendations",
+          "ethics": "Ethics",
+          "features": "Features",
+          "xai": "XAI"
+        },
+        "intended_use_title": "Intended Use",
+        "not_intended_title": "Not Intended For",
+        "ethics_labels": {
+          "fairness": "Fairness",
+          "privacy": "Data Privacy",
+          "transparency": "Transparency"
+        },
+        "changelog_title": "Changelog",
+        "status_active": "active",
+        "metrics": {
+          "accuracy": "Accuracy",
+          "f1": "F1-Score"
+        },
+        "performance_title": "Performance / Evaluation",
         "contact": {}
       }
     },

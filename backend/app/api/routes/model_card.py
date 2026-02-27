@@ -35,16 +35,16 @@ FEATURE_TRANSLATIONS_DE_EN: dict[str, str] = {
     "Objektive Messungen.LL...": "LL",
     "Objektive Messungen.4000 Hz...": "4000 Hz",
     # Hearing history & diagnosis
-    "Diagnose.Höranamnese.Hörminderung operiertes Ohr...": "Hearing Loss (Operated Ear)",
-    "Diagnose.Höranamnese.Versorgung operiertes Ohr...": "Hearing Aid / Device – Operated Ear",
-    "Diagnose.Höranamnese.Zeitpunkt des Hörverlusts (OP-Ohr)...": "Onset Time of Hearing Loss (Operated Ear)",
+    "Diagnose.Höranamnese.Hörminderung operiertes Ohr...": "Hearing Loss",
+    "Diagnose.Höranamnese.Versorgung operiertes Ohr...": "Hearing Aid / Device",
+    "Diagnose.Höranamnese.Zeitpunkt des Hörverlusts (OP-Ohr)...": "Onset Time of Hearing Loss",
     "Diagnose.Höranamnese.Erwerbsart...": "Hearing Loss Acquisition Type",
-    "Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)...": "Onset of Hearing Loss (Operated Ear)",
-    "Diagnose.Höranamnese.Hochgradige Hörminderung oder Taubheit (OP-Ohr)...": "Severe Hearing Loss or Deafness (Operated Ear)",
+    "Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)...": "Onset of Hearing Loss",
+    "Diagnose.Höranamnese.Hochgradige Hörminderung oder Taubheit (OP-Ohr)...": "Severe Hearing Loss or Deafness",
     "Diagnose.Höranamnese.Ursache....Ursache...": "Etiology / Cause of Hearing Loss",
     "Diagnose.Höranamnese.Art der Hörstörung...": "Type of Hearing Disorder",
-    "Diagnose.Höranamnese.Hörminderung Gegenohr...": "Hearing Loss (Contralateral)",
-    "Diagnose.Höranamnese.Versorgung Gegenohr...": "Hearing Device (Contralateral)",
+    "Diagnose.Höranamnese.Hörminderung Gegenohr...": "Hearing Loss",
+    "Diagnose.Höranamnese.Versorgung Gegenohr...": "Hearing Device",
     # Treatment & CI implantation
     "Behandlung/OP.CI Implantation": "CI Implantation / Treatment",
     # Outcome
@@ -65,26 +65,26 @@ FEATURE_DISPLAY_NAMES_DE: dict[str, str] = {
     "non-verbal": "Non-verbal",
     "Eltern m. Schwerhörigkeit": "Eltern m. Schwerhörigkeit",
     "Geschwister m. SH": "Geschwister m. Schwerhörigkeit",
-    "Symptome präoperativ.Geschmack...": "Geschmacksstörung (präop.)",
-    "Symptome präoperativ.Tinnitus...": "Tinnitus (präop.)",
-    "Symptome präoperativ.Schwindel...": "Schwindel (präop.)",
-    "Symptome präoperativ.Otorrhoe...": "Otorrhoe (präop.)",
-    "Symptome präoperativ.Kopfschmerzen...": "Kopfschmerzen (präop.)",
+    "Symptome präoperativ.Geschmack...": "Geschmacksstörung",
+    "Symptome präoperativ.Tinnitus...": "Tinnitus",
+    "Symptome präoperativ.Schwindel...": "Schwindel",
+    "Symptome präoperativ.Otorrhoe...": "Otorrhoe",
+    "Symptome präoperativ.Kopfschmerzen...": "Kopfschmerzen",
     "Bildgebung, präoperativ.Typ...": "Bildgebung: Typ",
     "Bildgebung, präoperativ.Befunde...": "Bildgebung: Befund",
     "Objektive Messungen.OAE (TEOAE/DPOAE)...": "OAE",
     "Objektive Messungen.LL...": "LL",
     "Objektive Messungen.4000 Hz...": "4000 Hz",
-    "Diagnose.Höranamnese.Hörminderung operiertes Ohr...": "Hörminderung (operiertes Ohr)",
-    "Diagnose.Höranamnese.Versorgung operiertes Ohr...": "Versorgung operiertes Ohr",
-    "Diagnose.Höranamnese.Zeitpunkt des Hörverlusts (OP-Ohr)...": "Zeitpunkt des Hörverlusts (OP-Ohr)",
+    "Diagnose.Höranamnese.Hörminderung operiertes Ohr...": "Hörminderung",
+    "Diagnose.Höranamnese.Versorgung operiertes Ohr...": "Versorgung",
+    "Diagnose.Höranamnese.Zeitpunkt des Hörverlusts (OP-Ohr)...": "Zeitpunkt des Hörverlusts",
     "Diagnose.Höranamnese.Erwerbsart...": "Erwerbsart",
-    "Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)...": "Beginn der Hörminderung (OP-Ohr)",
-    "Diagnose.Höranamnese.Hochgradige Hörminderung oder Taubheit (OP-Ohr)...": "Hochgradige Hörminderung / Taubheit (OP-Ohr)",
-    "Diagnose.Höranamnese.Ursache....Ursache...": "Diagnose.Höranamnese.Ursache",
+    "Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)...": "Beginn der Hörminderung",
+    "Diagnose.Höranamnese.Hochgradige Hörminderung oder Taubheit (OP-Ohr)...": "Hochgradige Hörminderung / Taubheit",
+    "Diagnose.Höranamnese.Ursache....Ursache...": "Ursache der Hörminderung",
     "Diagnose.Höranamnese.Art der Hörstörung...": "Art der Hörstörung",
-    "Diagnose.Höranamnese.Hörminderung Gegenohr...": "Hörminderung (Gegenohr)",
-    "Diagnose.Höranamnese.Versorgung Gegenohr...": "Versorgung (Gegenohr)",
+    "Diagnose.Höranamnese.Hörminderung Gegenohr...": "Hörminderung",
+    "Diagnose.Höranamnese.Versorgung Gegenohr...": "Versorgung",
     "Behandlung/OP.CI Implantation": "Behandlung/OP.CI Implantation",
     "outcome_measurments.pre.measure.": "Outcome.Präoperativ",
     "abstand": "Outcome.Abstand (Tage)",
@@ -94,8 +94,51 @@ FEATURE_DISPLAY_NAMES_DE: dict[str, str] = {
 def _render_model_card_markdown_de() -> str:
     """Build a German Markdown string from the loaded ModelCard."""
     card = load_model_card()
+    meta = card.metadata or {}
 
-    # Build metrics section only if metrics are available
+    dataset_size = meta.get("dataset_size")
+    ds_label = f"N={dataset_size}" if dataset_size else "N=?"
+    features_count = meta.get("features_count") or len(card.features)
+    training_date = meta.get("training_date", "")
+    validation_strategy = meta.get("validation_strategy", "80/20 Stratifiziert")
+    training_desc = meta.get("training_description") or "Gemäß DSGVO pseudonymisiert"
+    hyperparams: dict = meta.get("hyperparameters") or {}
+    ethical_fairness = meta.get("ethical_fairness", "")
+    ethical_transparency = meta.get("ethical_transparency", "")
+    changelog = meta.get("changelog", "")
+
+    # ── Model Description ──────────────────────────────────────────────────────
+    model_description = "\n## 🤖 Modellbeschreibung\n\n"
+    model_description += (
+        "**Random Forest Classifier** – Ensemble von Entscheidungsbäumen: "
+        "nicht-linear, robust gegenüber Ausreißern und geeignet für heterogene "
+        "klinische Merkmale.\n\n"
+    )
+    model_description += "| Eigenschaft | Wert |\n"
+    model_description += "|---|---|\n"
+    model_description += f"| Trainingsdaten | {training_desc} |\n"
+    model_description += f"| Datensatzgröße | {ds_label} Patient:innen |\n"
+    if training_date:
+        model_description += f"| Trainingsdatum | {training_date} |\n"
+    model_description += f"| Validierungsstrategie | {validation_strategy} |\n"
+    model_description += f"| Anzahl Merkmale | {features_count} |\n"
+    model_description += "\n"
+
+    # ── Hyperparameter table ───────────────────────────────────────────────────
+    if hyperparams:
+        max_depth_val = hyperparams.get("max_depth")
+        max_depth_disp = str(max_depth_val) if max_depth_val is not None else "unbegrenzt"
+        model_description += "### ⚙️ Hyperparameter\n\n"
+        model_description += "| Parameter | Wert |\n"
+        model_description += "|---|---|\n"
+        model_description += f"| n\\_estimators | {hyperparams.get('n_estimators', '?')} |\n"
+        model_description += f"| max\\_depth | {max_depth_disp} |\n"
+        model_description += f"| min\\_samples\\_split | {hyperparams.get('min_samples_split', '?')} |\n"
+        model_description += f"| class\\_weight | {hyperparams.get('class_weight', '?')} |\n"
+        model_description += f"| random\\_state | {hyperparams.get('random_state', '?')} |\n"
+        model_description += "\n"
+
+    # ── Metrics table ──────────────────────────────────────────────────────────
     metrics_section = ""
     if card.metrics and any(
         [
@@ -106,67 +149,47 @@ def _render_model_card_markdown_de() -> str:
             card.metrics.roc_auc,
         ]
     ):
-        dataset_size = (
-            card.metadata.get("dataset_size")
-            if getattr(card, "metadata", None)
-            else None
-        )
-        ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
-        # Render as a vertical numbered list: 1) Train/Test set, 2) Metrics combined
-        metrics_section += f'1. <strong class="text-primary">Trainings-/Test-Set:</strong> 80/20 Split ({ds_label})\n'
-
-        parts: list[str] = []
+        metrics_section += f"*Bewertungsgrundlage: 80/20 Train-Test-Split ({ds_label})*\n\n"
+        metrics_section += "| Metrik | Ergebnis (Testsatz) |\n"
+        metrics_section += "|---|---|\n"
         if card.metrics.accuracy is not None:
-            parts.append(
-                f'<strong class="text-primary">Genauigkeit:</strong> {card.metrics.accuracy:.2%}'
-            )
-        if card.metrics.roc_auc is not None:
-            parts.append(f"**ROC-AUC:** {card.metrics.roc_auc:.2f}")
-        if card.metrics.recall is not None:
-            parts.append(f"**Sensitivität (Recall):** {card.metrics.recall:.2%}")
-        if card.metrics.precision is not None:
-            parts.append(f"**Spezifität (Precision):** {card.metrics.precision:.2%}")
+            metrics_section += f"| **Genauigkeit (Accuracy)** | **{card.metrics.accuracy:.2%}** |\n"
         if card.metrics.f1_score is not None:
-            parts.append(
-                f'<strong class="text-primary">F1-Score:</strong> {card.metrics.f1_score:.2f}'
-            )
+            metrics_section += f"| **F1-Score** | **{card.metrics.f1_score:.2f}** |\n"
+        if card.metrics.roc_auc is not None:
+            metrics_section += f"| ROC-AUC | {card.metrics.roc_auc:.2f} |\n"
+        if card.metrics.recall is not None:
+            metrics_section += f"| Sensitivität (Recall) | {card.metrics.recall:.2%} |\n"
+        if card.metrics.precision is not None:
+            metrics_section += f"| Spezifität (Precision) | {card.metrics.precision:.2%} |\n"
+        metrics_section += "\n> **Hinweis:** Zahlen dienen zur Orientierung und ersetzen nicht die klinische Urteilsfähigkeit.\n"
 
-        metrics_combined = " | ".join(parts) if parts else "Metriken nicht verfügbar"
-        metrics_section += f"2. {metrics_combined}\n\n"
-        metrics_section += "\n> **Hinweis:** Zahlen dienen zur Orientierung, nicht zur alleinigen Entscheidungsfindung.\n"
-
-    # Group features
+    # ── Features ───────────────────────────────────────────────────────────────
     feature_groups = _group_features(card.features)
-
     features_section = "\n## 📋 Merkmale\n\n"
     features_section += f"**Gesamt: {len(card.features)} klinische Merkmale**\n\n"
-
     for group_name, group_features in feature_groups.items():
         features_section += f"### {group_name}\n\n"
-
-        # Show all features as numbered list (renders as chips via CSS)
         for i, feature in enumerate(group_features, 1):
             de_name = FEATURE_DISPLAY_NAMES_DE.get(
                 feature.name, feature.name.replace("...", "").strip()
             )
             features_section += f"{i}. {de_name}\n"
-
         features_section += "\n"
 
-    # Build model description section
-    model_description = "\n## 🤖 Modellbeschreibung\n\n"
-    model_description += "**Random Forest Classifier:** Ensemble von Entscheidungsbäumen, nicht-linear, robust gegenüber Ausreißern und geeignet für heterogene Patient:innenmerkmale\n\n"
-    # Use training description and dataset size from JSON metadata when available
-    training_desc = None
-    dataset_size = None
-    if getattr(card, "metadata", None):
-        training_desc = card.metadata.get("training_description")
-        dataset_size = card.metadata.get("dataset_size")
+    # ── Ethical considerations ─────────────────────────────────────────────────
+    ethics_section = "\n## 🛡️ Ethische Aspekte\n\n"
+    if ethical_fairness:
+        ethics_section += f"- **Fairness:** {ethical_fairness}\n"
+    ethics_section += f"- **Datenschutz:** {training_desc}\n"
+    if ethical_transparency:
+        ethics_section += f"- **Transparenz:** {ethical_transparency}\n"
 
-    model_description += f"- **Trainingsdaten:** {training_desc or 'Pseudonymisierte Beispiel-Patient:innendaten (keine echten Patient:innen)'}\n"
-    model_description += f"- **Datensatzgröße:** N={dataset_size if dataset_size is not None else '??'}\n"
-    model_description += "- **Train/Test Split:** 80/20 (stratifiziert)\n"
+    # ── Changelog ─────────────────────────────────────────────────────────────
+    changelog_section = ""
+    if changelog:
+        changelog_section = f"\n---\n\n## 📝 Versionshinweis\n\n> {changelog}\n"
 
     return f"""\
 # HEAR CI Prediction Model
@@ -204,20 +227,65 @@ def _render_model_card_markdown_de() -> str:
 ---
 {features_section}
 ---
+{ethics_section}
+---
 
 ## 🧠 Interpretierbarkeit / XAI
 
-- **SHAP Feature Importance** wird genutzt, um den Einfluss jeder Variable auf die Vorhersage zu bewerten
-- **Wichtigste Einflussfaktoren:** Alter, Beginn der Hörminderung, CI-Typ, Bildgebungsergebnisse, Hörverlust OP-Ohr
-- **Visualisierung:** Interaktive Wasserfall- und Force-Plots im Frontend ermöglichen Nachvollziehbarkeit und kritische Bewertung jeder Vorhersage
-"""
+- **SHAP Feature Importance** bewertet den Beitrag jedes Merkmals zur Vorhersage
+- **Einflussfaktoren:** Alter, Beginn der Hörminderung, CI-Typ, Bildgebung, Hörverlust OP-Ohr
+- **Visualisierung:** Interaktive Wasserfall- und Force-Plots ermöglichen eine nachvollziehbare Bewertung jeder Vorhersage
+{changelog_section}"""
 
 
 def _render_model_card_markdown_en() -> str:
     """Build an English Markdown string from the loaded ModelCard."""
     card = load_model_card()
+    meta = card.metadata or {}
 
-    # Build metrics section only if metrics are available
+    dataset_size = meta.get("dataset_size")
+    ds_label = f"N={dataset_size}" if dataset_size else "N=?"
+    features_count = meta.get("features_count") or len(card.features)
+    training_date = meta.get("training_date", "")
+    validation_strategy = meta.get("validation_strategy", "80/20 Stratified")
+    training_desc = meta.get("training_description") or "Pseudonymised in accordance with GDPR"
+    hyperparams: dict = meta.get("hyperparameters") or {}
+    ethical_fairness = meta.get("ethical_fairness", "")
+    ethical_transparency = meta.get("ethical_transparency", "")
+    changelog = meta.get("changelog", "")
+
+    # ── Model Description ──────────────────────────────────────────────────────
+    model_description = "\n## 🤖 Model Description\n\n"
+    model_description += (
+        "**Random Forest Classifier** – Ensemble of decision trees: "
+        "non-linear, robust to outliers and suitable for heterogeneous "
+        "clinical features.\n\n"
+    )
+    model_description += "| Property | Value |\n"
+    model_description += "|---|---|\n"
+    model_description += f"| Training Data | {training_desc} |\n"
+    model_description += f"| Dataset Size | {ds_label} patients |\n"
+    if training_date:
+        model_description += f"| Training Date | {training_date} |\n"
+    model_description += f"| Validation Strategy | {validation_strategy} |\n"
+    model_description += f"| Number of Features | {features_count} |\n"
+    model_description += "\n"
+
+    # ── Hyperparameter table ───────────────────────────────────────────────────
+    if hyperparams:
+        max_depth_val = hyperparams.get("max_depth")
+        max_depth_disp = str(max_depth_val) if max_depth_val is not None else "unlimited"
+        model_description += "### ⚙️ Hyperparameters\n\n"
+        model_description += "| Parameter | Value |\n"
+        model_description += "|---|---|\n"
+        model_description += f"| n\\_estimators | {hyperparams.get('n_estimators', '?')} |\n"
+        model_description += f"| max\\_depth | {max_depth_disp} |\n"
+        model_description += f"| min\\_samples\\_split | {hyperparams.get('min_samples_split', '?')} |\n"
+        model_description += f"| class\\_weight | {hyperparams.get('class_weight', '?')} |\n"
+        model_description += f"| random\\_state | {hyperparams.get('random_state', '?')} |\n"
+        model_description += "\n"
+
+    # ── Metrics table ──────────────────────────────────────────────────────────
     metrics_section = ""
     if card.metrics and any(
         [
@@ -228,44 +296,25 @@ def _render_model_card_markdown_en() -> str:
             card.metrics.roc_auc,
         ]
     ):
-        dataset_size = (
-            card.metadata.get("dataset_size")
-            if getattr(card, "metadata", None)
-            else None
-        )
-        ds_label = f"N={dataset_size}" if dataset_size else "N=?"
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
-        # Render as vertical numbered list: 1) Train/Test set, 2) Metrics combined
-        metrics_section += f'1. <strong class="text-primary">Training/Test Set:</strong> 80/20 split ({ds_label})\n\n'
-
-        parts_en: list[str] = []
+        metrics_section += f"*Evaluation basis: 80/20 train-test split ({ds_label})*\n\n"
+        metrics_section += "| Metric | Result (Test Set) |\n"
+        metrics_section += "|---|---|\n"
         if card.metrics.accuracy is not None:
-            parts_en.append(
-                f'<strong class="text-primary">Accuracy:</strong> {card.metrics.accuracy:.2%}'
-            )
-        if card.metrics.roc_auc is not None:
-            parts_en.append(f"**ROC-AUC:** {card.metrics.roc_auc:.2f}")
-        if card.metrics.recall is not None:
-            parts_en.append(f"**Sensitivity (Recall):** {card.metrics.recall:.2%}")
-        if card.metrics.precision is not None:
-            parts_en.append(
-                f"**Specificity (Precision):** {card.metrics.precision:.2%}"
-            )
+            metrics_section += f"| **Accuracy** | **{card.metrics.accuracy:.2%}** |\n"
         if card.metrics.f1_score is not None:
-            parts_en.append(
-                f'<strong class="text-primary">F1-Score:</strong> {card.metrics.f1_score:.2f}'
-            )
+            metrics_section += f"| **F1-Score** | **{card.metrics.f1_score:.2f}** |\n"
+        if card.metrics.roc_auc is not None:
+            metrics_section += f"| ROC-AUC | {card.metrics.roc_auc:.2f} |\n"
+        if card.metrics.recall is not None:
+            metrics_section += f"| Sensitivity (Recall) | {card.metrics.recall:.2%} |\n"
+        if card.metrics.precision is not None:
+            metrics_section += f"| Specificity (Precision) | {card.metrics.precision:.2%} |\n"
+        metrics_section += "\n> **Note:** These figures are for guidance only and should not be used as the sole basis for clinical decision-making.\n"
 
-        metrics_combined_en = (
-            " | ".join(parts_en) if parts_en else "Metrics not available"
-        )
-        metrics_section += f"2. {metrics_combined_en}\n\n"
-        metrics_section += "\n> **Note:** These figures are for guidance only and should not be used as the sole basis for decision-making.\n"
-
-    # Group features
+    # ── Features ───────────────────────────────────────────────────────────────
     feature_groups = _group_features(card.features)
 
-    # Map German group names to English
     group_name_map = {
         "👤 Demografie": "👤 Demographics",
         "🗣️ Sprache & Kommunikation": "🗣️ Language & Communication",
@@ -284,44 +333,38 @@ def _render_model_card_markdown_en() -> str:
     for group_name, group_features in feature_groups.items():
         en_group_name = group_name_map.get(group_name, group_name)
         features_section += f"### {en_group_name}\n\n"
-
-        # Show all features with English names
         for i, feature in enumerate(group_features, 1):
             en_name = FEATURE_TRANSLATIONS_DE_EN.get(
                 feature.name, feature.name.replace("...", "").strip()
             )
             features_section += f"{i}. {en_name}\n"
-
         features_section += "\n"
 
-    # Build model description section
-    model_description = "\n## 🤖 Model Description\n\n"
-    model_description += "**Random Forest Classifier:** Ensemble of decision trees, non-linear, robust to outliers and suitable for heterogeneous patient characteristics\n\n"
-    training_desc = None
-    dataset_size = None
-    if getattr(card, "metadata", None):
-        training_desc = card.metadata.get("training_description")
-        dataset_size = card.metadata.get("dataset_size")
+    # ── Ethical considerations ─────────────────────────────────────────────────
+    ethics_section = "\n## 🛡️ Ethical Considerations\n\n"
+    if ethical_fairness:
+        ethics_section += f"- **Fairness:** {ethical_fairness}\n"
+    ethics_section += f"- **Privacy:** {training_desc}\n"
+    if ethical_transparency:
+        ethics_section += f"- **Transparency:** {ethical_transparency}\n"
 
-    model_description += f"- **Training Data:** {training_desc or 'Pseudonymized example patient data (not real patients)'}\n"
-    model_description += f"- **Dataset Size:** N={dataset_size if dataset_size is not None else '??'} patients\n"
-    model_description += "- **Train/Test Split:** 80/20 (stratified)\n"
+    # ── Changelog ─────────────────────────────────────────────────────────────
+    changelog_section = ""
+    if changelog:
+        changelog_section = f"\n---\n\n## 📝 Version Notes\n\n> {changelog}\n"
 
-    # Translate intended use
+    # ── Static lists (localised hardcoded) ────────────────────────────────────
     intended_use_en = [
         "Support physicians in assessing the probability of success of a cochlear implant",
         "Decision support tool for planning CI operations",
         "Educational tool for demonstrating XAI methods in clinical decision-making",
     ]
-
     not_intended_en = [
         "Autonomous clinical decisions without medical evaluation",
         "Use outside the validated patient population",
         "Legal or administrative decisions",
         "Patients under 18 years of age",
     ]
-
-    # Use dataset size where possible; fall back to a generic phrasing
     ds = dataset_size if dataset_size is not None else "??"
     limitations_en = [
         f"Model is based on a limited dataset (N={ds})",
@@ -332,7 +375,6 @@ def _render_model_card_markdown_en() -> str:
         "Predictions with missing or incomplete data are less reliable",
         "SHAP interpretations show relative influences, not absolute causality",
     ]
-
     recommendations_en = [
         "Use only as a support tool – human medical judgment takes precedence",
         "Always interpret results in clinical context and considering patient history",
@@ -377,13 +419,15 @@ def _render_model_card_markdown_en() -> str:
 ---
 {features_section}
 ---
+{ethics_section}
+---
 
 ## 🧠 Interpretability / XAI
 
-- **SHAP Feature Importance** is used to evaluate the influence of each variable on the prediction
-- **Most important factors:** Age, Onset of hearing loss, CI type, Imaging results, Hearing loss operated ear
-- **Visualization:** Interactive waterfall and force plots in the frontend enable traceability and critical evaluation of each prediction
-"""
+- **SHAP Feature Importance** evaluates each feature's contribution to the prediction
+- **Key factors:** Age, Onset of hearing loss, CI type, Imaging results, Hearing loss operated ear
+- **Visualization:** Interactive waterfall and force plots enable traceability and critical evaluation of each prediction
+{changelog_section}"""
 
 
 def _group_features(features: list) -> dict[str, list]:
@@ -448,6 +492,106 @@ def _group_features(features: list) -> dict[str, list]:
 
     # Remove empty groups
     return {k: v for k, v in groups.items() if v}
+
+
+def _build_feature_groups_json(lang: str) -> dict:
+    """Build grouped features dict for the JSON endpoint."""
+    card = load_model_card()
+    feature_groups = _group_features(card.features)
+    total = len(card.features)
+
+    group_name_map_en = {
+        "👤 Demografie": "👤 Demographics",
+        "🗣️ Sprache & Kommunikation": "🗣️ Language & Communication",
+        "👨‍👩‍👧 Familienanamnese": "👨‍👩‍👧 Family History",
+        "🩺 Präoperative Symptome": "🩺 Preoperative Symptoms",
+        "🔬 Bildgebung": "🔬 Imaging",
+        "📊 Objektive Messungen": "📊 Objective Measurements",
+        "👂 Hörstatus – Operiertes Ohr": "👂 Hearing Status – Operated Ear",
+        "👂 Hörstatus – Gegenohr": "👂 Hearing Status – Contralateral Ear",
+        "⚕️ Behandlung & Outcome": "⚕️ Treatment & Outcome",
+    }
+
+    result: dict[str, list[str]] = {}
+    for group_name, features in feature_groups.items():
+        display_group = group_name_map_en.get(group_name, group_name) if lang == "en" else group_name
+        names: list[str] = []
+        for f in features:
+            if lang == "en":
+                names.append(FEATURE_TRANSLATIONS_DE_EN.get(f.name, f.name.replace("...", "").strip()))
+            else:
+                names.append(FEATURE_DISPLAY_NAMES_DE.get(f.name, f.name.replace("...", "").strip()))
+        result[display_group] = names
+
+    return {"groups": result, "total": total}
+
+
+@router.get("/json")
+def get_model_card_json(lang: str = Query("de", description="Language: 'de' or 'en'")):
+    """Return structured model card JSON, with text fields in the requested language."""
+    import json, pathlib, copy
+    json_path = pathlib.Path(__file__).parent.parent.parent / "config" / "model_cards" / "v3_randomforest_2026-02-17.json"
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+
+    # ── Feature groups & XAI (both languages) ──────────────────────────────
+    feature_data = _build_feature_groups_json(lang.lower())
+
+    if lang.lower() != "en":
+        data["name"] = "HEAR CI Prognosemodell"
+        data["status"] = "aktiv"
+        data["feature_groups"] = feature_data["groups"]
+        data["features_total"] = feature_data["total"]
+        return data
+
+    # ── English overrides ──────────────────────────────────────────────────────
+    en = copy.deepcopy(data)
+    en["name"] = "HEAR CI Prediction Model"
+    en["model_type"] = "RandomForestClassifier"
+    en["status"] = "active"
+
+    en["training"]["validation_strategy"] = "Stratified 80/20 train test split"
+
+    en["intended_use"] = [
+        "Support physicians in estimating the probability of cochlear implant success",
+        "Decision support tool for planning CI surgeries",
+        "Educational tool to demonstrate XAI methods in clinical decision-making",
+    ]
+    en["not_intended_for"] = [
+        "Autonomous clinical decisions without medical evaluation",
+        "Use outside the validated patient population",
+        "Legal or administrative decisions",
+        "Patients under 18 years of age",
+    ]
+    en["limitations"] = [
+        "Model is based on a limited dataset (N=235)",
+        "Not validated outside the training population",
+        "Predictions are supportive indicators, not deterministic outcomes",
+        "Possible biases regarding age groups, gender and type of hearing loss",
+        "Model performance may vary for edge cases not represented in training",
+        "Predictions less reliable with missing or incomplete data",
+        "SHAP interpretations show relative influence, not absolute causality",
+    ]
+    en["recommendations"] = [
+        "Use only as a support tool – human medical judgment takes precedence",
+        "Always interpret results in clinical context and considering patient history",
+        "Use SHAP explanations to understand and critically evaluate predictions",
+        "Regular evaluation and model updates recommended (e.g., every 6 months)",
+        "For unexpected predictions: manually verify input data",
+    ]
+    en["ethical_considerations"] = {
+        "fairness": "Model was tested for bias in age groups and gender. No significant discrimination detected.",
+        "privacy": "All patient data is pseudonymised in accordance with GDPR (sample data only, no real patients).",
+        "transparency": "SHAP explanations are provided for all predictions to ensure traceability.",
+    }
+    en["changelog"] = (
+        "Improved hyperparameters and class weighting for imbalanced data. "
+        "Accuracy improved from 0.74 (v2) to 0.76 (v3)."
+    )
+
+    en["feature_groups"] = feature_data["groups"]
+    en["features_total"] = feature_data["total"]
+
+    return en
 
 
 @router.get("", response_class=PlainTextResponse)

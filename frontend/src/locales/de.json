@@ -22,8 +22,7 @@
       "prediction_subtitle": "Modellvorhersagen anzeigen und analysieren.",
       "prediction_text": "Untersuchen Sie Risikowerte, Modellausgaben und Leistungskennzahlen für Ihre Patient:innen.",
       "prediction_image_alt": "Illustration für Risikoanalysen und Modellvorhersagen.",
-      "welcome_text": "Willkommen bei Hear-UI, einem Projekt zur Vorhersage von Hörverlust.",
-      "goto_predictions": "Zu den Vorhersagen"
+      "welcome_text": "Willkommen bei Hear-UI, einem Projekt zur Vorhersage von Hörverlust."
     },
     "form": {
       "title": "Neuen Patienten anlegen",
@@ -42,7 +41,6 @@
         "created_with_id": "Patient wurde erstellt (ID: {{id}})"
       },
       "minimum_fields_title": "Pflichtfelder",
-      "minimum_fields_banner": "Bitte füllen Sie alle Pflichtfelder aus — das verbessert die Genauigkeit der Vorhersage.",
       "minimum_fields_hint": "Alle mit * gekennzeichneten Felder sind Pflichtfelder und müssen ausgefüllt werden: Vorname, Nachname, Geburtsdatum, Geschlecht, operierte Seite, Primäre Sprache, Präoperative Symptome (Geschmack, Tinnitus, Schwindel, Otorrhoe, Kopfschmerzen), Bildgebung (Typ und Befund), Objektive Messungen (OAE, LL, 4000 Hz), Hörminderung (operiertes Ohr und Gegenohr), Versorgung (operiertes Ohr und Gegenohr), Zeitpunkt und Beginn des Hörverlusts, Dauer der schweren Hörminderung, Erwerbsart, Ursache und Art der Hörstörung.",
       "minimum_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
       "required_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
@@ -135,14 +133,7 @@
       },
       "explanations": {
         "title": "Faktoren, die die Vorhersage beeinflussen",
-        "subtitle": "Sortiert nach positiven und negativen Einflussfaktoren, gruppiert nach Kategorie (z.\u00a0B. Demografie, Bildgebung)."
-      },
-      "whatif": {
-        "toggle": "Was-wäre-wenn-Analyse",
-        "description": "Passen Sie einzelne Merkmale an und sehen Sie, wie sich die Vorhersage ändert – ohne die gespeicherten Patientendaten zu verändern.",
-        "original": "Original",
-        "modified": "Modifiziert",
-        "reset_all": "Alles zurücksetzen"
+        "subtitle": "Sortiert nach positiven und negativen Einflussfaktoren, gruppiert nach Kategorie (z.\u00a0B. Demografie, Bildgebung). Rot = erh\u00f6ht die Wahrscheinlichkeit, Blau = verringert die Wahrscheinlichkeit."
       },
       "feedback": {
         "question": "Stimmen Sie der KI-Vorhersage zu?",
@@ -271,7 +262,7 @@
           "title": "Modellbeschreibung",
           "description": "Random Forest Classifier: Ensemble von Entscheidungsbäumen, nicht-linear, robuste Vorhersagen bei heterogenen Patient:innenmerkmalen",
           "training_data": "Trainingsdaten",
-          "training_data_value": "Anonymisierte echte Patient:innendaten (aus ethischen Gründen werden in der UI nur Beispieldaten angezeigt)",
+          "training_data_value": "Anonymisierte Patientendaten",
           "train_test_split": "Train/Test Split",
           "features": "Features",
           "features_value": "Siehe Feature-Liste unten"
@@ -290,7 +281,7 @@
         },
         "limitations": {
           "title": "Limitations",
-          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=235)",
+          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=137)",
           "item_2": "Nicht validiert außerhalb der Trainingspopulation (Universitätsklinikum Essen)",
           "item_3": "Vorhersagen sind unterstützende Hinweise, keine deterministischen Ergebnisse",
           "item_4": "Mögliche Biases in Bezug auf Altersgruppen, Geschlecht und Art des Hörverlusts",
@@ -308,7 +299,7 @@
         },
         "performance": {
           "title": "Performance / Evaluation",
-          "dataset": "Trainings-/Test-Set: 80/20 Split (N=235)",
+          "dataset": "Trainings-/Test-Set: 80/20 Split (N=137)",
           "metrics_title": "Metriken (auf Testdaten)",
           "accuracy": "Accuracy",
           "roc_auc": "ROC-AUC",
@@ -347,6 +338,58 @@
           "important_factors": "Wichtigste Einflussfaktoren: Alter, Beginn der Hörminderung, CI-Typ, Bildgebungsergebnisse, Hörverlust OP-Ohr",
           "visualization": "Visualisierung: Interaktive Wasserfall- und Force-Plots im Frontend ermöglichen Nachvollziehbarkeit und kritische Bewertung jeder Vorhersage"
         },
+        "hyperparameters": {
+          "title": "Hyperparameter",
+          "summary": "n_estimators=100 · max_depth=unbegrenzt · max_features=log2 · min_samples_split=10 · min_samples_leaf=2",
+          "labels": {
+            "n_estimators": "Anzahl Bäume",
+            "max_depth": "Max. Baumtiefe",
+            "max_features": "Merkmale je Aufteilung",
+            "min_samples_split": "Min. Datenpunkte zum Aufteilen",
+            "min_samples_leaf": "Min. Datenpunkte pro Blatt",
+            "class_weight": "Klassengewichtung",
+            "random_state": "Zufalls-Seed"
+          },
+          "descs": {
+            "n_estimators": "Anzahl der Entscheidungsbäume im Ensemble – mehr Bäume erhöhen Stabilität",
+            "max_depth": "Max. Tiefe jedes Baums (unbegrenzt = vollständig ausgewachsen)",
+            "max_features": "Zufällig gewählte Merkmale je Knotenaufteilung (log2 der Gesamtmerkmalanzahl)",
+            "min_samples_split": "Mindestanzahl Datenpunkte, um einen Knoten weiter aufzuteilen",
+            "min_samples_leaf": "Mindestanzahl Datenpunkte in einem Endknoten",
+            "class_weight": "Automatische Gewichtung bei Klassenungleichgewicht – seltene Klassen erhalten mehr Gewicht",
+            "random_state": "Zufalls-Seed für vollständig reproduzierbare Trainingsergebnisse"
+          }
+        },
+        "deployed": "Bereitgestellt",
+        "stats": {
+          "patients": "Patient:innen",
+          "features": "Merkmale",
+          "training_date": "Trainingsdatum",
+          "validation": "Validierung"
+        },
+        "metrics_hint": "Testset-Metriken · Werte dienen zur Orientierung, nicht als alleinige Entscheidungsgrundlage.",
+        "tabs": {
+          "use": "Verwendung",
+          "limits": "Einschränkungen",
+          "recs": "Empfehlungen",
+          "ethics": "Ethik",
+          "features": "Merkmale",
+          "xai": "XAI"
+        },
+        "intended_use_title": "Bestimmungsgemäße Verwendung",
+        "not_intended_title": "Nicht vorgesehen für",
+        "ethics_labels": {
+          "fairness": "Fairness",
+          "privacy": "Datenschutz",
+          "transparency": "Transparenz"
+        },
+        "changelog_title": "Changelog",
+        "status_active": "aktiv",
+        "metrics": {
+          "accuracy": "Genauigkeit",
+          "f1": "F1-Wert"
+        },
+        "performance_title": "Leistung / Bewertung",
         "contact": {}
       }
     },

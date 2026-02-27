@@ -59,7 +59,7 @@
 
   "ethical_considerations": {
     "fairness": "Modell wurde auf Bias in Altersgruppen und Geschlecht geprüft. Keine signifikante Diskriminierung festgestellt.",
-    "privacy": "Trainingsdaten sind anonymisierte echte Patient:innendaten (gemäß DSGVO pseudonymisiert). Aus ethischen Gründen werden in der UI ausschließlich Beispieldaten (keine echten Patient:innen) angezeigt.",
+    "privacy": "Alle Patientendaten gemäß DSGVO pseudonymisiert (Beispieldaten, keine echten Patient:innen)",
     "transparency": "SHAP-Erklärungen für alle Vorhersagen zur Gewährleistung der Nachvollziehbarkeit"
   },
 
