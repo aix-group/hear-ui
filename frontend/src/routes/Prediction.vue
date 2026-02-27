@@ -18,6 +18,24 @@
         class="my-6"
       />
 
+      <!-- Out-of-scope / data-quality warnings -->
+      <v-row v-if="predictionWarnings.length > 0" class="mb-4" no-gutters>
+        <v-col cols="12">
+          <v-alert
+            v-for="(warn, i) in predictionWarnings"
+            :key="i"
+            type="warning"
+            variant="tonal"
+            density="compact"
+            class="mb-2"
+            icon="mdi-alert-circle-outline"
+            border="start"
+          >
+            {{ warn }}
+          </v-alert>
+        </v-col>
+      </v-row>
+
       <!-- Results -->
       <v-row
         justify="start"
@@ -147,6 +165,128 @@
         </v-col>
       </v-row>
 
+      <!-- What-If Analysis Panel -->
+      <v-row class="mt-2" no-gutters>
+        <v-col cols="12">
+          <v-btn
+            :prepend-icon="whatIfOpen ? 'mdi-chevron-up' : 'mdi-flask-outline'"
+            color="primary"
+            variant="tonal"
+            size="small"
+            class="mb-3"
+            @click="whatIfOpen = !whatIfOpen"
+          >
+            {{ $t('prediction.whatif.toggle') }}
+          </v-btn>
+
+          <v-expand-transition>
+            <v-card v-if="whatIfOpen" variant="outlined" color="primary" class="pa-4 whatif-card">
+              <div class="text-body-2 text-medium-emphasis mb-4">{{ $t('prediction.whatif.description') }}</div>
+
+              <!-- Feature overrides: wrap in form with autocomplete=off to suppress browser suggestion bubbles -->
+              <form autocomplete="off" @submit.prevent="">
+              <v-row dense>
+                <v-col
+                  v-for="feat in whatIfFeatures"
+                  :key="feat.rawKey"
+                  cols="12"
+                  sm="6"
+                  md="4"
+                >
+                  <!-- Numeric slider -->
+                  <template v-if="feat.inputType === 'number'">
+                    <div class="text-caption mb-1">{{ feat.label }}</div>
+                    <div class="whatif-control">
+                      <v-slider
+                        v-model="whatIfValues[feat.rawKey]"
+                        :min="feat.sliderMin"
+                        :max="feat.sliderMax"
+                        :step="feat.sliderStep"
+                        thumb-label
+                        color="primary"
+                        density="compact"
+                        hide-details
+                        style="flex:1"
+                        @update:model-value="onWhatIfChange"
+                      />
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="small" variant="plain" class="v-field__clear whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-reset-icon" size="14">mdi-close</v-icon>
+                      </v-btn>
+                    </div>
+                  </template>
+                  <!-- Categorical select -->
+                  <template v-else-if="feat.options">
+                    <div class="whatif-control">
+                      <v-select
+                        v-model="whatIfValues[feat.rawKey]"
+                        :label="feat.label"
+                        :items="feat.options"
+                        item-title="title"
+                        item-value="value"
+                        density="compact"
+                        variant="outlined"
+                        hide-details
+                        class="mb-2"
+                        autocomplete="off"
+                        no-filter
+                        style="flex:1"
+                        :menu-props="{ closeOnContentClick: true }"
+                        @update:model-value="onWhatIfChange"
+                      />
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="small" variant="plain" class="v-field__clear whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
+                        <v-icon class="whatif-reset-icon" size="14">mdi-close</v-icon>
+                      </v-btn>
+                    </div>
+                  </template>
+                </v-col>
+              </v-row>
+              </form>
+
+              <!-- Result comparison -->
+              <v-divider class="my-4" />
+              <div class="d-flex align-center ga-6 flex-wrap">
+                <div class="text-center">
+                  <div class="text-caption text-medium-emphasis">{{ $t('prediction.whatif.original') }}</div>
+                  <div class="text-h5 font-weight-bold" :class="recommended ? 'text-success' : 'text-error'">
+                    {{ (predictionResult * 100).toFixed(0) }}%
+                  </div>
+                </div>
+                <v-icon size="32" color="grey">mdi-arrow-right</v-icon>
+                <div class="text-center">
+                  <div class="text-caption text-medium-emphasis">{{ $t('prediction.whatif.modified') }}</div>
+                  <div v-if="whatIfLoading" class="text-h5">
+                    <v-progress-circular indeterminate size="28" width="2" color="primary"/>
+                  </div>
+                  <div
+                    v-else-if="whatIfPrediction !== null"
+                    class="text-h5 font-weight-bold"
+                    :class="whatIfPrediction > (threshold ?? 0.5) ? 'text-success' : 'text-error'"
+                  >
+                    {{ (whatIfPrediction * 100).toFixed(0) }}%
+                  </div>
+                  <div v-else class="text-h5 text-grey">—</div>
+                </div>
+                <div v-if="whatIfPrediction !== null" class="text-body-2">
+                  <v-chip
+                    :color="whatIfDelta > 0 ? 'success' : whatIfDelta < 0 ? 'error' : 'default'"
+                    size="small"
+                    variant="tonal"
+                  >
+                    {{ whatIfDelta > 0 ? '+' : '' }}{{ (whatIfDelta * 100).toFixed(1) }} Pp
+                  </v-chip>
+                </div>
+              </div>
+              <!-- Reset all overrides button (bottom-right) -->
+              <div class="whatif-reset-all">
+                <v-btn small color="error" variant="tonal" @click="clearAllWhatIf">
+                  {{ $t('prediction.whatif.reset_all') }}
+                </v-btn>
+              </div>
+            </v-card>
+          </v-expand-transition>
+        </v-col>
+      </v-row>
+
 
       <v-divider
         class=" my-6
@@ -211,11 +351,12 @@ import i18next from 'i18next'
 import FeedbackForm from '@/components/FeedbackForm.vue'
 import {useFeatureDefinitions} from '@/lib/featureDefinitions'
 import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
+import {formatBirthDateLocale} from '@/utils'
 
 const route = useRoute()
 const router = useRouter()
 const patient_name = ref("")
-const patient_birth_date = ref<string | null>(null)
+const rawBirthDate = ref<string | null>(null)
 const rawId = route.params.patient_id
 const showFeedback = ref(false)
 
@@ -232,6 +373,18 @@ const prediction = ref<{
 const patientInputFeatures = ref<Record<string, unknown>>({})
 const loading = ref(true)
 const error = ref<string | null>(null)
+const predictionWarnings = ref<string[]>([])
+
+// What-if analysis state
+const whatIfOpen = ref(false)
+const whatIfValues = ref<Record<string, any>>({})
+const initialWhatIfValues = ref<Record<string, any>>({})
+const whatIfPrediction = ref<number | null>(null)
+const whatIfLoading = ref(false)
+let whatIfDebounce: ReturnType<typeof setTimeout> | null = null
+const whatIfDelta = computed(() =>
+  whatIfPrediction.value !== null ? whatIfPrediction.value - predictionResult.value : 0
+)
 
 if (!patient_id.value) {
   router.replace({name: "NotFound"})
@@ -242,7 +395,10 @@ const onLanguageChanged = (lng: string) => {
   language.value = lng
 }
 i18next.on('languageChanged', onLanguageChanged)
-const {definitions, labels} = useFeatureDefinitions()
+
+// Computed birth date — re-formats automatically when language changes
+const patient_birth_date = computed(() => formatBirthDateLocale(rawBirthDate.value, language.value))
+const {definitions, labels, sections} = useFeatureDefinitions()
 
 const threshold = ref<number | null>(null)
 const thresholdPercent = computed(() => {
@@ -330,12 +486,16 @@ const matchedFeatures = computed(() => {
     })
   }
 
-  // Sort: positive factors (descending by importance) first, then negative (ascending by importance)
+  // Sort: positive factors (descending) first → grouped by section,
+  // then negative factors (ascending) → grouped by section.
   features.sort((a, b) => {
     const aPos = a.importance >= 0 ? 0 : 1
     const bPos = b.importance >= 0 ? 0 : 1
     if (aPos !== bPos) return aPos - bPos
-    // Within same sign group, sort by absolute importance descending
+    // Within same sign group: sort by section name, then abs importance desc
+    const secA = a.section ?? ''
+    const secB = b.section ?? ''
+    if (secA !== secB) return secA.localeCompare(secB, 'de')
     return Math.abs(b.importance) - Math.abs(a.importance)
   })
 
@@ -343,6 +503,181 @@ const matchedFeatures = computed(() => {
 })
 
 const featureImportances = computed(() => matchedFeatures.value.map((f) => f.importance))
+
+// Section boundary annotations for the Plotly chart
+const sectionBoundaries = computed(() => {
+  const boundaries: Array<{yStart: number; label: string; isPositive: boolean}> = []
+  let lastKey = ''
+  matchedFeatures.value.forEach((f, i) => {
+    const sign = f.importance >= 0 ? '+' : '-'
+    const key = `${sign}|${f.section ?? ''}`
+    if (key !== lastKey) {
+      boundaries.push({
+        yStart: i,
+        label: (f.importance >= 0 ? '⬆ ' : '⬇ ') + (sections.value?.[f.section ?? ''] ?? f.section ?? (language.value?.startsWith('en') ? 'Other' : 'Weitere')),
+        isPositive: f.importance >= 0,
+      })
+      lastKey = key
+    }
+  })
+  return boundaries
+})
+
+// What-if feature list: top N features from SHAP that are adjustable
+const whatIfFeatures = computed(() => {
+  const defs = definitions.value ?? []
+  const defMap = Object.fromEntries(defs.map((d: any) => [d.raw, d]))
+
+  // All SHAP-matched features that are adjustable (options or numeric) – sorted by |importance| descending
+  const mapped = matchedFeatures.value.map((f) => {
+    const def = defMap[f.rawKey]
+    const currentVal = patientInputFeatures.value?.[f.rawKey]
+    const label = labelFor(f.normalizedKey, f.rawKey)
+
+    if (def?.input_type === 'number') {
+      const numVal = currentVal !== undefined && currentVal !== null ? Number(currentVal) : 0
+      return {
+        rawKey: f.rawKey,
+        normalized: def?.normalized,
+        label,
+        inputType: 'number' as const,
+        options: null,
+        sliderMin: 0,
+        sliderMax: f.rawKey.toLowerCase().includes('alter') || f.rawKey === 'Alter [J]' ? 100
+          : f.rawKey.toLowerCase().includes('dauer') ? 60
+          : f.rawKey.toLowerCase().includes('measure') || f.rawKey.toLowerCase().includes('messung') ? 100
+          : 50,
+        sliderStep: 1,
+        defaultVal: numVal,
+      }
+    }
+    if (def?.options?.length > 0) {
+      return {
+        rawKey: f.rawKey,
+        normalized: def?.normalized,
+        label,
+        inputType: 'select' as const,
+        options: (def.options as any[]).map((opt: any) => ({
+          title: (opt.labels && (opt.labels.de && i18next.language?.startsWith('de') ? opt.labels.de : opt.labels.en)) ?? opt.value,
+          value: opt.value,
+        })),
+        sliderMin: 0, sliderMax: 1, sliderStep: 1,
+        defaultVal: currentVal ?? null,
+      }
+    }
+    return null
+  }).filter(Boolean)
+
+  const typed = mapped as Array<{
+    rawKey: string; label: string; inputType: string;
+    options: Array<{title: string; value: any}> | null;
+    sliderMin: number; sliderMax: number; sliderStep: number;
+    defaultVal: any;
+  }>
+
+  // Remove gender from the controls and prioritise specific features
+  return typed
+    .filter((item: any) => item.normalized !== 'gender')
+    .sort((a: any, b: any) => {
+      const preferred = [
+        'duration_severe_hl',
+        'hearing_loss_onset',
+        'hl_operated_ear',
+        'imaging_findings_preop',
+        'ci_implant_type',
+        'age'
+      ]
+      const ia = preferred.indexOf(a.normalized ?? '')
+      const ib = preferred.indexOf(b.normalized ?? '')
+      if (ia === -1 && ib === -1) return 0
+      if (ia === -1) return 1
+      if (ib === -1) return -1
+      return ia - ib
+    })
+})
+
+watch(whatIfFeatures, (feats) => {
+  // Initialise whatIfValues from current patient data when features load
+  if (feats.length > 0 && Object.keys(whatIfValues.value).length === 0) {
+    const init: Record<string, any> = {}
+    feats.forEach((f) => { init[f.rawKey] = f.defaultVal })
+    whatIfValues.value = init
+    // Keep a copy of the initial defaults so we can detect when the user
+    // has reverted all changes and clear the modified prediction accordingly.
+    initialWhatIfValues.value = { ...init }
+  }
+})
+
+async function callWhatIf() {
+  if (!patient_id.value) return
+  whatIfLoading.value = true
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/v1/patients/${encodeURIComponent(patient_id.value)}/predict-override`,
+      {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', accept: 'application/json'},
+        body: JSON.stringify({overrides: whatIfValues.value}),
+      }
+    )
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    whatIfPrediction.value = data.prediction ?? null
+  } catch (e) {
+    console.error('what-if failed', e)
+  } finally {
+    whatIfLoading.value = false
+  }
+}
+
+function onWhatIfChange() {
+  // If overrides exactly match the initial defaults, clear the modified prediction
+  const keys = Object.keys(initialWhatIfValues.value)
+  let allEqual = true
+  for (const k of keys) {
+    const a = initialWhatIfValues.value[k]
+    const b = whatIfValues.value[k]
+    // treat arrays and objects by JSON stringification for simple deep-equality
+    if (Array.isArray(a) || typeof a === 'object') {
+      if (JSON.stringify(a) !== JSON.stringify(b)) { allEqual = false; break }
+    } else {
+      if (String(a) !== String(b)) { allEqual = false; break }
+    }
+  }
+  if (allEqual) {
+    if (whatIfDebounce) clearTimeout(whatIfDebounce)
+    whatIfPrediction.value = null
+    whatIfLoading.value = false
+    return
+  }
+
+  if (whatIfDebounce) clearTimeout(whatIfDebounce)
+  whatIfDebounce = setTimeout(() => callWhatIf(), 400)
+}
+
+function clearWhatIf(key: string) {
+  // Reset this override to the initial default value
+  const copy: Record<string, any> = { ...whatIfValues.value }
+  if (initialWhatIfValues.value && Object.prototype.hasOwnProperty.call(initialWhatIfValues.value, key)) {
+    copy[key] = initialWhatIfValues.value[key]
+  } else {
+    // Fallback: delete the key
+    delete copy[key]
+  }
+  whatIfValues.value = copy
+  // Trigger recalculation / possible reset
+  onWhatIfChange()
+}
+
+function clearAllWhatIf() {
+  if (initialWhatIfValues.value && Object.keys(initialWhatIfValues.value).length > 0) {
+    whatIfValues.value = { ...initialWhatIfValues.value }
+  } else {
+    whatIfValues.value = {}
+  }
+  // Trigger recalculation / possible reset
+  onWhatIfChange()
+}
 
 const formatFeatureValue = (value: number) => {
   if (!Number.isFinite(value)) return String(value)
@@ -363,8 +698,7 @@ const featureLabels = computed(() =>
         : typeof feature.rawValue === "number"
           ? formatFeatureValue(feature.rawValue)
           : String(feature.rawValue)
-    const sectionLabel = feature.section ? `[${feature.section}] ` : ''
-    return `${sectionLabel}${label}: ${rawDisplay}`
+    return `${label}  ·  ${rawDisplay}`
   })
 )
 
@@ -404,20 +738,34 @@ function renderExplanationPlot() {
   }
 
   const yVals = featureLabels.value.map((_, i) => i)
-  const wrapped = featureLabels.value.map((l) => wrapLabel(l, 48))
+  const wrapped = featureLabels.value.map((l) => wrapLabel(l, 44))
+
+  // Split into positive (red) and negative (blue) trace for cleaner legend
+  const posIdx = featureImportances.value.map((v, i) => v >= 0 ? i : -1).filter(i => i >= 0)
+  const negIdx = featureImportances.value.map((v, i) => v < 0 ? i : -1).filter(i => i >= 0)
 
   const data: Plotly.Data[] = [
     {
       type: "bar",
       orientation: "h",
-      x: featureImportances.value,
-      y: yVals,
-      marker: {
-        color: featureImportances.value.map((v) => (v >= 0 ? "#DD054A" : "#2196F3")),
-      },
-      // show full unwrapped label on hover
-      customdata: featureLabels.value,
-      hovertemplate: "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>",
+      name: language.value?.startsWith('en') ? "⬆ Increases probability" : "⬆ Erhöht Wahrscheinlichkeit",
+      x: posIdx.map(i => featureImportances.value[i]),
+      y: posIdx.map(i => yVals[i]),
+      marker: { color: 'rgba(221, 5, 74, 0.78)', line: { width: 0 } },
+      customdata: posIdx.map(i => featureLabels.value[i]),
+      hovertemplate: language.value?.startsWith('en') ? "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>" : "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
+      showlegend: true,
+    },
+    {
+      type: "bar",
+      orientation: "h",
+      name: language.value?.startsWith('en') ? "⬇ Decreases probability" : "⬇ Senkt Wahrscheinlichkeit",
+      x: negIdx.map(i => featureImportances.value[i]),
+      y: negIdx.map(i => yVals[i]),
+      marker: { color: 'rgba(33, 150, 243, 0.78)', line: { width: 0 } },
+      customdata: negIdx.map(i => featureLabels.value[i]),
+      hovertemplate: language.value?.startsWith('en') ? "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>" : "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
+      showlegend: true,
     },
   ]
 
@@ -433,20 +781,53 @@ function renderExplanationPlot() {
     showarrow: false,
     align: "left",
     valign: "middle",
-    font: { size: 11 },
+    font: { size: 11, color: '#333' },
   }))
 
+  // Section header annotations on the right side outside chart area
+  sectionBoundaries.value.forEach(({ yStart, label, isPositive }) => {
+    annotations.push({
+      xref: 'paper',
+      yref: 'y',
+      x: 1.02,
+      xanchor: 'left',
+      xshift: 0,
+      y: yStart,
+      text: `<b>${label}</b>`,
+      showarrow: false,
+      align: 'left',
+      valign: 'middle',
+      font: { size: 12, color: isPositive ? '#DD054A' : '#2196F3', family: 'Inter, Roboto, system-ui' },
+      // Make the label visually distinct: add a lightly shaded background and border
+      bgcolor: isPositive ? 'rgba(221,5,74,0.06)' : 'rgba(33,150,243,0.06)',
+      bordercolor: isPositive ? '#DD054A' : '#2196F3',
+      borderwidth: 1,
+      borderpad: 6,
+    })
+  })
+
   const layout: Partial<Plotly.Layout> = {
-    height: explanationPlotHeight.value, // uses your computed height
+    height: explanationPlotHeight.value,
     xaxis: {
-      title: "Contribution to prediction",
+      title: { text: language.value?.startsWith('en') ? "Contribution to prediction" : "Beitrag zur Vorhersage", font: { size: 12, color: '#666' } },
       automargin: true,
       zeroline: true,
-      zerolinewidth: 1,
+      zerolinewidth: 2,
+      zerolinecolor: '#999',
+      gridcolor: '#eee',
+      gridwidth: 1,
     },
     yaxis: {
-      showticklabels: false, // IMPORTANT: no tick labels
+      showticklabels: false,
       automargin: false,
+    },
+    legend: {
+      orientation: 'h',
+      yanchor: 'bottom',
+      y: 1.02,
+      xanchor: 'left',
+      x: 0,
+      font: { size: 11 },
     },
     annotations,
     margin: {
@@ -462,7 +843,11 @@ function renderExplanationPlot() {
           )) * 7
         )
       ),
-      r: 24,
+      // Dynamic right margin so section header labels are fully visible.
+      // Each char ≈ 8 px at font-size 11; add 32 px buffer; min 160, max 280.
+      r: sectionBoundaries.value.length
+        ? Math.max(160, Math.min(280, Math.max(...sectionBoundaries.value.map((b) => b.label.length)) * 8 + 32))
+        : 40,
       t: 10,
       b: 40,
     },
@@ -547,6 +932,7 @@ onMounted(async () => {
       params: filteredImportance,
       feature_values: filteredValues
     };
+    predictionWarnings.value = Array.isArray(data.warnings) ? data.warnings : [];
     renderExplanationPlot()
 
     const response2 = await fetch(
@@ -568,17 +954,8 @@ onMounted(async () => {
     const data2 = await response2.json();
 
     patient_name.value = data2.display_name
-    // Extract and format birth date for display
-    const rawBirthDate = data2.input_features?.['Geburtsdatum'] ?? null
-    if (rawBirthDate) {
-      // Convert YYYY-MM-DD to DD.MM.YYYY if needed
-      if (/^\d{4}-\d{2}-\d{2}$/.test(rawBirthDate)) {
-        const [y, m, d] = rawBirthDate.split('-')
-        patient_birth_date.value = `${d}.${m}.${y}`
-      } else {
-        patient_birth_date.value = rawBirthDate
-      }
-    }
+    // Store raw birth date; the computed patient_birth_date formats it per locale
+    rawBirthDate.value = data2.input_features?.['Geburtsdatum'] ?? null
     patientInputFeatures.value = data2.input_features ?? {}
 
   } catch (err: any) {
@@ -592,9 +969,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   i18next.off('languageChanged', onLanguageChanged)
 })
-
 </script>
-
 
 <style scoped>
 .prediction-sheet {
@@ -696,6 +1071,63 @@ onBeforeUnmount(() => {
   color: #666;
   padding: 0 2px;
   margin-bottom: 4px;
+}
+
+/* Muted remove button for What-If overrides (less aggressive than error color) */
+.whatif-reset-btn {
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0,0,0,0.04);
+  transition: background-color 120ms ease-in-out;
+}
+.whatif-reset-icon {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  line-height: 14px;
+}
+.whatif-reset-btn:hover {
+  background-color: rgba(0,0,0,0.08);
+}
+.whatif-reset-btn:active .whatif-reset-icon {
+  color: rgba(0,0,0,0.8);
+}
+
+/* Positioning and style for Reset-All button */
+.whatif-card {
+  position: relative;
+}
+.whatif-reset-all {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+}
+
+/* Inline control wrapper so reset button appears inside the input/slider */
+.whatif-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.whatif-control .whatif-reset-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 20px;
+  width: 20px;
+  height: 20px;
+}
+.whatif-control v-select,
+.whatif-control .v-select,
+.whatif-control .v-field {
+  padding-right: 36px; /* leave space for the overlayed button */
 }
 
 

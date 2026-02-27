@@ -30,7 +30,19 @@
           icon="mdi-information-outline"
         >
           <strong>{{ $t('form.minimum_fields_title') }}:</strong>
-          {{ $t('form.minimum_fields_hint') }}
+          {{ $t('form.minimum_fields_banner') }}
+        </v-alert>
+
+        <!-- Age out-of-scope warning (shown immediately when age < 18 or > 90) -->
+        <v-alert
+          v-if="ageWarningMessage"
+          type="warning"
+          variant="tonal"
+          density="compact"
+          class="mb-4"
+          icon="mdi-alert-outline"
+        >
+          {{ ageWarningMessage }}
         </v-alert>
 
         <template v-for="section in sectionedDefinitions" :key="section.name">
@@ -43,7 +55,7 @@
                   :model-value="formValues[field.normalized]"
                   @update:model-value="(val: any) => updateDateField(field.normalized, val)"
                   :label="field.label"
-                  placeholder="TT.MM.JJJJ"
+                  :placeholder="language.startsWith('en') ? 'MM/DD/YYYY' : 'TT.MM.JJJJ'"
                   :error-messages="[]"
                   :error="(submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field)) || !!(fieldErrorMap[field.normalized]?.length)"
                   :class="{ 'required-empty': submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field) }"
@@ -151,7 +163,7 @@
 
 
 <script lang="ts" setup>
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import {VCheckbox, VCombobox, VSelect, VTextField} from 'vuetify/components'
 import {useForm} from 'vee-validate'
 import i18next from 'i18next'
@@ -163,6 +175,11 @@ import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
 const language = ref(i18next.language)
 i18next.on('languageChanged', (lng) => {
   language.value = lng
+})
+
+// Reload feature labels AND section names whenever the user switches UI language
+watch(language, (lng) => {
+  void featureDefinitionsStore.loadLabels(lng)
 })
 
 const route = useRoute()
@@ -403,6 +420,23 @@ const validationSchema = computed(() => {
           return requiredMessageFor(def)
         }
       }
+      // Hard age-range check: model was trained only on adults aged 18–90
+      if (def.normalized === 'age' && !isEmptyValue(value, def)) {
+        const numAge = typeof value === 'number' ? value : Number(value)
+        if (Number.isFinite(numAge) && (numAge < 18 || numAge > 90)) {
+          return language.value?.startsWith('en')
+            ? `Age ${numAge} is outside the model's training range (18–90 years).`
+            : `Alter ${numAge} liegt außerhalb des Trainingsbereichs des Modells (18–90 Jahre).`
+        }
+      }
+      if (def.normalized === 'birth_date' && typeof value === 'string' && value.length === 10) {
+        const calcAge = calculateAgeFromDate(value)
+        if (calcAge !== null && (calcAge < 18 || calcAge > 90)) {
+          return language.value?.startsWith('en')
+            ? `Date of birth implies age ${calcAge} – outside the model's training range (18–90 years).`
+            : `Geburtsdatum ergibt Alter ${calcAge} – außerhalb des Trainingsbereichs (18–90 Jahre).`
+        }
+      }
       return true
     }
 
@@ -425,6 +459,26 @@ const {handleSubmit, handleReset, setFieldTouched, setFieldValue, values, errors
 
 const formValues = values
 const formErrors = computed(() => errors.value ?? {})
+
+// Warn immediately if entered age is outside the model's training range (18–90)
+const ageWarningMessage = computed(() => {
+  const bd = (formValues as any).birth_date
+  let age: number | null = null
+  if (typeof bd === 'string' && bd.length === 10) {
+    age = calculateAgeFromDate(bd)
+  }
+  if (age === null) {
+    const raw = (formValues as any).age
+    age = (typeof raw === 'number' && !isNaN(raw)) ? raw : null
+  }
+  if (age === null) return ''
+  if (age < 18 || age > 90) {
+    return language.value?.startsWith('en')
+      ? `Note: The model was trained exclusively on adults (\u2265\u202f18\u202fyears, \u2264\u202f90\u202fyears) \u2013 predictions outside this age range may not be reliable. (Patient age: ${age})`
+      : `Hinweis: Das Modell wurde ausschlie\u00dflich an Erwachsenen (\u2265\u202f18\u202fJahre, \u2264\u202f90\u202fJahre) trainiert \u2013 Vorhersagen au\u00dferhalb dieses Altersbereichs sind nicht zuverl\u00e4ssig. (Patientenalter: ${age})`
+  }
+  return ''
+})
 
 // Single source of truth for field-level error messages shown in the UI.
 // Populated synchronously on submit, cleared per-field when the user edits.
@@ -483,20 +537,51 @@ const updateField = (name: string, value: any) => {
 
 const formatDateInput = (raw: string): string => {
   const digits = raw.replace(/\D/g, '').slice(0, 8)
+  if (language.value?.startsWith('en')) {
+    // MM/DD/YYYY
+    if (digits.length <= 2) return digits
+    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+  }
+  // Default: DD.MM.YYYY
   if (digits.length <= 2) return digits
   if (digits.length <= 4) return `${digits.slice(0, 2)}.${digits.slice(2)}`
   return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`
 }
 
 const calculateAgeFromDate = (dateStr: string): number | null => {
-  // Expects DD.MM.YYYY format
-  const parts = dateStr.split('.')
-  if (parts.length !== 3 || parts[2].length !== 4) return null
-  const day = parseInt(parts[0], 10)
-  const month = parseInt(parts[1], 10) - 1
-  const year = parseInt(parts[2], 10)
-  if (isNaN(day) || isNaN(month) || isNaN(year)) return null
-  const birth = new Date(year, month, day)
+  // Accepts DD.MM.YYYY, MM/DD/YYYY, or YYYY-MM-DD
+  if (!dateStr || typeof dateStr !== 'string') return null
+  let day: number | null = null
+  let month: number | null = null
+  let year: number | null = null
+
+  if (dateStr.includes('/')) {
+    // MM/DD/YYYY
+    const parts = dateStr.split('/')
+    if (parts.length !== 3 || parts[2].length !== 4) return null
+    month = parseInt(parts[0], 10) - 1
+    day = parseInt(parts[1], 10)
+    year = parseInt(parts[2], 10)
+  } else if (dateStr.includes('.')) {
+    // DD.MM.YYYY
+    const parts = dateStr.split('.')
+    if (parts.length !== 3 || parts[2].length !== 4) return null
+    day = parseInt(parts[0], 10)
+    month = parseInt(parts[1], 10) - 1
+    year = parseInt(parts[2], 10)
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    // YYYY-MM-DD
+    const parts = dateStr.split('-')
+    year = parseInt(parts[0], 10)
+    month = parseInt(parts[1], 10) - 1
+    day = parseInt(parts[2], 10)
+  } else {
+    return null
+  }
+
+  if ([day, month, year].some((v) => v === null || isNaN(v as number))) return null
+  const birth = new Date(year as number, month as number, day as number)
   if (isNaN(birth.getTime())) return null
   const today = new Date()
   let age = today.getFullYear() - birth.getFullYear()
@@ -635,7 +720,22 @@ const buildInputFeatures = (values: Record<string, any>) => {
       value = value ?? ''
     }
 
-    input_features[def.raw] = value
+    // If this is the birth date field and user entered MM/DD/YYYY (English UI),
+    // convert to ISO YYYY-MM-DD for storage/submission so backend accepts it.
+    if ((def.normalized === 'birth_date' || def.raw === 'Geburtsdatum') && typeof value === 'string') {
+      const v = value.trim()
+      const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+      if (m) {
+        const mm = m[1].padStart(2, '0')
+        const dd = m[2].padStart(2, '0')
+        const yyyy = m[3]
+        input_features[def.raw] = `${yyyy}-${mm}-${dd}`
+      } else {
+        input_features[def.raw] = value
+      }
+    } else {
+      input_features[def.raw] = value
+    }
   }
 
   return input_features
@@ -810,6 +910,25 @@ const submit = async () => {
     return
   }
 
+  // Hard block: age out of model training range (18–90) — patient CANNOT be saved
+  const ageVal = (values as any).age
+  const bdVal = (values as any).birth_date
+  let effectiveAge: number | null = null
+  if (typeof bdVal === 'string' && bdVal.length === 10) {
+    effectiveAge = calculateAgeFromDate(bdVal)
+  }
+  if (effectiveAge === null && typeof ageVal === 'number' && Number.isFinite(ageVal)) {
+    effectiveAge = ageVal
+  }
+  if (effectiveAge !== null && (effectiveAge < 18 || effectiveAge > 90)) {
+    const ageErrMsg = language.value?.startsWith('en')
+      ? `Cannot save: patient age ${effectiveAge} is outside the model's training range (18–90 years).`
+      : `Speichern nicht möglich: Patientenalter ${effectiveAge} liegt außerhalb des Trainingsbereichs (18–90 Jahre).`
+    manualErrors.value = { ...manualErrors.value, age: ageErrMsg }
+    showError(ageErrMsg)
+    return
+  }
+
   await onSubmit()
 }
 
@@ -925,15 +1044,56 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* Prominent red outline when a required field is empty after submit */
-.required-empty :deep(.v-field__outline),
-.required-empty .v-field__outline {
-  border-color: rgb(var(--v-theme-error)) !important;
-  box-shadow: 0 0 0 3px rgba(var(--v-theme-error), 0.18);
+/* ── Required-empty: red outline for Vuetify 3 outlined fields ──────────────
+ *
+ * Root cause: Vuetify 3 outlined variant renders borders via
+ *   `border-color: currentColor`
+ * on .v-field__outline__start / __end / __notch::before / ::after.
+ * `currentColor` inherits from the nearest ancestor that carries a `color`
+ * value — which is .v-field itself.
+ *
+ * Fix: set `color` (not `border-color`) on .v-field, then also explicitly set
+ * border-color on every segment as belt-and-suspenders.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+/* Step 1 – The field container carries the "accent" color that currentColor
+   resolves to inside every child outline segment. */
+.required-empty :deep(.v-field) {
+  color: rgb(var(--v-theme-error)) !important;
+  --v-field-border-opacity: 1 !important;
+  box-shadow: 0 0 0 1px rgba(var(--v-theme-error), 0.28) !important;
 }
 
-.required-empty :deep(.v-label),
-.required-empty .v-label {
+/* Step 2 – Outline wrapper: propagate color downward explicitly */
+.required-empty :deep(.v-field__outline) {
   color: rgb(var(--v-theme-error)) !important;
+  opacity: 1 !important;
+}
+
+/* Step 3 – Left and right border bars */
+.required-empty :deep(.v-field__outline__start),
+.required-empty :deep(.v-field__outline__end) {
+  border-color: rgb(var(--v-theme-error)) !important;
+  border-width: 2px !important;
+  opacity: 1 !important;
+}
+
+/* Step 4 – Notch (label gap): color on the element so ::before/::after inherit */
+.required-empty :deep(.v-field__outline__notch) {
+  color: rgb(var(--v-theme-error)) !important;
+  border-color: rgb(var(--v-theme-error)) !important;
+}
+
+/* Step 5 – Notch pseudo-elements draw the top-border lines beside the label */
+.required-empty :deep(.v-field__outline__notch::before),
+.required-empty :deep(.v-field__outline__notch::after) {
+  border-top-color: rgb(var(--v-theme-error)) !important;
+  border-width: 2px !important;
+}
+
+/* Step 6 – Red label text */
+.required-empty :deep(.v-label) {
+  color: rgb(var(--v-theme-error)) !important;
+  opacity: 1 !important;
 }
 </style>

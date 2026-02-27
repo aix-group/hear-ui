@@ -21,11 +21,13 @@ test.describe('Create Patient Page', () => {
     expect(appVisible).toBe(true)
   })
 
-  test('navigating to create patient from home works', async ({ page }) => {
+  test('navigating to create patient via sidebar works', async ({ page }) => {
     await page.goto('/home')
-    // Click the create patient card (second card)
-    const cards = page.locator('.home-card')
-    await cards.nth(1).click()
+    // Home page was redesigned: navigate via sidebar (index 2 = CreatePatient)
+    const navIcon = page.locator('.v-app-bar-nav-icon')
+    await navIcon.click()
+    const createNav = page.locator('.nav-item').nth(2)
+    await createNav.click()
     await page.waitForURL('**/create-patient')
     expect(page.url()).toContain('/create-patient')
   })

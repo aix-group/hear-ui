@@ -21,6 +21,7 @@ class ShapVisualizationResponse(BaseModel):
     base_value: float
     plot_base64: str | None = None
     top_features: list[dict] | None = None
+    warnings: list[str] = []
 
 
 @router.get("/methods", summary="List Available XAI Methods")

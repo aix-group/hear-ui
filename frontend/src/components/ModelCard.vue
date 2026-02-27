@@ -29,6 +29,7 @@ import { API_BASE } from '@/lib/api'
 interface ModelCardData {
   name: string
   version: string
+  markdown?: string
   [key: string]: unknown
 }
 
@@ -40,9 +41,13 @@ export default defineComponent({
     }
   },
   async created() {
-    // Lade Model Card Daten vom Backend
+    // Backend returns plain-text Markdown, not JSON
     const response = await fetch(`${API_BASE}/api/v1/model-card`)
-    this.modelCard = await response.json()
+    if (!response.ok) return
+    const text = await response.text()
+    // Extract version from markdown for display
+    const version = text.match(/\*\*Version:\*\*\s*(.+)/)?.[1]?.trim() ?? ''
+    this.modelCard = { name: 'HEAR CI Prediction Model', version, markdown: text }
   }
 })
 </script>

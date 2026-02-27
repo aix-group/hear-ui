@@ -338,6 +338,58 @@
           "important_factors": "Wichtigste Einflussfaktoren: Alter, Beginn der Hörminderung, CI-Typ, Bildgebungsergebnisse, Hörverlust OP-Ohr",
           "visualization": "Visualisierung: Interaktive Wasserfall- und Force-Plots im Frontend ermöglichen Nachvollziehbarkeit und kritische Bewertung jeder Vorhersage"
         },
+        "hyperparameters": {
+          "title": "Hyperparameter",
+          "summary": "n_estimators=100 · max_depth=unbegrenzt · max_features=log2 · min_samples_split=10 · min_samples_leaf=2",
+          "labels": {
+            "n_estimators": "Anzahl Bäume",
+            "max_depth": "Max. Baumtiefe",
+            "max_features": "Merkmale je Aufteilung",
+            "min_samples_split": "Min. Datenpunkte zum Aufteilen",
+            "min_samples_leaf": "Min. Datenpunkte pro Blatt",
+            "class_weight": "Klassengewichtung",
+            "random_state": "Zufalls-Seed"
+          },
+          "descs": {
+            "n_estimators": "Anzahl der Entscheidungsbäume im Ensemble – mehr Bäume erhöhen Stabilität",
+            "max_depth": "Max. Tiefe jedes Baums (unbegrenzt = vollständig ausgewachsen)",
+            "max_features": "Zufällig gewählte Merkmale je Knotenaufteilung (log2 der Gesamtmerkmalanzahl)",
+            "min_samples_split": "Mindestanzahl Datenpunkte, um einen Knoten weiter aufzuteilen",
+            "min_samples_leaf": "Mindestanzahl Datenpunkte in einem Endknoten",
+            "class_weight": "Automatische Gewichtung bei Klassenungleichgewicht – seltene Klassen erhalten mehr Gewicht",
+            "random_state": "Zufalls-Seed für vollständig reproduzierbare Trainingsergebnisse"
+          }
+        },
+        "deployed": "Bereitgestellt",
+        "stats": {
+          "patients": "Patient:innen",
+          "features": "Merkmale",
+          "training_date": "Trainingsdatum",
+          "validation": "Validierung"
+        },
+        "metrics_hint": "Testset-Metriken · Werte dienen zur Orientierung, nicht als alleinige Entscheidungsgrundlage.",
+        "tabs": {
+          "use": "Verwendung",
+          "limits": "Einschränkungen",
+          "recs": "Empfehlungen",
+          "ethics": "Ethik",
+          "features": "Merkmale",
+          "xai": "XAI"
+        },
+        "intended_use_title": "Bestimmungsgemäße Verwendung",
+        "not_intended_title": "Nicht vorgesehen für",
+        "ethics_labels": {
+          "fairness": "Fairness",
+          "privacy": "Datenschutz",
+          "transparency": "Transparenz"
+        },
+        "changelog_title": "Changelog",
+        "status_active": "aktiv",
+        "metrics": {
+          "accuracy": "Genauigkeit",
+          "f1": "F1-Wert"
+        },
+        "performance_title": "Leistung / Bewertung",
         "contact": {}
       }
     },

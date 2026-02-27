@@ -13,73 +13,7 @@
 
       <v-divider class="my-6"/>
 
-      <!-- About Section -->
-      <v-row>
-        <v-col>
-          <h2>{{ $t('predictions_home.about.title') }}</h2>
-          <p class="text-medium-emphasis mt-2">
-            {{ $t('predictions_home.about.description') }}
-          </p>
-        </v-col>
-      </v-row>
 
-      <!-- How to get a prediction -->
-      <v-row>
-        <div>
-          <v-col>
-            <h2>{{ $t('predictions_home.process.title') }}</h2>
-            <v-timeline align="start" class="mt-4" density="compact" side="end">
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-magnify"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step1.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step1.description') }}</div>
-                </div>
-              </v-timeline-item>
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-account-plus"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step2.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step2.description') }}</div>
-                </div>
-              </v-timeline-item>
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-account-details"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step3.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step3.description') }}</div>
-                </div>
-              </v-timeline-item>
-              <v-timeline-item
-                  dot-color="primary"
-                  fill-dot
-                  icon="mdi-creation"
-                  size="small"
-              >
-                <div class="d-flex">
-                  <strong class="me-4">{{ $t('predictions_home.process.step4.title') }}</strong>
-                  <div>{{ $t('predictions_home.process.step4.description') }}</div>
-                </div>
-              </v-timeline-item>
-            </v-timeline>
-          </v-col>
-        </div>
-      </v-row>
-      <v-spacer class="my-6 mb-8"></v-spacer>
-
-      <v-divider class="my-6 mb-8"/>
 
       <!-- Action Buttons -->
       <div class="d-flex justify-center ga-4 mt-8">
@@ -110,53 +44,290 @@
       <!-- Model Card Section -->
       <v-row>
         <v-col>
-          <v-card class="model-card-professional" elevation="3">
+          <v-card class="mc-pro" elevation="4">
 
-            <!-- Header -->
-            <v-card-title class="model-card-header text-white pa-6">
-              <div class="text-h4 font-weight-bold">{{ meta.name }}</div>
-            </v-card-title>
+            <!-- ── Gradient Header ── -->
+            <div class="mc-header pa-6 text-white">
+              <div class="d-flex flex-wrap align-center ga-3 mb-1">
+                <v-icon size="26">mdi-clipboard-text-outline</v-icon>
+                <span class="text-h5 font-weight-bold" style="letter-spacing:.01em">{{ cardData?.name }}</span>
+                <v-chip variant="outlined" color="white" size="small" class="font-weight-medium">
+                  {{ cardData?.version }}
+                </v-chip>
+                <v-chip :color="cardData?.status === 'active' || cardData?.status === 'aktiv' ? '#81c784' : '#ffb74d'" size="small" class="font-weight-bold text-uppercase">
+                  {{ cardData?.status ?? $t('predictions_home.model_cards.status_active') }}
+                </v-chip>
+              </div>
+              <div class="text-body-2" style="opacity:.8">
+                {{ cardData?.model_type }} &middot; {{ $t('predictions_home.model_cards.deployed') }}: {{ cardData?.deployment_date }}
+              </div>
+            </div>
 
-            <!-- Metadata Bar -->
-            <div class="model-card-metadata pa-4 bg-grey-lighten-4">
+            <!-- ── Quick-Stats Bar ── -->
+            <div class="mc-stats bg-grey-lighten-4 pa-4">
               <v-row dense>
-                <v-col cols="12" md="4">
-                  <div class="text-caption text-grey-darken-1">{{ $t('predictions_home.model_cards.header.version') }}</div>
-                  <div class="text-body-1 font-weight-medium">{{ meta.version }}</div>
+                <v-col cols="6" sm="3">
+                  <div class="stat-cell">
+                    <v-icon color="primary" size="20" class="mb-1">mdi-account-group</v-icon>
+                    <div class="stat-val">{{ cardData?.training?.dataset_size }}</div>
+                    <div class="stat-lbl">{{ $t('predictions_home.model_cards.stats.patients') }}</div>
+                  </div>
                 </v-col>
-                <v-col cols="12" md="4">
-                  <div class="text-caption text-grey-darken-1">{{ $t('predictions_home.model_cards.header.model_type') }}</div>
-                  <div class="text-body-1 font-weight-medium">{{ meta.modelType }}</div>
+                <v-col cols="6" sm="3">
+                  <div class="stat-cell">
+                    <v-icon color="primary" size="20" class="mb-1">mdi-tag-multiple-outline</v-icon>
+                    <div class="stat-val">{{ cardData?.training?.features_count }}</div>
+                    <div class="stat-lbl">{{ $t('predictions_home.model_cards.stats.features') }}</div>
+                  </div>
                 </v-col>
-                <v-col cols="12" md="4">
-                  <div class="text-caption text-grey-darken-1">{{ $t('predictions_home.model_cards.header.last_updated') }}</div>
-                  <div class="text-body-1 font-weight-medium">{{ meta.lastUpdated }}</div>
+                <v-col cols="6" sm="3">
+                  <div class="stat-cell">
+                    <v-icon color="primary" size="20" class="mb-1">mdi-calendar-check-outline</v-icon>
+                    <div class="stat-val">{{ cardData?.training?.training_date }}</div>
+                    <div class="stat-lbl">{{ $t('predictions_home.model_cards.stats.training_date') }}</div>
+                  </div>
+                </v-col>
+                <v-col cols="6" sm="3">
+                  <div class="stat-cell">
+                    <v-icon color="primary" size="20" class="mb-1">mdi-sync</v-icon>
+                    <div class="stat-val stat-val--sm">{{ cardData?.training?.validation_strategy }}</div>
+                    <div class="stat-lbl">{{ $t('predictions_home.model_cards.stats.validation') }}</div>
+                  </div>
                 </v-col>
               </v-row>
             </div>
 
             <v-card-text class="pa-6">
-              <!-- Loading State -->
+              <!-- Loading -->
               <div v-if="loading" class="text-center py-12">
                 <v-progress-circular indeterminate color="primary" size="64"/>
-                <p class="mt-4 text-grey">{{ $t('predictions_home.model_cards.loading', { defaultValue: 'Lädt...' }) }}</p>
+                <p class="mt-4 text-grey">{{ $t('predictions_home.model_cards.loading') }}</p>
               </div>
 
-              <!-- Error State -->
+              <!-- Error -->
               <div v-else-if="error" class="text-center py-12">
                 <v-icon color="error" size="64">mdi-alert-circle-outline</v-icon>
                 <p class="mt-4 text-error">{{ error }}</p>
-                <v-btn @click="loadModelCard" variant="outlined" color="primary" class="mt-4">
-                  {{ $t('predictions_home.model_cards.retry', { defaultValue: 'Erneut versuchen' }) }}
-                </v-btn>
+                <v-btn @click="loadModelCard" variant="outlined" color="primary" class="mt-4">{{ $t('predictions_home.model_cards.retry') }}</v-btn>
               </div>
 
-              <!-- Rendered Markdown -->
-              <div
-                v-else
-                class="model-card-markdown"
-                v-html="renderedHtml"
-              />
+              <template v-else-if="cardData">
+
+                <!-- ── Performance Metrics ── -->
+                <div class="mc-section-title mb-3">
+                  <v-icon size="17" class="mr-1">mdi-chart-bar</v-icon>
+                  {{ $t('predictions_home.model_cards.performance_title') }}
+                </div>
+                <v-row dense class="mb-5">
+                  <v-col cols="12" sm="6">
+                    <div class="metric-card">
+                      <div class="d-flex justify-space-between align-end mb-1">
+                        <span class="metric-label">{{ $t('predictions_home.model_cards.metrics.accuracy') }}</span>
+                        <span class="metric-value">{{ (cardData.metrics.test_set.accuracy * 100).toFixed(0) }}%</span>
+                      </div>
+                      <v-progress-linear :model-value="cardData.metrics.test_set.accuracy * 100" color="primary" rounded height="10" bg-color="rgba(0,0,0,0.07)"/>
+                    </div>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <div class="metric-card">
+                      <div class="d-flex justify-space-between align-end mb-1">
+                        <span class="metric-label">{{ $t('predictions_home.model_cards.metrics.f1') }}</span>
+                        <span class="metric-value">{{ cardData.metrics.test_set.f1_score.toFixed(2) }}</span>
+                      </div>
+                      <v-progress-linear :model-value="cardData.metrics.test_set.f1_score * 100" color="secondary" rounded height="10" bg-color="rgba(0,0,0,0.07)"/>
+                    </div>
+                  </v-col>
+                </v-row>
+                <v-alert type="info" variant="tonal" density="compact" class="text-caption mb-6">
+                  {{ $t('predictions_home.model_cards.metrics_hint') }}
+                </v-alert>
+
+                <!-- ── Hyperparameter Chips ── -->
+                <div class="mc-section-title mb-1">
+                  <v-icon size="17" class="mr-1">mdi-tune-variant</v-icon>
+                  {{ $t('predictions_home.model_cards.hyperparameters.title') }}
+                </div>
+                <div class="text-caption mb-3" style="opacity:.9">{{ hyperparamsSummary }}</div>
+                <div class="hp-grid mb-7">
+                  <div
+                    v-for="hp in hyperparamsToShow"
+                    :key="hp.key"
+                    class="hp-card pa-3"
+                  >
+                    <div class="d-flex align-center justify-space-between ga-2 mb-1">
+                      <span class="hp-label">{{ hp.label }}</span>
+                      <v-chip size="x-small" variant="tonal" color="primary" class="font-weight-bold">{{ hp.value }}</v-chip>
+                    </div>
+                    <div class="hp-desc">{{ hp.desc }}</div>
+                  </div>
+                </div>
+
+                <!-- ── Tabbed Sections ── -->
+                <v-tabs v-model="activeTab" color="primary" density="comfortable" class="mb-1">
+                  <v-tab value="use">
+                    <v-icon start size="16">mdi-check-circle-outline</v-icon>
+                    {{ $t('predictions_home.model_cards.tabs.use') }}
+                  </v-tab>
+                  <v-tab value="limits">
+                    <v-icon start size="16">mdi-alert-outline</v-icon>
+                    {{ $t('predictions_home.model_cards.tabs.limits') }}
+                  </v-tab>
+                  <v-tab value="recs">
+                    <v-icon start size="16">mdi-lightbulb-outline</v-icon>
+                    {{ $t('predictions_home.model_cards.tabs.recs') }}
+                  </v-tab>
+                  <v-tab value="ethics">
+                    <v-icon start size="16">mdi-scale-balance</v-icon>
+                    {{ $t('predictions_home.model_cards.tabs.ethics') }}
+                  </v-tab>
+                  <v-tab value="features">
+                    <v-icon start size="16">mdi-format-list-checks</v-icon>
+                    {{ $t('predictions_home.model_cards.tabs.features') }}
+                  </v-tab>
+                  <v-tab value="xai">
+                    <v-icon start size="16">mdi-brain</v-icon>
+                    {{ $t('predictions_home.model_cards.tabs.xai') }}
+                  </v-tab>
+                </v-tabs>
+                <v-divider class="mb-4"/>
+
+                <v-window v-model="activeTab">
+
+                  <!-- Intended Use -->
+                  <v-window-item value="use">
+                    <div class="mc-subsection-title mb-2">{{ $t('predictions_home.model_cards.intended_use_title') }}</div>
+                    <v-list density="compact" class="mb-5 mc-list mc-list--ok">
+                      <v-list-item
+                        v-for="(item, i) in cardData.intended_use"
+                        :key="i"
+                        prepend-icon="mdi-check-circle-outline"
+                        :title="item"
+                        class="mc-list-item"
+                      />
+                    </v-list>
+                    <div class="mc-subsection-title mc-subsection-title--warn mb-2">{{ $t('predictions_home.model_cards.not_intended_title') }}</div>
+                    <v-list density="compact" class="mc-list mc-list--warn">
+                      <v-list-item
+                        v-for="(item, i) in cardData.not_intended_for"
+                        :key="i"
+                        prepend-icon="mdi-close-circle-outline"
+                        :title="item"
+                        class="mc-list-item"
+                      />
+                    </v-list>
+                  </v-window-item>
+
+                  <!-- Limitations -->
+                  <v-window-item value="limits">
+                    <v-list density="compact" class="mc-list mc-list--warn">
+                      <v-list-item
+                        v-for="(item, i) in cardData.limitations"
+                        :key="i"
+                        prepend-icon="mdi-alert-circle-outline"
+                        :title="item"
+                        class="mc-list-item"
+                      />
+                    </v-list>
+                  </v-window-item>
+
+                  <!-- Recommendations -->
+                  <v-window-item value="recs">
+                    <v-list density="compact" class="mc-list mc-list--ok">
+                      <v-list-item
+                        v-for="(item, i) in cardData.recommendations"
+                        :key="i"
+                        prepend-icon="mdi-lightbulb-on-outline"
+                        :title="item"
+                        class="mc-list-item"
+                      />
+                    </v-list>
+                  </v-window-item>
+
+                  <!-- Ethics -->
+                  <v-window-item value="ethics">
+                    <v-list density="compact" class="mc-list">
+                      <v-list-item
+                        prepend-icon="mdi-scale-balance"
+                        class="mc-list-item mc-ethics-item"
+                      >
+                        <template #title><span class="font-weight-bold">{{ $t('predictions_home.model_cards.ethics_labels.fairness') }}</span></template>
+                        <template #subtitle><span class="text-body-2">{{ cardData.ethical_considerations.fairness }}</span></template>
+                      </v-list-item>
+                      <v-divider class="my-2"/>
+                      <v-list-item
+                        prepend-icon="mdi-shield-account-outline"
+                        class="mc-list-item mc-ethics-item"
+                      >
+                        <template #title><span class="font-weight-bold">{{ $t('predictions_home.model_cards.ethics_labels.privacy') }}</span></template>
+                        <template #subtitle><span class="text-body-2">{{ cardData.ethical_considerations.privacy }}</span></template>
+                      </v-list-item>
+                      <v-divider class="my-2"/>
+                      <v-list-item
+                        prepend-icon="mdi-eye-outline"
+                        class="mc-list-item mc-ethics-item"
+                      >
+                        <template #title><span class="font-weight-bold">{{ $t('predictions_home.model_cards.ethics_labels.transparency') }}</span></template>
+                        <template #subtitle><span class="text-body-2">{{ cardData.ethical_considerations.transparency }}</span></template>
+                      </v-list-item>
+                    </v-list>
+                  </v-window-item>
+
+                  <!-- Features -->
+                  <v-window-item value="features">
+                    <v-chip variant="tonal" color="secondary" size="small" class="font-weight-bold mb-4">
+                      {{ $t('predictions_home.model_cards.features.total', { count: cardData.features_total || cardData.training?.features_count }) }}
+                    </v-chip>
+                    <div v-if="cardData.feature_groups" class="feature-groups mt-2">
+                      <div
+                        v-for="(feats, groupName) in cardData.feature_groups"
+                        :key="groupName"
+                        class="feature-group mb-4"
+                      >
+                        <div class="feature-group-title mb-2">{{ groupName }}</div>
+                        <div class="d-flex flex-wrap ga-1">
+                          <v-chip
+                            v-for="(feat, idx) in feats"
+                            :key="idx"
+                            variant="outlined"
+                            size="small"
+                            color="primary"
+                            class="feature-chip"
+                          >
+                            {{ feat }}
+                          </v-chip>
+                        </div>
+                      </div>
+                    </div>
+                  </v-window-item>
+
+                  <!-- XAI -->
+                  <v-window-item value="xai">
+                    <v-list density="compact" class="mc-list mc-list--ok">
+                      <v-list-item prepend-icon="mdi-chart-waterfall" class="mc-list-item">
+                        <template #title><span class="text-body-2">{{ $t('predictions_home.model_cards.xai.shap') }}</span></template>
+                      </v-list-item>
+                      <v-list-item prepend-icon="mdi-star-outline" class="mc-list-item">
+                        <template #title><span class="text-body-2">{{ $t('predictions_home.model_cards.xai.important_factors') }}</span></template>
+                      </v-list-item>
+                      <v-list-item prepend-icon="mdi-chart-box-outline" class="mc-list-item">
+                        <template #title><span class="text-body-2">{{ $t('predictions_home.model_cards.xai.visualization') }}</span></template>
+                      </v-list-item>
+                    </v-list>
+                  </v-window-item>
+
+                </v-window>
+
+                <!-- ── Changelog ── -->
+                <v-divider class="my-6"/>
+                <div class="mc-section-title mb-3">
+                  <v-icon size="17" class="mr-1">mdi-history</v-icon>
+                  {{ $t('predictions_home.model_cards.changelog_title') }}
+                </div>
+                <v-alert type="success" variant="tonal" class="text-body-2">
+                  {{ cardData.changelog }}
+                </v-alert>
+
+              </template>
             </v-card-text>
           </v-card>
         </v-col>
@@ -167,71 +338,92 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, computed } from 'vue'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
+import { onMounted, ref, computed, watch } from 'vue'
 import { API_BASE } from '@/lib/api'
 import { useTranslation } from 'i18next-vue'
 
 const { i18next } = useTranslation()
 
+interface HyperParams { [key: string]: string | number }
+interface TrainingInfo {
+  dataset_size: number
+  features_count: number
+  training_date: string
+  hyperparameters: HyperParams
+  validation_strategy: string
+}
+interface ModelCardData {
+  name: string
+  version: string
+  model_type: string
+  deployment_date: string
+  status: string
+  training: TrainingInfo
+  metrics: { test_set: { accuracy: number; f1_score: number } }
+  intended_use: string[]
+  not_intended_for: string[]
+  limitations: string[]
+  recommendations: string[]
+  ethical_considerations: { fairness: string; privacy: string; transparency: string }
+  changelog: string
+  feature_groups?: Record<string, string[]>
+  features_total?: number
+}
+
 const loading = ref(true)
 const error = ref('')
-const rawMarkdown = ref('')
+const cardData = ref<ModelCardData | null>(null)
+const activeTab = ref('use')
 
-interface Meta { name: string; version: string; modelType: string; lastUpdated: string }
-
-const meta = ref<Meta>({
-  name: 'HEAR CI Prediction Model',
-  version: 'v3.0',
-  modelType: 'RandomForestClassifier',
-  lastUpdated: new Date().toISOString().slice(0, 10),
-})
-
-// Configure marked: GitHub-flavoured Markdown with line breaks
-marked.setOptions({ gfm: true, breaks: true } as Parameters<typeof marked.setOptions>[0])
-
-const renderedHtml = computed(() => {
-  if (!rawMarkdown.value) return ''
-  const html = marked.parse(rawMarkdown.value) as string
-  return DOMPurify.sanitize(html)
-})
-
-/**
- * Strip the h1 title and Version/ModelType/LastUpdated metadata lines
- * from the raw markdown before rendering, since they are already shown
- * in the header bar above the rendered content.
- */
-function stripHeaderBlock(md: string): string {
-  return md
-    // Remove the h1 line (e.g. "# HEAR CI Prediction Model")
-    .replace(/^#\s+.+\n?/m, '')
-    // Remove the three metadata lines inserted by the backend template
-    .replace(/\*\*(?:Version|Model Type|Modelltyp|Letzte Aktualisierung|Last Updated):\*\*.*\n?/gi, '')
-    // Collapse multiple consecutive blank lines left by the removal
-    .replace(/\n{3,}/g, '\n\n')
-    .trimStart()
+// Authoritative hyperparameter values with DE/EN localised display values
+const overrideEn: Record<string, string | number> = {
+  n_estimators: 100,
+  max_depth: 'unlimited',
+  max_features: 'log2',
+  min_samples_split: 10,
+  min_samples_leaf: 2,
+  class_weight: 'balanced',
+  random_state: 42,
+}
+const overrideDe: Record<string, string | number> = {
+  n_estimators: 100,
+  max_depth: 'unbegrenzt',
+  max_features: 'log2',
+  min_samples_split: 10,
+  min_samples_leaf: 2,
+  class_weight: 'balanced',
+  random_state: 42,
 }
 
-/** Extract the handful of metadata values we show in the header bar. */
-function extractMeta(md: string): Meta {
-  const title = md.match(/^#\s+(.+)$/m)?.[1] ?? meta.value.name
-  const version = md.match(/\*\*Version:\*\*\s*([^\s\n]+)/i)?.[1] ?? meta.value.version
-  const modelType = md.match(/\*\*(?:Modelltyp|Model Type):\*\*\s*(.+?)(?:\s{2,}|\n)/i)?.[1]?.trim() ?? meta.value.modelType
-  const lastUpdated = md.match(/\*\*(?:Letzte Aktualisierung|Last Updated):\*\*\s*(.+?)(?:\s{2,}|\n)/i)?.[1]?.trim() ?? meta.value.lastUpdated
-  return { name: title, version, modelType, lastUpdated }
-}
+const locale = computed(() => (i18next.language?.startsWith('en') ? 'en' : 'de'))
+
+const hyperparamsToShow = computed(() => {
+  const raw: HyperParams = cardData.value?.training?.hyperparameters || {}
+  const override = locale.value === 'en' ? overrideEn : overrideDe
+  const keys = Array.from(new Set([...Object.keys(override), ...Object.keys(raw)]))
+  return keys.map((k) => ({
+    key: k,
+    label: i18next.t(`predictions_home.model_cards.hyperparameters.labels.${k}`, k),
+    desc: i18next.t(`predictions_home.model_cards.hyperparameters.descs.${k}`, ''),
+    value: override[k] ?? raw[k],
+  }))
+})
+
+const hyperparamsSummary = computed(() => {
+  const override = locale.value === 'en' ? overrideEn : overrideDe
+  const order = ['n_estimators', 'max_depth', 'max_features', 'min_samples_split', 'min_samples_leaf']
+  const parts = order.map((k) => `${k}=${override[k] ?? (cardData.value?.training?.hyperparameters?.[k] ?? '?')}`)
+  return parts.join(' \u00B7 ')
+})
 
 async function loadModelCard() {
   loading.value = true
   error.value = ''
   try {
     const lang = i18next.language?.startsWith('en') ? 'en' : 'de'
-    const res = await fetch(`${API_BASE}/api/v1/model-card?lang=${lang}`)
+    const res = await fetch(`${API_BASE}/api/v1/model-card/json?lang=${lang}`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const text = await res.text()
-    meta.value = extractMeta(text)
-    rawMarkdown.value = stripHeaderBlock(text)
+    cardData.value = await res.json()
   } catch (err) {
     error.value = String(err)
   } finally {
@@ -253,184 +445,129 @@ onMounted(() => loadModelCard())
   box-shadow: 0 4px 22px rgba(var(--v-theme-primary), 0.35) !important;
 }
 
-/* Professional Model Card Styles */
-.model-card-professional {
-  border-radius: 8px !important;
+/* ── Model Card: outer wrapper ── */
+.mc-pro {
+  border-radius: 10px !important;
   overflow: hidden;
   border: 1px solid #e0e0e0;
 }
 
-.model-card-header {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-primary-darken-1)) 100%);
+/* ── Gradient header ── */
+.mc-header {
+  background: linear-gradient(135deg,
+    rgb(var(--v-theme-primary)) 0%,
+    color-mix(in srgb, rgb(var(--v-theme-primary)) 80%, black) 100%);
 }
 
-.model-card-metadata {
-  border-bottom: 1px solid #e0e0e0;
+/* ── Quick stats bar ── */
+.mc-stats { border-bottom: 1px solid #e0e0e0; }
+
+.stat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4px 8px;
 }
-
-/* ── Rendered Markdown Styles ─────────────────────────────────── */
-.model-card-markdown {
-  line-height: 1.8;
-  color: rgba(0, 0, 0, 0.82);
-  font-size: 0.96rem;
-  font-family: inherit;
-}
-
-/* H1 (model name) – hidden, already in header bar */
-.model-card-markdown :deep(h1) { display: none; }
-
-/* ── Section headings (h2) ──────────────────────────── */
-.model-card-markdown :deep(h2) {
-  font-size: 1.05rem;
+.stat-val {
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #fff;
-  background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-primary-darken-1), 0.85) 100%);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  margin: 2.2rem 0 0.9rem;
-  letter-spacing: 0.02em;
+  color: rgba(0, 0, 0, 0.82);
+  line-height: 1.2;
+}
+.stat-val--sm { font-size: 0.82rem; }
+.stat-lbl {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.48);
+}
+
+/* ── Section heading ── */
+.mc-section-title {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-/* ── Sub-group headings (h3) ──────────────────────────── */
-.model-card-markdown :deep(h3) {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: rgb(var(--v-theme-primary));
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  margin: 1.4rem 0 0.5rem;
-  padding-bottom: 0.2rem;
-  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.2);
-}
-
-/* ── Paragraphs ──────────────────────────── */
-.model-card-markdown :deep(p) {
-  margin: 0.5rem 0;
-}
-
-/* ── Unordered lists (bullet points) ──────────────────────────── */
-.model-card-markdown :deep(ul) {
-  padding-left: 1.4rem;
-  margin: 0.4rem 0 1rem;
-}
-
-.model-card-markdown :deep(ul li) {
-  margin-bottom: 0.35rem;
-  line-height: 1.7;
-  position: relative;
-}
-
-.model-card-markdown :deep(ul li::marker) {
   color: rgb(var(--v-theme-primary));
+  padding-bottom: 4px;
+  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.18);
 }
 
-/* ── Bold labels inside paragraphs/lists ──────────────────────────── */
-.model-card-markdown :deep(li strong),
-.model-card-markdown :deep(p strong) {
-  color: rgba(0, 0, 0, 0.87);
-}
-
-/* ── Italic text ──────────────────────────── */
-.model-card-markdown :deep(em) {
-  color: rgba(0, 0, 0, 0.55);
-  font-size: 0.9rem;
-}
-
-/* ── Horizontal rule – styled divider ──────────────────────────── */
-.model-card-markdown :deep(hr) {
-  border: none;
-  border-top: 2px dashed rgba(var(--v-theme-primary), 0.2);
-  margin: 2rem 0;
-}
-
-/* ── Blockquote – highlighted note ──────────────────────────── */
-.model-card-markdown :deep(blockquote) {
-  border-left: 4px solid rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.06);
-  margin: 1.2rem 0;
-  padding: 0.75rem 1.1rem;
-  border-radius: 0 8px 8px 0;
-  color: rgba(0, 0, 0, 0.72);
-  font-style: normal;
-  font-size: 0.93rem;
-}
-
-.model-card-markdown :deep(blockquote p) {
-  margin: 0;
-}
-
-/* ── Inline code ──────────────────────────── */
-.model-card-markdown :deep(code) {
-  background: #f4f4f4;
-  border-radius: 4px;
-  padding: 0.1em 0.4em;
-  font-size: 0.86em;
-  color: #c62828;
-  font-family: 'Courier New', monospace;
-}
-
-/* ── Ordered list → feature chip grid ──────────────────────────── */
-.model-card-markdown :deep(ol) {
-  list-style: none;
-  padding-left: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin: 0.6rem 0 1.2rem;
-}
-
-.model-card-markdown :deep(ol li) {
-  background: rgba(var(--v-theme-primary), 0.07);
-  border: 1px solid rgba(var(--v-theme-primary), 0.28);
-  border-radius: 20px;
-  padding: 0.25rem 0.85rem;
-  font-size: 0.81rem;
-  color: rgb(var(--v-theme-primary));
-  margin-bottom: 0;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.model-card-markdown :deep(ol li:hover) {
-  background: rgba(var(--v-theme-primary), 0.14);
-  border-color: rgba(var(--v-theme-primary), 0.5);
-}
-
-/* ── Tables (metrics rows) ──────────────────────────── */
-.model-card-markdown :deep(table) {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0.8rem 0 1.2rem;
-  font-size: 0.91rem;
-}
-
-.model-card-markdown :deep(th) {
-  background: rgba(var(--v-theme-primary), 0.1);
-  color: rgb(var(--v-theme-primary));
+/* ── Sub-section heading ── */
+.mc-subsection-title {
+  font-size: 0.85rem;
   font-weight: 700;
-  padding: 0.5rem 0.8rem;
-  text-align: left;
-  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.3);
+  color: rgba(0, 0, 0, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.mc-subsection-title--warn { color: rgb(var(--v-theme-warning)) !important; }
+
+/* ── Metric cards ── */
+.metric-card {
+  background: rgba(var(--v-theme-primary), 0.05);
+  border: 1px solid rgba(var(--v-theme-primary), 0.15);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.metric-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.5);
+}
+.metric-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: rgb(var(--v-theme-primary));
+  line-height: 1;
 }
 
-.model-card-markdown :deep(td) {
-  padding: 0.4rem 0.8rem;
-  border-bottom: 1px solid #eeeeee;
-  vertical-align: middle;
+/* ── List styles ── */
+.mc-list { background: transparent !important; }
+.mc-list--ok :deep(.v-list-item__prepend .v-icon) { color: rgb(var(--v-theme-success)) !important; }
+.mc-list--warn :deep(.v-list-item__prepend .v-icon) { color: rgb(var(--v-theme-warning)) !important; }
+.mc-list-item :deep(.v-list-item-title) { white-space: normal; font-size: 0.875rem; line-height: 1.5; }
+.mc-ethics-item :deep(.v-list-item-subtitle) { white-space: normal; opacity: 1; }
+
+/* ── Hyperparameter cards ── */
+.hp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+.hp-card {
+  background: rgba(var(--v-theme-primary), 0.05);
+  border: 1px solid rgba(var(--v-theme-primary), 0.15);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.hp-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.72);
+  line-height: 1.3;
+}
+.hp-desc {
+  font-size: 0.71rem;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.48);
+  margin-top: 4px;
 }
 
-.model-card-markdown :deep(tr:last-child td) {
-  border-bottom: none;
+/* ── Feature group chips ── */
+.feature-group-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.65);
+  letter-spacing: 0.03em;
+}
+.feature-chip {
+  font-size: 0.75rem !important;
 }
 
-/* ── Responsive ──────────────────────────── */
-@media (max-width: 768px) {
-  .model-card-markdown { font-size: 0.92rem; }
-  .model-card-markdown :deep(h2) { font-size: 0.95rem; padding: 0.4rem 0.8rem; }
-  .model-card-markdown :deep(h3) { font-size: 0.85rem; }
-  .model-card-markdown :deep(ol li) { white-space: normal; font-size: 0.78rem; }
-}
 </style>
 
