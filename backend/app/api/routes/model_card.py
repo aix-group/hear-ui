@@ -1,3 +1,7 @@
+import copy
+import json
+import pathlib
+
 from fastapi import APIRouter, Query
 from fastapi.responses import PlainTextResponse
 
@@ -127,15 +131,25 @@ def _render_model_card_markdown_de() -> str:
     # ── Hyperparameter table ───────────────────────────────────────────────────
     if hyperparams:
         max_depth_val = hyperparams.get("max_depth")
-        max_depth_disp = str(max_depth_val) if max_depth_val is not None else "unbegrenzt"
+        max_depth_disp = (
+            str(max_depth_val) if max_depth_val is not None else "unbegrenzt"
+        )
         model_description += "### ⚙️ Hyperparameter\n\n"
         model_description += "| Parameter | Wert |\n"
         model_description += "|---|---|\n"
-        model_description += f"| n\\_estimators | {hyperparams.get('n_estimators', '?')} |\n"
+        model_description += (
+            f"| n\\_estimators | {hyperparams.get('n_estimators', '?')} |\n"
+        )
         model_description += f"| max\\_depth | {max_depth_disp} |\n"
-        model_description += f"| min\\_samples\\_split | {hyperparams.get('min_samples_split', '?')} |\n"
-        model_description += f"| class\\_weight | {hyperparams.get('class_weight', '?')} |\n"
-        model_description += f"| random\\_state | {hyperparams.get('random_state', '?')} |\n"
+        model_description += (
+            f"| min\\_samples\\_split | {hyperparams.get('min_samples_split', '?')} |\n"
+        )
+        model_description += (
+            f"| class\\_weight | {hyperparams.get('class_weight', '?')} |\n"
+        )
+        model_description += (
+            f"| random\\_state | {hyperparams.get('random_state', '?')} |\n"
+        )
         model_description += "\n"
 
     # ── Metrics table ──────────────────────────────────────────────────────────
@@ -150,19 +164,27 @@ def _render_model_card_markdown_de() -> str:
         ]
     ):
         metrics_section = "\n## 📊 Leistung / Bewertung\n\n"
-        metrics_section += f"*Bewertungsgrundlage: 80/20 Train-Test-Split ({ds_label})*\n\n"
+        metrics_section += (
+            f"*Bewertungsgrundlage: 80/20 Train-Test-Split ({ds_label})*\n\n"
+        )
         metrics_section += "| Metrik | Ergebnis (Testsatz) |\n"
         metrics_section += "|---|---|\n"
         if card.metrics.accuracy is not None:
-            metrics_section += f"| **Genauigkeit (Accuracy)** | **{card.metrics.accuracy:.2%}** |\n"
+            metrics_section += (
+                f"| **Genauigkeit (Accuracy)** | **{card.metrics.accuracy:.2%}** |\n"
+            )
         if card.metrics.f1_score is not None:
             metrics_section += f"| **F1-Score** | **{card.metrics.f1_score:.2f}** |\n"
         if card.metrics.roc_auc is not None:
             metrics_section += f"| ROC-AUC | {card.metrics.roc_auc:.2f} |\n"
         if card.metrics.recall is not None:
-            metrics_section += f"| Sensitivität (Recall) | {card.metrics.recall:.2%} |\n"
+            metrics_section += (
+                f"| Sensitivität (Recall) | {card.metrics.recall:.2%} |\n"
+            )
         if card.metrics.precision is not None:
-            metrics_section += f"| Spezifität (Precision) | {card.metrics.precision:.2%} |\n"
+            metrics_section += (
+                f"| Spezifität (Precision) | {card.metrics.precision:.2%} |\n"
+            )
         metrics_section += "\n> **Hinweis:** Zahlen dienen zur Orientierung und ersetzen nicht die klinische Urteilsfähigkeit.\n"
 
     # ── Features ───────────────────────────────────────────────────────────────
@@ -248,7 +270,9 @@ def _render_model_card_markdown_en() -> str:
     features_count = meta.get("features_count") or len(card.features)
     training_date = meta.get("training_date", "")
     validation_strategy = meta.get("validation_strategy", "80/20 Stratified")
-    training_desc = meta.get("training_description") or "Pseudonymised in accordance with GDPR"
+    training_desc = (
+        meta.get("training_description") or "Pseudonymised in accordance with GDPR"
+    )
     hyperparams: dict = meta.get("hyperparameters") or {}
     ethical_fairness = meta.get("ethical_fairness", "")
     ethical_transparency = meta.get("ethical_transparency", "")
@@ -274,15 +298,25 @@ def _render_model_card_markdown_en() -> str:
     # ── Hyperparameter table ───────────────────────────────────────────────────
     if hyperparams:
         max_depth_val = hyperparams.get("max_depth")
-        max_depth_disp = str(max_depth_val) if max_depth_val is not None else "unlimited"
+        max_depth_disp = (
+            str(max_depth_val) if max_depth_val is not None else "unlimited"
+        )
         model_description += "### ⚙️ Hyperparameters\n\n"
         model_description += "| Parameter | Value |\n"
         model_description += "|---|---|\n"
-        model_description += f"| n\\_estimators | {hyperparams.get('n_estimators', '?')} |\n"
+        model_description += (
+            f"| n\\_estimators | {hyperparams.get('n_estimators', '?')} |\n"
+        )
         model_description += f"| max\\_depth | {max_depth_disp} |\n"
-        model_description += f"| min\\_samples\\_split | {hyperparams.get('min_samples_split', '?')} |\n"
-        model_description += f"| class\\_weight | {hyperparams.get('class_weight', '?')} |\n"
-        model_description += f"| random\\_state | {hyperparams.get('random_state', '?')} |\n"
+        model_description += (
+            f"| min\\_samples\\_split | {hyperparams.get('min_samples_split', '?')} |\n"
+        )
+        model_description += (
+            f"| class\\_weight | {hyperparams.get('class_weight', '?')} |\n"
+        )
+        model_description += (
+            f"| random\\_state | {hyperparams.get('random_state', '?')} |\n"
+        )
         model_description += "\n"
 
     # ── Metrics table ──────────────────────────────────────────────────────────
@@ -297,7 +331,9 @@ def _render_model_card_markdown_en() -> str:
         ]
     ):
         metrics_section = "\n## 📊 Performance / Evaluation\n\n"
-        metrics_section += f"*Evaluation basis: 80/20 train-test split ({ds_label})*\n\n"
+        metrics_section += (
+            f"*Evaluation basis: 80/20 train-test split ({ds_label})*\n\n"
+        )
         metrics_section += "| Metric | Result (Test Set) |\n"
         metrics_section += "|---|---|\n"
         if card.metrics.accuracy is not None:
@@ -309,7 +345,9 @@ def _render_model_card_markdown_en() -> str:
         if card.metrics.recall is not None:
             metrics_section += f"| Sensitivity (Recall) | {card.metrics.recall:.2%} |\n"
         if card.metrics.precision is not None:
-            metrics_section += f"| Specificity (Precision) | {card.metrics.precision:.2%} |\n"
+            metrics_section += (
+                f"| Specificity (Precision) | {card.metrics.precision:.2%} |\n"
+            )
         metrics_section += "\n> **Note:** These figures are for guidance only and should not be used as the sole basis for clinical decision-making.\n"
 
     # ── Features ───────────────────────────────────────────────────────────────
@@ -514,13 +552,25 @@ def _build_feature_groups_json(lang: str) -> dict:
 
     result: dict[str, list[str]] = {}
     for group_name, features in feature_groups.items():
-        display_group = group_name_map_en.get(group_name, group_name) if lang == "en" else group_name
+        display_group = (
+            group_name_map_en.get(group_name, group_name)
+            if lang == "en"
+            else group_name
+        )
         names: list[str] = []
         for f in features:
             if lang == "en":
-                names.append(FEATURE_TRANSLATIONS_DE_EN.get(f.name, f.name.replace("...", "").strip()))
+                names.append(
+                    FEATURE_TRANSLATIONS_DE_EN.get(
+                        f.name, f.name.replace("...", "").strip()
+                    )
+                )
             else:
-                names.append(FEATURE_DISPLAY_NAMES_DE.get(f.name, f.name.replace("...", "").strip()))
+                names.append(
+                    FEATURE_DISPLAY_NAMES_DE.get(
+                        f.name, f.name.replace("...", "").strip()
+                    )
+                )
         result[display_group] = names
 
     return {"groups": result, "total": total}
@@ -529,8 +579,12 @@ def _build_feature_groups_json(lang: str) -> dict:
 @router.get("/json")
 def get_model_card_json(lang: str = Query("de", description="Language: 'de' or 'en'")):
     """Return structured model card JSON, with text fields in the requested language."""
-    import json, pathlib, copy
-    json_path = pathlib.Path(__file__).parent.parent.parent / "config" / "model_cards" / "v3_randomforest_2026-02-17.json"
+    json_path = (
+        pathlib.Path(__file__).parent.parent.parent
+        / "config"
+        / "model_cards"
+        / "v3_randomforest_2026-02-17.json"
+    )
     data = json.loads(json_path.read_text(encoding="utf-8"))
 
     # ── Feature groups & XAI (both languages) ──────────────────────────────
