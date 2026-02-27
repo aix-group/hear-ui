@@ -147,6 +147,7 @@
                   <v-icon size="17" class="mr-1">mdi-tune-variant</v-icon>
                   {{ $t('predictions_home.model_cards.hyperparameters.title') }}
                 </div>
+                <div class="text-caption mb-3" style="opacity:.9">{{ hyperparamsSummary }}</div>
                 <div class="hp-grid mb-7">
                   <div
                     v-for="hp in hyperparamsToShow"
@@ -406,6 +407,13 @@ const hyperparamsToShow = computed(() => {
     desc: i18next.t(`predictions_home.model_cards.hyperparameters.descs.${k}`, ''),
     value: override[k] ?? raw[k],
   }))
+})
+
+const hyperparamsSummary = computed(() => {
+  const override = locale.value === 'en' ? overrideEn : overrideDe
+  const order = ['n_estimators', 'max_depth', 'max_features', 'min_samples_split', 'min_samples_leaf']
+  const parts = order.map((k) => `${k}=${override[k] ?? (cardData.value?.training?.hyperparameters?.[k] ?? '?')}`)
+  return parts.join(' \u00B7 ')
 })
 
 async function loadModelCard() {
