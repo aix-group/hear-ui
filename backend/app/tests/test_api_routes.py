@@ -1,6 +1,6 @@
 """Tests for API routes - comprehensive test coverage."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -40,7 +40,7 @@ def sample_patient(sample_patient_data):
     from app.models import Patient
 
     return Patient(
-        id=uuid4(), input_features=sample_patient_data, created_at=datetime.utcnow()
+        id=uuid4(), input_features=sample_patient_data, created_at=datetime.now(UTC)
     )
 
 
@@ -158,7 +158,7 @@ class TestPatientRoutes:
         patient = Patient(
             id=uuid4(),
             input_features={},  # Empty features
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
 
         with patch("app.api.routes.patients.crud") as mock_crud:
@@ -198,7 +198,7 @@ class TestPatientRoutes:
         from app.api.routes.patients import predict_patient_api
         from app.models import Patient
 
-        patient = Patient(id=uuid4(), input_features={}, created_at=datetime.utcnow())
+        patient = Patient(id=uuid4(), input_features={}, created_at=datetime.now(UTC))
 
         with patch("app.api.routes.patients.crud") as mock_crud:
             mock_crud.get_patient.return_value = patient
@@ -224,7 +224,7 @@ class TestFeedbackRoutes:
 
         feedback_in = FeedbackCreate(**sample_feedback_data)
         expected_feedback = Feedback(
-            id=uuid4(), created_at=datetime.utcnow(), **sample_feedback_data
+            id=uuid4(), created_at=datetime.now(UTC), **sample_feedback_data
         )
 
         with patch("app.api.routes.feedback.crud") as mock_crud:
@@ -242,7 +242,7 @@ class TestFeedbackRoutes:
 
         feedback_id = uuid4()
         expected_feedback = Feedback(
-            id=feedback_id, created_at=datetime.utcnow(), **sample_feedback_data
+            id=feedback_id, created_at=datetime.now(UTC), **sample_feedback_data
         )
 
         with patch("app.api.routes.feedback.crud") as mock_crud:
