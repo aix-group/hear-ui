@@ -133,7 +133,7 @@
       },
       "explanations": {
         "title": "Factors influencing the prediction",
-        "subtitle": "Sorted by positive and negative influencing factors, grouped by category (e.g. Demographics, Imaging). Red = increases probability, Blue = decreases probability."
+        "subtitle": "Sorted by positive and negative influencing factors, grouped by category (e.g. Demographics, Imaging)."
       },
       "feedback": {
         "question": "Do you agree with the AI prediction?",
