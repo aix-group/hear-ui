@@ -20,10 +20,21 @@ class TestExplainerEndpoint:
 
         if resp.status_code == 200:
             data = resp.json()
+            # Standardized aligned-list schema (required by task spec)
+            assert "features" in data, "Response must contain 'features' list"
+            assert "values" in data, "Response must contain 'values' list"
+            assert "attributions" in data, "Response must contain 'attributions' list"
+            assert "base_value" in data, "Response must contain 'base_value'"
             assert "prediction" in data
+            # All aligned lists must have the same length d
+            d = len(data["features"])
+            assert len(data["values"]) == d, "values list must align with features"
+            assert len(data["attributions"]) == d, "attributions list must align with features"
+            # No pre-rendered images in payload (optional field)
+            assert data.get("plot_base64") is None
+            # Backward-compatible fields (still present)
             assert "feature_importance" in data
             assert "shap_values" in data
-            assert "base_value" in data
             assert "top_features" in data
 
     def test_explain_with_minimal_data(self, client: TestClient, db):
