@@ -281,7 +281,7 @@
         },
         "limitations": {
           "title": "Limitations",
-          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=137)",
+          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=235)",
           "item_2": "Nicht validiert außerhalb der Trainingspopulation (Universitätsklinikum Essen)",
           "item_3": "Vorhersagen sind unterstützende Hinweise, keine deterministischen Ergebnisse",
           "item_4": "Mögliche Biases in Bezug auf Altersgruppen, Geschlecht und Art des Hörverlusts",

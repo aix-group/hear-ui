@@ -299,7 +299,7 @@
         },
         "limitations": {
           "title": "Limitations",
-          "item_1": "Model based on limited dataset (N=137)",
+          "item_1": "Model based on limited dataset (N=235)",
           "item_2": "Not validated outside training population (University Hospital Essen)",
           "item_3": "Predictions are supportive evidence, not deterministic outcomes",
           "item_4": "Possible biases regarding age groups, gender, and type of hearing loss",

@@ -3,10 +3,8 @@
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D.svg)](https://vuejs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.114+-009688.svg)](https://fastapi.tiangolo.com/)
-[![Backend Tests](https://img.shields.io/badge/Backend_Tests-542%20passed-brightgreen.svg)](#testing)
-[![Backend Coverage](https://img.shields.io/badge/Backend_Coverage-86%25-green.svg)](#testing)
-[![Frontend Tests](https://img.shields.io/badge/Frontend_Tests-87%20passed-brightgreen.svg)](#testing)
-[![Frontend Coverage](https://img.shields.io/badge/Frontend_Coverage-95%25-brightgreen.svg)](#testing)
+[![Backend CI](https://github.com/aix-group/hear-ui/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/aix-group/hear-ui/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/aix-group/hear-ui/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/aix-group/hear-ui/actions/workflows/frontend-ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 AI-assisted clinical decision support for estimating Cochlear Implant outcomes and explaining predictions via SHAP.
@@ -20,7 +18,7 @@ AI-assisted clinical decision support for estimating Cochlear Implant outcomes a
 For hearing-impaired patients, the question arises whether a Cochlear Implant (CI) would help. HEAR-UI supports this decision by providing:
 
 - **ML-based outcome predictions** — estimates the probability of CI success based on patient data
-- **Explainable AI (XAI) visualizations** — SHAP feature importance, coefficient-based and LIME explanations
+- **Explainable AI (XAI) visualizations** — SHAP feature importance (waterfall chart), with pluggable coefficient-based and LIME explainers
 - **User feedback collection** — clinicians can agree/disagree with predictions
 - **Patient management** — create, search, and manage patient records
 
@@ -78,7 +76,7 @@ Copy `.env.example` to `.env` and update values:
 | Variable | Description |
 |----------|-------------|
 | `POSTGRES_PASSWORD` | Database password (change from default!) |
-| `SECRET_KEY` | JWT signing key (generate: `python -c "import secrets; print(secrets.token_urlsafe(32))"`) |
+| `SECRET_KEY` | Application secret key (generate: `python -c "import secrets; print(secrets.token_urlsafe(32))"`) |
 | `DOCKER_IMAGE_BACKEND` | Backend image name (default: `hear-backend`) |
 | `DOCKER_IMAGE_FRONTEND` | Frontend image name (default: `hear-frontend`) |
 
@@ -144,7 +142,7 @@ docker compose -f docker/docker-compose.yml exec backend python -m pytest -v --c
 cd backend && pytest app/tests/ -v --cov=app --cov-report=term-missing
 ```
 
-**Results**: 542 tests passed | 86% coverage
+Current results are reported by the CI pipeline (see badge above).
 
 ### Frontend Tests
 
@@ -156,7 +154,7 @@ pnpm test:e2e          # E2E API tests (Playwright)
 pnpm test:e2e:ui       # E2E UI tests (Playwright)
 ```
 
-**Results**: 87 tests passed | 95% statement coverage
+Current results are reported by the CI pipeline (see badge above).
 
 ## CI/CD
 
@@ -188,14 +186,14 @@ hear-ui/
 │   │   ├── core/           # ML model wrapper, preprocessor, SHAP explainer
 │   │   ├── db/             # Database connection & CRUD
 │   │   ├── models/         # SQLModel database models + trained ML model
-│   │   └── tests/          # Backend test suite (542 tests)
+│   │   └── tests/          # Backend test suite
 │   └── requirements.txt
 ├── frontend/               # Vue.js 3 SPA
 │   ├── src/
 │   │   ├── components/     # Vue components (feedback, model card, charts)
 │   │   ├── routes/         # Page views (patients, predictions, search)
 │   │   ├── client/         # Auto-generated API client (OpenAPI)
-│   │   └── test/           # Unit tests (87 tests)
+│   │   └── test/           # Vitest unit tests
 │   └── tests/              # Playwright E2E tests
 ├── docker/                 # Docker Compose orchestration
 │   ├── docker-compose.yml

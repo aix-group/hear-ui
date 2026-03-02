@@ -26,7 +26,7 @@ The backend provides a REST API for:
 | Migrations | Alembic |
 | ML Model | scikit-learn (RandomForest) |
 | Explainability | SHAP (TreeExplainer), coefficient-based, LIME |
-| Testing | pytest (542 tests, 86% coverage) |
+| Testing | pytest (coverage ≥69%, enforced in CI) |
 | Linting | Ruff (linter + formatter) |
 | Type Checking | mypy |
 
@@ -114,7 +114,7 @@ docker compose -f docker/docker-compose.yml exec backend \
 cd backend && pytest app/tests/ -v --cov=app
 ```
 
-**Results**: 542 tests passed | 86% coverage
+Current results are reported by the CI pipeline. Coverage threshold: ≥69%.
 
 ### Test Categories
 
@@ -164,7 +164,7 @@ backend/
 │   ├── db/                  # Database connection, CRUD, models
 │   ├── models/              # SQLModel schemas + trained .pkl model
 │   ├── config/              # Feature definitions, locales, model cards
-│   └── tests/               # Test suite (542 tests)
+│   └── tests/               # Test suite
 ├── alembic.ini              # Alembic configuration
 ├── Dockerfile               # Container build
 ├── pyproject.toml           # Python project config (Ruff, pytest, mypy)

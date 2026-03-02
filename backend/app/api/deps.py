@@ -14,5 +14,3 @@ def get_db() -> Generator[Session, None, None]:
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
-
-# Authentication removed: no current_user helpers provided.
