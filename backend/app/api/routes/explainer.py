@@ -12,16 +12,34 @@ router = APIRouter(prefix="/explainer", tags=["explainer"])
 
 
 class ShapVisualizationResponse(BaseModel):
-    """Response with SHAP values and optional plot."""
+    """Response with SHAP explanation following standardized aligned-list schema.
+
+    Standardized schema (all lists are of equal length d and share the same ordering):
+      - features:     list of d feature names (strings)
+      - values:       list of d feature values (numeric)
+      - attributions: list of d contribution scores (float, i.e. SHAP values)
+      - base_value:   scalar baseline prediction (float, optional)
+
+    Backward-compatible fields (kept for existing consumers):
+      - feature_importance: dict mapping feature name -> attribution
+      - feature_values:     dict mapping feature name -> value
+      - shap_values:        same data as `attributions`, as a list
+    """
 
     prediction: float
-    feature_importance: dict[str, float]
-    feature_values: dict[str, float] | None = None
-    shap_values: list[float]
-    base_value: float
+    # ── Standardized aligned-list schema ──────────────────────────────────
+    features: list[str] = []
+    values: list[float] = []
+    attributions: list[float] = []
+    base_value: float = 0.0
+    # ── Optional extras ───────────────────────────────────────────────────
     plot_base64: str | None = None
     top_features: list[dict] | None = None
     warnings: list[str] = []
+    # ── Backward-compatible fields ─────────────────────────────────────────
+    feature_importance: dict[str, float] = {}
+    feature_values: dict[str, float] | None = None
+    shap_values: list[float] = []
 
 
 @router.get("/methods", summary="List Available XAI Methods")
@@ -155,11 +173,17 @@ async def get_shap_explanation(
             for name, importance in sorted_features[:10]
         ]
 
-        # Get SHAP values as list (for backward compatibility)
-        shap_values = [
-            explanation.feature_importance.get(name, 0.0)
-            for name in wrapper.get_feature_names()
-        ]
+        # Build ordered aligned lists (standardized schema)
+        feat_names: list[str] = wrapper.get_feature_names() or []
+        feat_values: dict[str, float] = explanation.feature_values or {}
+        feat_importance: dict[str, float] = explanation.feature_importance or {}
+
+        features_list = feat_names
+        values_list = [float(feat_values.get(n, 0.0)) for n in feat_names]
+        attributions_list = [float(feat_importance.get(n, 0.0)) for n in feat_names]
+
+        # Backward-compatible shap_values list (same data as attributions)
+        shap_values = attributions_list
 
         # Get plot if available
         plot_base64 = None
@@ -169,13 +193,19 @@ async def get_shap_explanation(
             plot_base64 = explanation.metadata.get("plot_base64")
 
         return ShapVisualizationResponse(
-            prediction=prediction,  # Use wrapper prediction, not explainer
-            feature_importance=explanation.feature_importance,
-            feature_values=explanation.feature_values,
-            shap_values=shap_values,
+            prediction=prediction,
+            # Standardized aligned-list schema
+            features=features_list,
+            values=values_list,
+            attributions=attributions_list,
             base_value=explanation.base_value,
+            # Optional extras
             plot_base64=plot_base64,
             top_features=top_features,
+            # Backward-compatible
+            feature_importance=feat_importance,
+            feature_values=feat_values,
+            shap_values=shap_values,
         )
 
     except HTTPException:

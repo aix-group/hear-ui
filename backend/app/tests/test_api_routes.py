@@ -320,14 +320,57 @@ class TestExplainerRoutes:
 
         response = ShapVisualizationResponse(
             prediction=0.75,
-            feature_importance={"age": 0.1},
-            shap_values=[0.1, 0.2],
+            features=["age", "gender"],
+            values=[45.0, 1.0],
+            attributions=[0.1, -0.05],
             base_value=0.5,
+            feature_importance={"age": 0.1, "gender": -0.05},
+            shap_values=[0.1, -0.05],
         )
 
         assert response.prediction == 0.75
-        assert response.feature_importance == {"age": 0.1}
         assert response.base_value == 0.5
+        assert response.plot_base64 is None
+        # Standardized aligned-list schema
+        assert response.features == ["age", "gender"]
+        assert response.values == [45.0, 1.0]
+        assert response.attributions == [0.1, -0.05]
+        assert len(response.features) == len(response.values) == len(response.attributions)
+
+    def test_shap_visualization_response_lists_aligned(self):
+        """All aligned lists must share the same length d."""
+        from app.api.routes.explainer import ShapVisualizationResponse
+
+        feat = ["f0", "f1", "f2"]
+        vals = [1.0, 2.0, 3.0]
+        attrs = [0.3, -0.1, 0.05]
+
+        response = ShapVisualizationResponse(
+            prediction=0.8,
+            features=feat,
+            values=vals,
+            attributions=attrs,
+            base_value=0.6,
+        )
+
+        d = len(feat)
+        assert len(response.features) == d
+        assert len(response.values) == d
+        assert len(response.attributions) == d
+        # Verify shap_values defaults empty (not required)
+        assert isinstance(response.shap_values, list)
+
+    def test_shap_visualization_response_no_prerendered_images(self):
+        """plot_base64 must be None by default (no pre-rendered images in payload)."""
+        from app.api.routes.explainer import ShapVisualizationResponse
+
+        response = ShapVisualizationResponse(
+            prediction=0.5,
+            features=["x"],
+            values=[1.0],
+            attributions=[0.2],
+            base_value=0.3,
+        )
         assert response.plot_base64 is None
 
 

@@ -689,15 +689,30 @@ async def explainer_patient_api(
                 )
         # ──────────────────────────────────────────────────────────────────
 
+        # Build standardized aligned-list schema (same ordering via EXPECTED_FEATURES_RF)
+        features_list: list[str] = list(EXPECTED_FEATURES_RF)
+        values_list: list[float] = [
+            float(feature_values.get(n, 0.0)) for n in features_list
+        ]
+        attributions_list: list[float] = [
+            float(feature_importance.get(n, 0.0)) for n in features_list
+        ]
+
         return ShapVisualizationResponse(
             prediction=prediction,
-            feature_importance=feature_importance,
-            feature_values=feature_values,
-            shap_values=shap_values,
+            # Standardized aligned-list schema
+            features=features_list,
+            values=values_list,
+            attributions=attributions_list,
             base_value=base_value,
+            # Optional extras
             plot_base64=None,
             top_features=top_features,
             warnings=warnings,
+            # Backward-compatible
+            feature_importance=feature_importance,
+            feature_values=feature_values,
+            shap_values=shap_values,
         )
 
     except HTTPException:
