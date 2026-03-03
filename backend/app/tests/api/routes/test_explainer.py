@@ -29,7 +29,9 @@ class TestExplainerEndpoint:
             # All aligned lists must have the same length d
             d = len(data["features"])
             assert len(data["values"]) == d, "values list must align with features"
-            assert len(data["attributions"]) == d, "attributions list must align with features"
+            assert len(data["attributions"]) == d, (
+                "attributions list must align with features"
+            )
             # No pre-rendered images in payload (optional field)
             assert data.get("plot_base64") is None
             # Backward-compatible fields (still present)

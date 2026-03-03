@@ -335,7 +335,9 @@ class TestExplainerRoutes:
         assert response.features == ["age", "gender"]
         assert response.values == [45.0, 1.0]
         assert response.attributions == [0.1, -0.05]
-        assert len(response.features) == len(response.values) == len(response.attributions)
+        assert (
+            len(response.features) == len(response.values) == len(response.attributions)
+        )
 
     def test_shap_visualization_response_lists_aligned(self):
         """All aligned lists must share the same length d."""
