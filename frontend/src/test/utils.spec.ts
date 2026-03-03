@@ -116,3 +116,80 @@ describe('confirmPasswordRules', () => {
     expect(rules.required).toBeUndefined()
   })
 })
+
+// ── formatBirthDateLocale ───────────────────────────────────────────
+import { formatBirthDateLocale } from '@/utils'
+
+describe('formatBirthDateLocale', () => {
+  // null / undefined / empty input
+  it('returns null for null input', () => {
+    expect(formatBirthDateLocale(null, 'de')).toBeNull()
+  })
+
+  it('returns null for undefined input', () => {
+    expect(formatBirthDateLocale(undefined, 'de')).toBeNull()
+  })
+
+  it('returns null for empty string', () => {
+    expect(formatBirthDateLocale('', 'de')).toBeNull()
+  })
+
+  // German format output
+  it('formats ISO date to German DD.MM.YYYY', () => {
+    expect(formatBirthDateLocale('1990-05-16', 'de')).toBe('16.05.1990')
+  })
+
+  it('passes through already-German date unchanged for DE locale', () => {
+    expect(formatBirthDateLocale('16.05.1990', 'de')).toBe('16.05.1990')
+  })
+
+  // English format output
+  it('formats ISO date to English "Month Dth, YYYY"', () => {
+    expect(formatBirthDateLocale('2000-01-01', 'en')).toBe('January 1st, 2000')
+  })
+
+  it('formats ISO date to English with "nd" suffix', () => {
+    expect(formatBirthDateLocale('1985-03-02', 'en')).toBe('March 2nd, 1985')
+  })
+
+  it('formats ISO date to English with "rd" suffix', () => {
+    expect(formatBirthDateLocale('2010-07-03', 'en')).toBe('July 3rd, 2010')
+  })
+
+  it('formats ISO date to English with "th" suffix for day 4', () => {
+    expect(formatBirthDateLocale('2021-08-04', 'en')).toBe('August 4th, 2021')
+  })
+
+  it('formats ISO date to English with "th" suffix for day 11', () => {
+    // 11th is a special case: even though 11 % 10 === 1, it uses "th"
+    expect(formatBirthDateLocale('2021-06-11', 'en')).toBe('June 11th, 2021')
+  })
+
+  it('formats ISO date to English with "th" suffix for day 12', () => {
+    expect(formatBirthDateLocale('2021-06-12', 'en')).toBe('June 12th, 2021')
+  })
+
+  it('formats ISO date to English with "th" suffix for day 13', () => {
+    expect(formatBirthDateLocale('2021-06-13', 'en')).toBe('June 13th, 2021')
+  })
+
+  it('formats German-style date to English', () => {
+    expect(formatBirthDateLocale('16.05.1990', 'en')).toBe('May 16th, 1990')
+  })
+
+  it('returns raw value for unrecognised date format', () => {
+    expect(formatBirthDateLocale('not-a-date', 'de')).toBe('not-a-date')
+  })
+
+  it('handles all 12 months in English', () => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ]
+    months.forEach((name, i) => {
+      const mm = String(i + 1).padStart(2, '0')
+      const result = formatBirthDateLocale(`2000-${mm}-01`, 'en')
+      expect(result).toBe(`${name} 1st, 2000`)
+    })
+  })
+})

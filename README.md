@@ -142,7 +142,14 @@ docker compose -f docker/docker-compose.yml exec backend python -m pytest -v --c
 cd backend && pytest app/tests/ -v --cov=app --cov-report=term-missing
 ```
 
-Current results are reported by the CI pipeline (see badge above).
+**Current results (unit tests only, no integration/e2e):**
+
+| Metric | Value |
+|--------|-------|
+| Tests | 600 passed, 1 skipped |
+| Coverage | **75 %** (CI minimum: 69 %) |
+
+Highest-coverage modules: `feature_catalog.py` 99 %, `model_adapter.py` 99 %, `shap_explainer_adapter.py` 95 %, `db/crud.py` 95 %.
 
 ### Frontend Tests
 
@@ -154,7 +161,15 @@ pnpm test:e2e          # E2E API tests (Playwright)
 pnpm test:e2e:ui       # E2E UI tests (Playwright)
 ```
 
-Current results are reported by the CI pipeline (see badge above).
+**Current results:**
+
+| Metric | Value |
+|--------|-------|
+| Tests | 97 passed across 12 files |
+| Statement coverage | **96 %** |
+| Branch coverage | 74 % |
+
+Note: `main.ts`, `i18n.ts`, and Vuetify plugin files are intentionally excluded from coverage as they are application entry points / third-party configuration.
 
 ## CI/CD
 
@@ -168,7 +183,7 @@ Automated pipelines run on every push and PR via GitHub Actions:
 5. E2E API Tests (Playwright)
 6. Docker Build + Security Scan (Trivy)
 7. Smoke Tests (container runtime)
-8. Coverage Report (minimum 69%)
+8. Coverage Report (minimum 69 %, currently **75 %**)
 
 **Frontend CI** ([frontend-ci.yml](.github/workflows/frontend-ci.yml)):
 1. Lint & Format (Biome)
