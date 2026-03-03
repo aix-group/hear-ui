@@ -22,7 +22,8 @@
       "prediction_subtitle": "Run and inspect model predictions.",
       "prediction_text": "Explore risk scores, model outputs and performance for your patients.",
       "prediction_image_alt": "Illustration representing risk prediction and analytics.",
-      "welcome_text": "Welcome to Hear-UI, a project for predicting hearing loss."
+      "welcome_text": "Welcome to Hear-UI, a project for predicting hearing loss.",
+      "goto_predictions": "Go to Predictions"
     },
     "form": {
       "title": "Add new patient",
@@ -42,6 +43,7 @@
       },
       "minimum_fields_title": "Required fields",
       "minimum_fields_hint": "All fields marked with * are required: First name, Last name, Date of birth, Gender, Operated side, Primary language, Pre-operative symptoms (Taste, Tinnitus, Vertigo, Otorrhea, Headache), Imaging (Type and Findings), Objective measurements (OAE, LL, 4000 Hz), Hearing loss (operated and contralateral ear), Amplification (operated and contralateral ear), Hearing loss onset and start, Duration of severe hearing loss, Acquisition type, Etiology and Hearing disorder type.",
+      "minimum_fields_banner": "All fields marked with * are required: First name, Last name, Date of birth, Gender, Operated side, Primary language, Pre-operative symptoms (Taste, Tinnitus, Vertigo, Otorrhea, Headache), Imaging (Type and Findings), Objective measurements (OAE, LL, 4000 Hz), Hearing loss (operated and contralateral ear), Amplification (operated and contralateral ear), Hearing loss onset and start, Duration of severe hearing loss, Acquisition type, Etiology and Hearing disorder type.",
       "minimum_fields_error": "Please fill in the red-highlighted fields.",
       "required_fields_error": "Please fill in the red-highlighted fields.",
       "hints": {
@@ -146,6 +148,13 @@
         "sending": "Sending...",
         "required_error": "Please choose whether you agree with the prediction.",
         "submit_error": "Error submitting feedback. Please try again."
+      },
+      "whatif": {
+        "toggle": "What-if Analysis",
+        "description": "Adjust individual feature values to explore how different inputs would affect the prediction.",
+        "original": "Original",
+        "modified": "Modified",
+        "reset_all": "Reset all"
       },
       "back": "Back to patient details",
       "give_feedback": "Give feedback"
