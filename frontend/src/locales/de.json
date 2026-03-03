@@ -22,7 +22,8 @@
       "prediction_subtitle": "Modellvorhersagen anzeigen und analysieren.",
       "prediction_text": "Untersuchen Sie Risikowerte, Modellausgaben und Leistungskennzahlen für Ihre Patient:innen.",
       "prediction_image_alt": "Illustration für Risikoanalysen und Modellvorhersagen.",
-      "welcome_text": "Willkommen bei Hear-UI, einem Projekt zur Vorhersage von Hörverlust."
+      "welcome_text": "Willkommen bei Hear-UI, einem Projekt zur Vorhersage von Hörverlust.",
+      "goto_predictions": "Zu den Vorhersagen"
     },
     "form": {
       "title": "Neuen Patienten anlegen",
@@ -42,6 +43,7 @@
       },
       "minimum_fields_title": "Pflichtfelder",
       "minimum_fields_hint": "Alle mit * gekennzeichneten Felder sind Pflichtfelder und müssen ausgefüllt werden: Vorname, Nachname, Geburtsdatum, Geschlecht, operierte Seite, Primäre Sprache, Präoperative Symptome (Geschmack, Tinnitus, Schwindel, Otorrhoe, Kopfschmerzen), Bildgebung (Typ und Befund), Objektive Messungen (OAE, LL, 4000 Hz), Hörminderung (operiertes Ohr und Gegenohr), Versorgung (operiertes Ohr und Gegenohr), Zeitpunkt und Beginn des Hörverlusts, Dauer der schweren Hörminderung, Erwerbsart, Ursache und Art der Hörstörung.",
+      "minimum_fields_banner": "Pflichtfelder für die Vorhersage: Geschlecht, Alter und Hörminderung (operiertes Ohr) müssen ausgefüllt werden, damit eine Vorhersage getroffen werden kann.",
       "minimum_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
       "required_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
       "hints": {
@@ -133,7 +135,7 @@
       },
       "explanations": {
         "title": "Faktoren, die die Vorhersage beeinflussen",
-        "subtitle": "Sortiert nach positiven und negativen Einflussfaktoren, gruppiert nach Kategorie (z.\u00a0B. Demografie, Bildgebung). Rot = erh\u00f6ht die Wahrscheinlichkeit, Blau = verringert die Wahrscheinlichkeit."
+        "subtitle": "Sortiert nach positiven und negativen Einflussfaktoren, gruppiert nach Kategorie (z.\u00a0B. Demografie, Bildgebung)."
       },
       "feedback": {
         "question": "Stimmen Sie der KI-Vorhersage zu?",
@@ -146,6 +148,13 @@
         "sending": "Wird gesendet...",
         "required_error": "Bitte wählen Sie, ob Sie der Vorhersage zustimmen oder nicht.",
         "submit_error": "Fehler beim Absenden des Feedbacks. Bitte versuchen Sie es erneut."
+      },
+      "whatif": {
+        "toggle": "What-if-Analyse",
+        "description": "Passen Sie einzelne Merkmalswerte an, um zu sehen, wie unterschiedliche Eingaben die Vorhersage beeinflussen würden.",
+        "original": "Original",
+        "modified": "Geändert",
+        "reset_all": "Alle zurücksetzen"
       },
       "back": "Zurück zu den Patienten",
       "give_feedback": "Feedback geben"
@@ -281,7 +290,7 @@
         },
         "limitations": {
           "title": "Limitations",
-          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=137)",
+          "item_1": "Modell basiert auf einem begrenzten Datensatz (N=235)",
           "item_2": "Nicht validiert außerhalb der Trainingspopulation (Universitätsklinikum Essen)",
           "item_3": "Vorhersagen sind unterstützende Hinweise, keine deterministischen Ergebnisse",
           "item_4": "Mögliche Biases in Bezug auf Altersgruppen, Geschlecht und Art des Hörverlusts",

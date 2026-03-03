@@ -133,7 +133,7 @@ def update_patient(
     Returns:
         Updated Patient object or None if not found
     """
-    from datetime import datetime
+    from datetime import UTC, datetime
 
     if isinstance(patient_id, str):
         patient_id = uuid.UUID(patient_id)
@@ -148,7 +148,7 @@ def update_patient(
             setattr(patient, key, value)
 
     # Always update the updated_at timestamp
-    patient.updated_at = datetime.utcnow()
+    patient.updated_at = datetime.now(UTC)
 
     session.add(patient)
     session.commit()

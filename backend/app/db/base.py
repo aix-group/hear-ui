@@ -1,6 +1,5 @@
-# Ensure models are imported so Alembic's target_metadata includes them.
-# Ensure these models are imported so Alembic's target_metadata
-# includes them for autogeneration and migrations.
+# Import all SQLModel table classes so Alembic's target_metadata
+# includes them for migration autogeneration.
 
 from sqlmodel import SQLModel  # noqa: F401
 

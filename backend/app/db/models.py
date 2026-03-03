@@ -1,22 +1,4 @@
-from sqlmodel import Field, SQLModel
-
-# Keep only non-item models here. Items were removed from the domain.
-
-
-# JSON payload containing access token
-class Token(SQLModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-# Contents of JWT token (kept for compatibility but not used)
-class TokenPayload(SQLModel):
-    sub: str | None = None
-
-
-class NewPassword(SQLModel):
-    token: str
-    new_password: str = Field(min_length=8, max_length=40)
+from sqlmodel import SQLModel
 
 
 # Simple message response model used across the API

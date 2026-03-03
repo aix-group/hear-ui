@@ -689,18 +689,26 @@ const labelFor = (normalized: string, fallback?: string) => {
   return labels.value?.[normalized] ?? fallback ?? normalized
 }
 
-const featureLabels = computed(() =>
-  matchedFeatures.value.map((feature) => {
+const featureLabels = computed(() => {
+  const lang = language.value?.startsWith('de') ? 'de' : 'en'
+  const defMap = Object.fromEntries((definitions.value ?? []).map((d: any) => [d.raw, d]))
+  return matchedFeatures.value.map((feature) => {
     const label = labelFor(feature.normalizedKey, feature.description ?? feature.rawKey)
-    const rawDisplay =
-      feature.rawValue === undefined || feature.rawValue === null
-        ? "—"
-        : typeof feature.rawValue === "number"
-          ? formatFeatureValue(feature.rawValue)
-          : String(feature.rawValue)
+    let rawDisplay: string
+    if (feature.rawValue === undefined || feature.rawValue === null) {
+      rawDisplay = "—"
+    } else if (typeof feature.rawValue === "number") {
+      rawDisplay = formatFeatureValue(feature.rawValue)
+    } else {
+      // Try to resolve localized option label
+      const def = defMap[feature.rawKey]
+      const rawStr = String(feature.rawValue)
+      const option = def?.options?.find((o: any) => String(o.value) === rawStr)
+      rawDisplay = option?.labels?.[lang] ?? option?.labels?.['en'] ?? rawStr
+    }
     return `${label}  ·  ${rawDisplay}`
   })
-)
+})
 
 const explanationPlotHeight = computed(() => {
   const numFeatures = featureLabels.value.length
