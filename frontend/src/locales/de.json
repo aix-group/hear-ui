@@ -43,7 +43,7 @@
       },
       "minimum_fields_title": "Pflichtfelder",
       "minimum_fields_hint": "Alle mit * gekennzeichneten Felder sind Pflichtfelder und müssen ausgefüllt werden: Vorname, Nachname, Geburtsdatum, Geschlecht, operierte Seite, Primäre Sprache, Präoperative Symptome (Geschmack, Tinnitus, Schwindel, Otorrhoe, Kopfschmerzen), Bildgebung (Typ und Befund), Objektive Messungen (OAE, LL, 4000 Hz), Hörminderung (operiertes Ohr und Gegenohr), Versorgung (operiertes Ohr und Gegenohr), Zeitpunkt und Beginn des Hörverlusts, Dauer der schweren Hörminderung, Erwerbsart, Ursache und Art der Hörstörung.",
-      "minimum_fields_banner": "Alle mit * gekennzeichneten Felder sind Pflichtfelder und müssen ausgefüllt werden: Vorname, Nachname, Geburtsdatum, Geschlecht, operierte Seite, Primäre Sprache, Präoperative Symptome (Geschmack, Tinnitus, Schwindel, Otorrhoe, Kopfschmerzen), Bildgebung (Typ und Befund), Objektive Messungen (OAE, LL, 4000 Hz), Hörminderung (operiertes Ohr und Gegenohr), Versorgung (operiertes Ohr und Gegenohr), Zeitpunkt und Beginn des Hörverlusts, Dauer der schweren Hörminderung, Erwerbsart, Ursache und Art der Hörstörung.",
+      "minimum_fields_banner": "Pflichtfelder für die Vorhersage: Geschlecht, Alter und Hörminderung (operiertes Ohr) müssen ausgefüllt werden, damit eine Vorhersage getroffen werden kann.",
       "minimum_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
       "required_fields_error": "Bitte die rot umkreisten Felder ausfüllen.",
       "hints": {
