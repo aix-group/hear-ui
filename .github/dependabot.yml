@@ -1,4 +1,22 @@
 # Purpose: Configures Dependabot to automatically check for dependency updates.
+#
+# Ignore rules rationale:
+#   - python >=3.13: Python 3.12 is the project's target runtime. Python 3.13+
+#     is either pre-release or lacks pre-compiled binary wheels for key
+#     dependencies (scikit-learn, numpy, shap) causing `uv sync --frozen` to
+#     fail inside Docker. Upgrade Python intentionally, not via Dependabot.
+#
+#   - node >=21: Odd-numbered Node.js releases are non-LTS (current) and
+#     unsupported in production. Node 20 is the active LTS. To move to
+#     Node 22 LTS, bump the Dockerfile manually and remove/update this rule.
+#
+#   - dotenv (major): dotenv v17 is ESM-only and drops the CommonJS entry
+#     point. The project uses `import 'dotenv/config'` in playwright.config.ts;
+#     a major-version upgrade requires testing ESM compatibility first.
+#
+#   - @vitejs/plugin-vue (major): v6 requires Vite v6. The project currently
+#     uses Vite v5. Upgrading the plugin without also upgrading Vite breaks the
+#     build. Both must be updated together intentionally.
 version: 2
 updates:
   # GitHub Actions
@@ -8,30 +26,52 @@ updates:
       interval: weekly
     commit-message:
       prefix: "deps"
-  # Python (backend)
+
+  # Python (backend pip)
   - package-ecosystem: pip
     directory: /backend
     schedule:
       interval: weekly
     commit-message:
       prefix: "deps"
-  # Node.js (frontend)
+
+  # Node.js (frontend npm)
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
     commit-message:
       prefix: "deps"
-  # Docker
+    ignore:
+      # dotenv v17 is ESM-only; upgrade manually once compatibility is verified
+      - dependency-name: "dotenv"
+        update-types: ["version-update:semver-major"]
+      # @vitejs/plugin-vue v6 requires Vite v6; upgrade both together manually
+      - dependency-name: "@vitejs/plugin-vue"
+        update-types: ["version-update:semver-major"]
+
+  # Docker – backend
   - package-ecosystem: docker
     directory: /backend
     schedule:
       interval: weekly
     commit-message:
       prefix: "deps"
+    ignore:
+      # Python 3.13+ lacks pre-compiled wheels for scikit-learn/numpy/shap;
+      # stay on 3.12.x until all dependencies support the newer runtime
+      - dependency-name: "python"
+        versions: [">=3.13"]
+
+  # Docker – frontend
   - package-ecosystem: docker
     directory: /frontend
     schedule:
       interval: weekly
     commit-message:
       prefix: "deps"
+    ignore:
+      # Node odd-number releases (21, 23, 25, ...) are non-LTS current releases;
+      # only upgrade to even-numbered LTS versions (22, 24, ...) manually
+      - dependency-name: "node"
+        versions: [">=21"]
