@@ -9,6 +9,8 @@
 
 AI-assisted clinical decision support for estimating Cochlear Implant outcomes and explaining predictions via SHAP.
 
+**More information:** [Paper](2026_XAI_Demo_Explaining_Clinical_Predictions_for_Tabular_Data.pdf) | [Demo video](https://www.youtube.com/watch?v=fWad4PT5oVE)
+
 ---
 
 **Quick links**: [Getting Started](#getting-started) | [Usage](#usage) | [Development](#development) | [Testing](#testing) | [Architecture](#architecture) | [Contributing](#contributing) | [License](#license)
