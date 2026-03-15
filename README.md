@@ -1,57 +1,45 @@
-# HEAR-UI
-
-[![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
-[![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D.svg)](https://vuejs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.114+-009688.svg)](https://fastapi.tiangolo.com/)
-[![Backend CI](https://github.com/aix-group/hear-ui/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/aix-group/hear-ui/actions/workflows/backend-ci.yml)
-[![Frontend CI](https://github.com/aix-group/hear-ui/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/aix-group/hear-ui/actions/workflows/frontend-ci.yml)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-AI-assisted clinical decision support for estimating Cochlear Implant outcomes and explaining predictions via SHAP.
-
-**More information:** [Paper](2026_XAI_Demo_Explaining_Clinical_Predictions_for_Tabular_Data.pdf) | [Demo video](https://www.youtube.com/watch?v=fWad4PT5oVE)
+<p align="center">
+  <img height="150px" src="frontend/public/assets/images/Logo.png" alt="HEAR-UI Logo">
+</p>
 
 ---
 
-**Quick links**: [Getting Started](#getting-started) | [Usage](#usage) | [Development](#development) | [Testing](#testing) | [Architecture](#architecture) | [Contributing](#contributing) | [License](#license)
+**HEAR-UI** is an AI-assisted clinical decision support system designed to estimate Cochlear Implant outcomes and explain predictions using explainable AI (XAI). It provides machine learning-based outcome predictions, interactive SHAP explanations, patient management, and clinical feedback collection — all engineered as a **decision support tool** where the final decision always rests with the medical professional.
 
-## About
+**More information:** [Demo video](https://www.youtube.com/watch?v=y3joL_4FiKk) | [System Design](SYSTEM_DESIGN.md)
 
-For hearing-impaired patients, the question arises whether a Cochlear Implant (CI) would help. HEAR-UI supports this decision by providing:
+## Quickstart
 
-- **ML-based outcome predictions** — estimates the probability of CI success based on patient data
-- **Explainable AI (XAI) visualizations** — SHAP feature importance (waterfall chart), with pluggable coefficient-based and LIME explainers
-- **User feedback collection** — clinicians can agree/disagree with predictions
-- **Patient management** — create, search, and manage patient records
-
-The application is designed as a clinical decision **support** tool — the final decision always rests with the medical professional.
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Frontend | Vue.js 3, TypeScript, Vite, Vuetify, Plotly.js |
-| Backend | FastAPI, SQLModel, scikit-learn, SHAP |
-| Database | PostgreSQL |
-| Testing | Pytest, Vitest, Playwright |
-| Linting | Ruff (backend), Biome (frontend) |
-| CI/CD | GitHub Actions |
-| Infrastructure | Docker, Docker Compose |
-
-## Getting Started
-
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) & Docker Compose
-- [Git](https://git-scm.com/)
-
-### Quick Start
+### Clone repository
 
 ```bash
 git clone <repo-url>
 cd hear-ui
-cp .env.example .env        # Edit .env with secure values!
+```
 
+### Configure environment
+
+Create a `.env` file based on the template and set the required variables.
+
+```bash
+cp .env.example .env
+# Edit .env with secure values
+```
+
+**Environment Variables:**
+
+| Variable | Description |
+|----------|-------------|
+| `POSTGRES_PASSWORD` | Database password (change from default!) |
+| `SECRET_KEY` | Application secret key (generate: `python -c "import secrets; print(secrets.token_urlsafe(32))"`) |
+| `DOCKER_IMAGE_BACKEND` | Backend image name (default: `hear-backend`) |
+| `DOCKER_IMAGE_FRONTEND` | Frontend image name (default: `hear-frontend`) |
+
+> **Security**: Never commit `.env` with real secrets.
+
+### Start containers
+
+```bash
 docker compose -f docker/docker-compose.yml \
   -f docker/docker-compose.override.yml \
   --env-file "$PWD/.env" up -d --build
@@ -63,78 +51,64 @@ docker compose -f docker/docker-compose.yml \
 |---------|-----|
 | Frontend | http://localhost:5173 |
 | Backend API | http://localhost:8000 |
-| API Docs (Swagger) | http://localhost:8000/docs |
+| API Documentation (Swagger) | http://localhost:8000/docs |
 
-**Verify:**
+**Verify the setup:**
 
 ```bash
 curl http://localhost:8000/api/v1/utils/health-check/
 ```
 
-### Environment Variables
+## Features
 
-Copy `.env.example` to `.env` and update values:
+**Core Capabilities:**
 
-| Variable | Description |
-|----------|-------------|
-| `POSTGRES_PASSWORD` | Database password (change from default!) |
-| `SECRET_KEY` | Application secret key (generate: `python -c "import secrets; print(secrets.token_urlsafe(32))"`) |
-| `DOCKER_IMAGE_BACKEND` | Backend image name (default: `hear-backend`) |
-| `DOCKER_IMAGE_FRONTEND` | Frontend image name (default: `hear-frontend`) |
+- **ML-based outcome predictions** — estimates the probability of Cochlear Implant success based on patient data
+- **Explainable AI (XAI) visualizations** — SHAP waterfall charts with pluggable coefficient-based and LIME explainers
+- **User feedback collection** — clinicians can agree/disagree with predictions to improve the system
+- **Patient management** — create, search, update, and manage patient records
+- **RESTful API** — full API documentation at `/docs`
 
-> **Security**: Never commit `.env` with real secrets.
+**Example Requests:**
 
-## Usage
-
-### Prediction
-
+*Prediction:*
 ```bash
 curl -sS -X POST http://localhost:8000/api/v1/predict/ \
   -H "Content-Type: application/json" \
   -d '{"Alter [J]": 45, "Geschlecht": "w", "Primäre Sprache": "Deutsch"}'
 ```
 
-### SHAP Explanation
-
+*SHAP Explanation:*
 ```bash
 curl -sS -X POST http://localhost:8000/api/v1/explainer/explain \
   -H "Content-Type: application/json" \
   -d '{"age":45, "gender":"w", "implant_type":"Cochlear"}'
 ```
 
-Full API documentation is available at `/docs` when the backend is running.
+## Tech Stack
 
-## Development
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Vue.js 3, TypeScript, Vite, Vuetify, Plotly.js |
+| **Backend** | FastAPI, SQLModel, scikit-learn, SHAP |
+| **Database** | PostgreSQL |
+| **Testing** | Pytest, Vitest, Playwright |
+| **Linting & Formatting** | Ruff (backend), Biome (frontend) |
+| **CI/CD** | GitHub Actions |
+| **Infrastructure** | Docker, Docker Compose |
 
-### Backend (without Docker)
+## Development Instructions
 
-```bash
-cd backend
-pip install -r requirements.txt   # or: uv sync
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+Refer to the following documents for detailed setup and development workflows:
 
-### Frontend
+- [Backend](./backend/README.md) — API development, testing, migrations
+- [Frontend](./frontend/README.md) — Vue.js components, styling, state management
+- [System Design](SYSTEM_DESIGN.md) — architecture, data flow, ML pipeline
 
-```bash
-cd frontend
-pnpm install
-pnpm dev
-```
 
-### Linting
+## Testing & Quality Assurance
 
-```bash
-# Backend
-cd backend && ruff check app/ && ruff format app/
-
-# Frontend
-cd frontend && pnpm lint
-```
-
-## Testing
-
-### Backend Tests
+**Backend Tests:**
 
 ```bash
 # In Docker (recommended)
@@ -144,88 +118,95 @@ docker compose -f docker/docker-compose.yml exec backend python -m pytest -v --c
 cd backend && pytest app/tests/ -v --cov=app --cov-report=term-missing
 ```
 
-**Current results (unit tests only, no integration/e2e):**
+**Results (unit tests only):**
+- **600 passed, 1 skipped**
+- **Test coverage: 75 %** 
 
-| Metric | Value |
-|--------|-------|
-| Tests | 600 passed, 1 skipped |
-| Coverage | **75 %** (CI minimum: 69 %) |
-
-Highest-coverage modules: `feature_catalog.py` 99 %, `model_adapter.py` 99 %, `shap_explainer_adapter.py` 95 %, `db/crud.py` 95 %.
-
-### Frontend Tests
+**Frontend Tests:**
 
 ```bash
 cd frontend
 pnpm test              # Unit tests (Vitest)
-pnpm test:coverage     # With coverage report
+pnpm test:coverage     # Coverage report
 pnpm test:e2e          # E2E API tests (Playwright)
-pnpm test:e2e:ui       # E2E UI tests (Playwright)
+pnpm test:e2e:ui       # E2E UI tests (Playwright, requires running backend)
 ```
 
-**Current results:**
+**Results:**
+- **97 passed** across 12 test files
+- **Statement coverage: 96 %**
+- **Branch coverage: 74 %**
 
-| Metric | Value |
-|--------|-------|
-| Tests | 97 passed across 12 files |
-| Statement coverage | **96 %** |
-| Branch coverage | 74 % |
+## CI/CD Pipeline
 
-Note: `main.ts`, `i18n.ts`, and Vuetify plugin files are intentionally excluded from coverage as they are application entry points / third-party configuration.
+Automated testing and validation run on every push and pull request via GitHub Actions:
 
-## CI/CD
-
-Automated pipelines run on every push and PR via GitHub Actions:
-
-**Backend CI** ([backend-ci.yml](.github/workflows/backend-ci.yml)):
+**Backend CI** ([.github/workflows/backend-ci.yml](.github/workflows/backend-ci.yml)):
 1. Lint & Format (Ruff)
 2. Type Check (mypy)
 3. Unit & Integration Tests (with PostgreSQL)
-4. DB Migration Check (Alembic)
+4. Database Migration Check (Alembic)
 5. E2E API Tests (Playwright)
-6. Docker Build + Security Scan (Trivy)
+6. Docker Build
 7. Smoke Tests (container runtime)
-8. Coverage Report (minimum 69 %, currently **75 %**)
+8. Coverage Report 
 
-**Frontend CI** ([frontend-ci.yml](.github/workflows/frontend-ci.yml)):
+**Frontend CI** ([.github/workflows/frontend-ci.yml](.github/workflows/frontend-ci.yml)):
 1. Lint & Format (Biome)
 2. Unit Tests (Vitest + coverage)
 3. Build Check (TypeScript + Vite)
 4. E2E Tests (Playwright)
 
-## Architecture
+## Architecture and Data Flow
+
+**Project Structure:**
 
 ```
 hear-ui/
-├── backend/                # FastAPI backend
+├── backend/                    # FastAPI REST API
 │   ├── app/
-│   │   ├── api/routes/     # REST API endpoints
-│   │   ├── core/           # ML model wrapper, preprocessor, SHAP explainer
-│   │   ├── db/             # Database connection & CRUD
-│   │   ├── models/         # SQLModel database models + trained ML model
-│   │   └── tests/          # Backend test suite
+│   │   ├── api/routes/         # REST API endpoints
+│   │   ├── core/               # ML model, preprocessor, SHAP explainer
+│   │   ├── db/                 # Database connection & CRUD operations
+│   │   ├── models/             # SQLModel schemas + trained ML model
+│   │   ├── config/             # Feature definitions, locales, model cards
+│   │   └── tests/              # Backend test suite (600+ tests)
+│   ├── alembic/                # Database migrations
 │   └── requirements.txt
-├── frontend/               # Vue.js 3 SPA
+├── frontend/                   # Vue.js 3 Single Page Application
 │   ├── src/
-│   │   ├── components/     # Vue components (feedback, model card, charts)
-│   │   ├── routes/         # Page views (patients, predictions, search)
-│   │   ├── client/         # Auto-generated API client (OpenAPI)
-│   │   └── test/           # Vitest unit tests
-│   └── tests/              # Playwright E2E tests
-├── docker/                 # Docker Compose orchestration
+│   │   ├── components/         # Vue components (feedback, model card, charts)
+│   │   ├── routes/             # Page views (patients, predictions, search)
+│   │   ├── client/             # Auto-generated API client (OpenAPI)
+│   │   ├── hooks/              # Composables and reusable logic
+│   │   ├── locales/            # Internationalization (i18n) files
+│   │   └── test/               # Vitest unit tests
+│   ├── tests/                  # Playwright E2E tests
+│   └── vite.config.ts
+├── docker/                     # Docker Compose orchestration
 │   ├── docker-compose.yml
 │   └── docker-compose.override.yml
-├── .github/workflows/      # CI/CD pipelines
-└── patientsData/           # Sample patient CSV data
+├── .github/workflows/          # CI/CD pipelines (GitHub Actions)
+├── patientsData/               # Sample patient CSV data
+├── scripts/                    # Utility scripts (data generation, testing, deployment)
+└── SYSTEM_DESIGN.md            # Detailed architecture documentation
 ```
 
-### Core Data Flow
+**Data Flow:**
 
-1. Frontend sends patient data to Backend API
-2. `ModelWrapper` preprocesses data via `RandomForestDatasetAdapter`
-3. `ModelAdapter` runs inference on the loaded ML model
-4. Explainer computes SHAP / coefficient / LIME explanations
-5. Results returned to frontend; optionally persisted in PostgreSQL
+1. **User Interface**: Frontend (Vue.js) collects patient data and sends to Backend API
+2. **Preprocessing**: Backend `ModelWrapper` validates and preprocesses data via `RandomForestDatasetAdapter`
+3. **Inference**: `ModelAdapter` runs prediction on the trained ML model
+4. **Explanation**: Explainer computes SHAP / coefficient / LIME explanations
+5. **Response**: Results (prediction + explanation) returned to frontend
+6. **Persistence**: Data optionally stored in PostgreSQL for feedback and analytics
+
+## Contributing
+
+We welcome contributions! Please review the development setup in the respective directories:
+
+- **Backend contributions**: See [backend/README.md](./backend/README.md)
+- **Frontend contributions**: See [frontend/README.md](./frontend/README.md)
 
 ## License
 
@@ -233,6 +214,6 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 
 ## Maintainers
 
-- Adelia Manafov
-- Artem Mozharov
-- Niels Kuhl
+- **Adelia Manafov** 
+- **Artem Mozharov** 
+- **Niels Kuhl**
