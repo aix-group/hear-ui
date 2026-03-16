@@ -1,5 +1,5 @@
 import logging
-from datetime import timezone, datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -50,7 +50,7 @@ def _extract_birth_year(patient) -> int | None:
     age = features.get("Alter [J]")
     if age is not None:
         try:
-            return datetime.now(timezone.utc).year - int(float(age))
+            return datetime.now(UTC).year - int(float(age))
         except (ValueError, TypeError):
             pass
     return None

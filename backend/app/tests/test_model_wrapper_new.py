@@ -41,9 +41,7 @@ class TestFromConfig:
         ):
             mock_init.return_value = None
             wrapper_instance = MagicMock()
-            with patch.object(
-                ModelWrapper, "__new__", return_value=wrapper_instance
-            ):
+            with patch.object(ModelWrapper, "__new__", return_value=wrapper_instance):
                 result = ModelWrapper.from_config("some/config.json")
                 assert result is wrapper_instance
 
