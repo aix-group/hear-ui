@@ -1,6 +1,6 @@
 """Tests for the patient search endpoint."""
 
-from datetime import UTC, datetime
+from datetime import timezone, datetime
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -9,7 +9,7 @@ from app.models import Patient
 
 def make_patient_with_name(name: str):
     return Patient(
-        id=uuid4(), input_features={"Name": name}, created_at=datetime.now(UTC)
+        id=uuid4(), input_features={"Name": name}, created_at=datetime.now(timezone.utc)
     )
 
 
@@ -54,7 +54,7 @@ def test_search_patients_fallback_uses_any_string_value():
     p = Patient(
         id=uuid4(),
         input_features={"foo": 123, "bar": "Beispiel"},
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     with patch("app.api.routes.patients.crud") as mock_crud:

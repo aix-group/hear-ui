@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import timezone, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -20,7 +20,7 @@ class PatientBase(SQLModel):
 
 class Patient(PatientBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = Field(default=None)
 
 
