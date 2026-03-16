@@ -1,6 +1,6 @@
 """Tests for the main FastAPI application."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, PropertyMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -112,3 +112,114 @@ class TestModelWrapperState:
         assert model_wrapper is not None
         # After startup, app.state.model_wrapper should be set
         # (may be None if model file not found, but attribute should exist)
+
+
+class TestRootRedirect:
+    """Test root URL redirect."""
+
+    def test_root_redirects_to_docs(self):
+        """Test GET / redirects to /docs."""
+        from app.main import app
+
+        client = TestClient(app, follow_redirects=False)
+        response = client.get("/")
+        assert response.status_code in [301, 302, 307, 308]
+        assert "/docs" in response.headers.get("location", "")
+
+
+class TestCustomGenerateUniqueIdException:
+    """Test exception path in custom_generate_unique_id."""
+
+    def test_generate_unique_id_tags_raises_exception(self):
+        """Test fallback when accessing tags raises an exception."""
+        from fastapi.routing import APIRoute
+
+        from app.main import custom_generate_unique_id
+
+        mock_route = MagicMock(spec=APIRoute)
+        type(mock_route).tags = PropertyMock(side_effect=Exception("boom"))
+        mock_route.name = "my_route"
+
+        result = custom_generate_unique_id(mock_route)
+        assert result == "default-my_route"
+
+
+class TestUnhandledExceptionHandler:
+    """Test the global exception handler for unhandled errors."""
+
+    def test_real_500_exception_handled(self):
+        """Test that a real unhandled exception returns 500 JSON."""
+        from app.main import app
+
+        # Add a temporary route that raises a non-HTTP exception
+        @app.get("/test-internal-error-xyz")
+        async def _raise_error():
+            raise RuntimeError("intentional test error")
+
+        client = TestClient(app, raise_server_exceptions=False)
+        response = client.get("/test-internal-error-xyz")
+        assert response.status_code == 500
+        assert response.json() == {"detail": "Internal Server Error"}
+
+        # Remove the temporary route
+        app.routes.pop()
+
+
+class TestLifespanErrorHandling:
+    """Test lifespan handles model load errors gracefully."""
+
+    def test_lifespan_file_not_found_still_sets_state(self):
+        """Lifespan sets app.state.model_wrapper even when model file missing."""
+        from fastapi import FastAPI
+
+        from app.main import lifespan
+
+        test_app = FastAPI(lifespan=lifespan)
+        with patch("app.main.model_wrapper") as mock_wrapper:
+            mock_wrapper.load.side_effect = FileNotFoundError("no model file")
+            client = TestClient(test_app, raise_server_exceptions=False)
+            with client:
+                assert test_app.state.model_wrapper is mock_wrapper
+
+    def test_lifespan_generic_exception_still_sets_state(self):
+        """Lifespan sets app.state.model_wrapper on generic exception."""
+        from fastapi import FastAPI
+
+        from app.main import lifespan
+
+        test_app = FastAPI(lifespan=lifespan)
+        with patch("app.main.model_wrapper") as mock_wrapper:
+            mock_wrapper.load.side_effect = RuntimeError("unexpected")
+            client = TestClient(test_app, raise_server_exceptions=False)
+            with client:
+                assert test_app.state.model_wrapper is mock_wrapper
+
+
+class TestModelsInit:
+    """Test app/models/__init__.py stub functions."""
+
+    def test_load_model_card_returns_none(self):
+        """load_model_card is a stub that returns None."""
+        from app.models import load_model_card
+
+        result = load_model_card()
+        assert result is None
+
+    def test_save_model_card_accepts_none(self):
+        """save_model_card is a stub that accepts any argument."""
+        from app.models import save_model_card
+
+        result = save_model_card(None)
+        assert result is None
+
+    def test_update_metrics_calls_load_and_save(self):
+        """update_metrics calls load/save with a mocked card."""
+        from unittest.mock import MagicMock, patch
+
+        from app.models import update_metrics
+
+        mock_card = MagicMock()
+        with patch("app.models.load_model_card", return_value=mock_card), \
+             patch("app.models.save_model_card") as mock_save:
+            update_metrics({"accuracy": 0.95})
+            mock_save.assert_called_once_with(mock_card)

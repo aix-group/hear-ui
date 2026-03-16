@@ -111,3 +111,18 @@ if (typeof URL.revokeObjectURL === 'undefined') {
 
 // Silence console.warn from Vuetify in test output
 vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+// Stub visualViewport (required by Vuetify v-overlay/v-dialog in jsdom)
+if (typeof globalThis.visualViewport === 'undefined') {
+  ;(globalThis as any).visualViewport = {
+    width: 1024,
+    height: 768,
+    offsetLeft: 0,
+    offsetTop: 0,
+    pageLeft: 0,
+    pageTop: 0,
+    scale: 1,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }
+}
