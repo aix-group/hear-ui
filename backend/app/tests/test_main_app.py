@@ -219,7 +219,9 @@ class TestModelsInit:
         from app.models import update_metrics
 
         mock_card = MagicMock()
-        with patch("app.models.load_model_card", return_value=mock_card), \
-             patch("app.models.save_model_card") as mock_save:
+        with (
+            patch("app.models.load_model_card", return_value=mock_card),
+            patch("app.models.save_model_card") as mock_save,
+        ):
             update_metrics({"accuracy": 0.95})
             mock_save.assert_called_once_with(mock_card)

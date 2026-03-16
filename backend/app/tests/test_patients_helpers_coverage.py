@@ -9,22 +9,17 @@ Focuses on:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
-
-import pytest
-
+from unittest.mock import patch
 
 # ============================================================================
 # Import helpers directly
 # ============================================================================
-
 from app.api.routes.patients import (
     _extract_birth_date,
     _extract_birth_year,
 )
-
 
 # ============================================================================
 # _extract_birth_year
@@ -57,13 +52,13 @@ class TestExtractBirthYear:
     def test_age_fallback(self):
         """When no Geburtsdatum, use Alter [J] to estimate birth year."""
         p = self._patient({"Alter [J]": 45})
-        expected = datetime.now(timezone.utc).year - 45
+        expected = datetime.now(UTC).year - 45
         assert _extract_birth_year(p) == expected
 
     def test_age_float_fallback(self):
         """Age as float string is also accepted."""
         p = self._patient({"Alter [J]": "50.0"})
-        expected = datetime.now(timezone.utc).year - 50
+        expected = datetime.now(UTC).year - 50
         assert _extract_birth_year(p) == expected
 
     def test_no_features_returns_none(self):
@@ -84,7 +79,7 @@ class TestExtractBirthYear:
     def test_empty_geburtsdatum_falls_to_age(self):
         """Empty Geburtsdatum string falls through to age."""
         p = self._patient({"Geburtsdatum": "   ", "Alter [J]": 30})
-        expected = datetime.now(timezone.utc).year - 30
+        expected = datetime.now(UTC).year - 30
         assert _extract_birth_year(p) == expected
 
     def test_geburtsdatum_takes_priority_over_age(self):
@@ -147,7 +142,7 @@ class TestPatientsRouteHelpers:
     def test_update_patient_database_error(self, client, db):
         """Test that 500 is returned on DB exception during update."""
         from app import crud
-        from app.models import PatientCreate, PatientUpdate
+        from app.models import PatientCreate
 
         # Create a patient
         patient_in = PatientCreate(
