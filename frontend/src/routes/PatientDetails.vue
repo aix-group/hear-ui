@@ -3,7 +3,7 @@
     <v-sheet
         :elevation="12"
         border
-        class="patient-sheet"
+        class="details-sheet"
         rounded="lg"
     >
       <v-row justify="start" no-gutters>
@@ -429,14 +429,6 @@ onMounted(async () => {
 }
 
 /* ── Existing styles ────────────────────────────────────── */
-.patient-sheet {
-  padding: 32px;
-  border-width: 2px;
-  border-style: solid;
-  border-color: rgb(var(--v-theme-primary));
-  background-color: rgb(var(--v-theme-surface));
-  box-shadow: 0 4px 22px rgba(var(--v-theme-primary), 0.35) !important;
-}
 
 /* stack cards vertically and center them a bit */
 .details-grid {

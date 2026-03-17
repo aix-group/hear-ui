@@ -3,7 +3,7 @@
     <v-sheet
         :elevation="12"
         border
-        class="predictions-home-sheet"
+        class="details-sheet"
         rounded="lg"
     >
       <!-- Title -->
@@ -436,14 +436,6 @@ onMounted(() => loadModelCard())
 </script>
 
 <style scoped>
-.predictions-home-sheet {
-  padding: 32px;
-  border-width: 2px;
-  border-style: solid;
-  border-color: rgb(var(--v-theme-primary));
-  background-color: rgb(var(--v-theme-surface));
-  box-shadow: 0 4px 22px rgba(var(--v-theme-primary), 0.35) !important;
-}
 
 /* ── Model Card: outer wrapper ── */
 .mc-pro {
