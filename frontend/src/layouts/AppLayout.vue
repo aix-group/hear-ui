@@ -151,3 +151,10 @@ onBeforeUnmount(() => {
   margin-right: 16px !important;
 }
 </style>
+
+<style>
+/* Global utility classes used across the layout and its pages */
+.blue-shadow {
+  box-shadow: 0 4px 22px rgba(var(--v-theme-primary), 0.35) !important;
+}
+</style>

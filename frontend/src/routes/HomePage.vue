@@ -57,7 +57,7 @@
       <v-col>
         <h2 class="text-h6 font-weight-bold mb-2">{{ $t('predictions_home.process.title') }}</h2>
         <v-timeline align="start" class="mt-4" density="compact" side="end">
-          <v-timeline-item dot-color="primary" fill-dot icon="mdi-magnify" size="small">
+          <v-timeline-item dot-color="primary" fill-dot icon="mdi-magnify" size="small" :to="{ name: 'PredictionsHome' }">
             <div class="d-flex">
               <strong class="me-4">{{ $t('predictions_home.process.step1.title') }}</strong>
               <div>{{ $t('predictions_home.process.step1.description') }}</div>
@@ -92,7 +92,7 @@
           color="primary"
           prepend-icon="mdi-creation"
           size="large"
-          variant="elevated"
+          variant="flat"
       >
         {{ $t('homepage.goto_predictions') }}
       </v-btn>
