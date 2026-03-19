@@ -25,7 +25,9 @@
       <v-row justify="start" no-gutters>
         <h1>
           {{ $t('patient_details.title') }}
-          <span class="text-primary">{{ displayName }}</span><span v-if="formattedBirthDate" class="text-primary">, {{ formattedBirthDate }}</span>
+          <span class="text-primary">{{ displayName }}</span><span v-if="formattedBirthDate" class="text-primary">, {{
+            formattedBirthDate
+          }}</span>
         </h1>
 
       </v-row>
@@ -37,11 +39,11 @@
       <!-- Patient details cards -->
       <v-row class="details-grid" dense>
         <v-col
-          v-for="section in detailSections"
-          :key="section.title"
-          cols="12"
-          md="6"
-          class="detail-col"
+            v-for="section in detailSections"
+            :key="section.title"
+            cols="12"
+            md="6"
+            class="detail-col"
         >
           <v-card class="detail-card" rounded="lg" elevation="0" variant="outlined">
             <v-card-title class="detail-card__header">
@@ -58,62 +60,55 @@
       </v-row>
 
 
-
       <v-divider
           class="my-6"
       />
 
       <!-- Actions -->
-      <div class="patient-actions">
+      <v-row allign-content="stretch" justify="space-evenly">
 
-        <!-- Left group -->
-        <div class="patient-actions__group">
-          <v-btn
-              class="patient-action-btn"
-              color="warning"
-              variant="tonal"
-              prepend-icon="mdi-pencil"
-              :to="{ name: 'UpdatePatient', params: { id: patient_id } }"
-          >
-            {{ $t('patient_details.change_patient') }}
-          </v-btn>
+        <v-btn
+            class="patient-action-btn"
+            color="warning"
+            variant="tonal"
+            prepend-icon="mdi-pencil"
+            :to="{ name: 'UpdatePatient', params: { id: patient_id } }"
+        >
+          {{ $t('patient_details.change_patient') }}
+        </v-btn>
 
-          <v-btn
-              v-if="otherEar"
-              class="patient-action-btn"
-              color="primary"
-              variant="tonal"
-              prepend-icon="mdi-ear-hearing"
-              :to="{ name: 'CreatePatient', query: { copyFrom: patient_id, ear: otherEar } }"
-          >
-            {{ $t('patient_details.add_other_ear') }} ({{ otherEar }})
-          </v-btn>
-        </div>
+        <v-btn
+            v-if="otherEar"
+            class="patient-action-btn"
+            color="primary"
+            variant="tonal"
+            prepend-icon="mdi-ear-hearing"
+            :to="{ name: 'CreatePatient', query: { copyFrom: patient_id, ear: otherEar } }"
+        >
+          {{ $t('patient_details.add_other_ear') }} ({{ otherEar }})
+        </v-btn>
 
-        <!-- Right group -->
-        <div class="patient-actions__group">
-          <v-btn
-              class="patient-action-btn"
-              color="error"
-              variant="outlined"
-              prepend-icon="mdi-delete-outline"
-              :disabled="!patient_id"
-              @click="openDeleteDialog"
-          >
-            {{ $t('patient_details.delete_patient') }}
-          </v-btn>
+        <v-btn
+            class="patient-action-btn"
+            color="error"
+            variant="outlined"
+            prepend-icon="mdi-delete-outline"
+            :disabled="!patient_id"
+            @click="openDeleteDialog"
+        >
+          {{ $t('patient_details.delete_patient') }}
+        </v-btn>
 
-          <v-btn
-              class="patient-action-btn"
-              color="success"
-              variant="flat"
-              prepend-icon="mdi-chart-bar"
-              :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
-          >
-            {{ $t('patient_details.generate_prediction') }}
-          </v-btn>
-        </div>
-      </div>
+        <v-btn
+            class="patient-action-btn"
+            color="success"
+            variant="flat"
+            prepend-icon="mdi-chart-bar"
+            :to="{ name: 'Prediction', params: {patient_id: patient_id}}"
+        >
+          {{ $t('patient_details.generate_prediction') }}
+        </v-btn>
+      </v-row>
 
       <v-snackbar
           v-model="updateSuccessOpen"
@@ -142,7 +137,7 @@
           </v-card-title>
           <v-card-text>
             <p class="mb-4">
-              {{ $t('patient_details.delete_confirm_body', { name: displayName }) }}
+              {{ $t('patient_details.delete_confirm_body', {name: displayName}) }}
             </p>
             <v-alert
                 v-if="deleteError"
@@ -185,8 +180,12 @@ import {featureDefinitionsStore} from "@/lib/featureDefinitionsStore";
 import {formatBirthDateLocale} from "@/utils";
 
 const language = ref(i18next.language)
-i18next.on('languageChanged', (lng) => { language.value = lng })
-watch(language, (lng) => { void featureDefinitionsStore.loadLabels(lng) })
+i18next.on('languageChanged', (lng) => {
+  language.value = lng
+})
+watch(language, (lng) => {
+  void featureDefinitionsStore.loadLabels(lng)
+})
 
 const route = useRoute();
 const router = useRouter();
@@ -252,7 +251,7 @@ const detailSections = computed(() => {
   const defs = definitions.value ?? []
   const input = patient.value?.input_features ?? {}
 
-  const itemsBySection: Record<string, Array<{label: string; value: string}>> = {}
+  const itemsBySection: Record<string, Array<{ label: string; value: string }>> = {}
 
   for (const def of defs) {
     if (def?.ui_only) continue
@@ -287,13 +286,13 @@ const detailSections = computed(() => {
 
   const orderForFilter = sectionOrder.value?.length ? sectionOrder.value : defaultOrder
   const otherSections = Object.keys(itemsBySection)
-    .filter((title) => !orderForFilter.includes(title))
-    .sort()
-    .map((title) => ({title: sectionLabelFor(title), items: itemsBySection[title]}))
+      .filter((title) => !orderForFilter.includes(title))
+      .sort()
+      .map((title) => ({title: sectionLabelFor(title), items: itemsBySection[title]}))
 
   return [...orderedSections, ...otherSections]
-    .filter((section) => section.items.length > 0)
-    .filter((section) => section.title !== "Weitere")
+      .filter((section) => section.items.length > 0)
+      .filter((section) => section.title !== "Weitere")
 })
 
 const openDeleteDialog = () => {
@@ -396,20 +395,7 @@ onMounted(async () => {
 
 <style scoped>
 /* ── Action bar ─────────────────────────────────────────── */
-.patient-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: nowrap;
-}
 
-.patient-actions__group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
 .patient-action-btn {
   height: 40px !important;
@@ -418,15 +404,6 @@ onMounted(async () => {
   letter-spacing: 0.01em;
 }
 
-@media (max-width: 768px) {
-  .patient-actions {
-    flex-wrap: wrap;
-  }
-  .patient-action-btn {
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-}
 
 /* ── Existing styles ────────────────────────────────────── */
 
