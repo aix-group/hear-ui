@@ -10,7 +10,7 @@ import installI18n from "./i18n.ts";
 const app = createApp(App)
 
 app.use(router)
-app.use(vuetify) // 👈 register Vuetify globally
+app.use(vuetify)
 installI18n(app)
 
 app.mount('#app')

@@ -3,7 +3,7 @@
     <v-sheet
         :elevation="12"
         border
-        class="predictions-home-sheet"
+        class="details-sheet"
         rounded="lg"
     >
       <!-- Title -->
@@ -19,21 +19,21 @@
       <div class="d-flex justify-center ga-4 mt-8">
         <v-btn
             :to="{ name: 'SearchPatients' }"
-            color="grey-lighten-4"
-            class="text-black"
+            color="primary"
             prepend-icon="mdi-magnify"
-            size="small"
-            variant="tonal"
+            size="large"
+            variant="outlined"
+            density="default"
         >
           {{ $t('predictions_home.action_cards.search_patients.title') }}
         </v-btn>
         <v-btn
             :to="{ name: 'CreatePatient' }"
-            color="grey-lighten-4"
-            class="text-black"
+            color="primary"
+            size="large"
+            variant="outlined"
+            density="default"
             prepend-icon="mdi-account-plus"
-            size="small"
-            variant="tonal"
         >
           {{ $t('predictions_home.action_cards.create_patient.title') }}
         </v-btn>
@@ -375,7 +375,7 @@ const error = ref('')
 const cardData = ref<ModelCardData | null>(null)
 const activeTab = ref('use')
 
-// Authoritative hyperparameter values with DE/EN localised display values
+// Authoritative hyperparameter values with DE/EN localized display values
 const overrideEn: Record<string, string | number> = {
   n_estimators: 100,
   max_depth: 'unlimited',
@@ -436,14 +436,6 @@ onMounted(() => loadModelCard())
 </script>
 
 <style scoped>
-.predictions-home-sheet {
-  padding: 32px;
-  border-width: 2px;
-  border-style: solid;
-  border-color: rgb(var(--v-theme-primary));
-  background-color: rgb(var(--v-theme-surface));
-  box-shadow: 0 4px 22px rgba(var(--v-theme-primary), 0.35) !important;
-}
 
 /* ── Model Card: outer wrapper ── */
 .mc-pro {
