@@ -151,3 +151,16 @@ onBeforeUnmount(() => {
   margin-right: 16px !important;
 }
 </style>
+
+<style>
+/* Global utility classes used across the layout and its pages */
+
+.v-sheet.details-sheet{
+  padding: 32px;
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 4px 22px rgba(var(--v-theme-primary), 0.35) !important;
+}
+</style>

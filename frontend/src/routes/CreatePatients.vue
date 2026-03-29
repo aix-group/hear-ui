@@ -3,7 +3,7 @@
     <v-sheet
         :elevation="12"
         border
-        class="new-patient-card"
+        class="new-patient-card details-sheet"
         rounded="lg"
     >
 
@@ -988,14 +988,6 @@ onMounted(async () => {
 
 
 <style scoped>
-.new-patient-card {
-  padding: 32px;
-  border-width: 2px;
-  border-style: solid;
-  border-color: rgb(var(--v-theme-primary));
-  background-color: rgb(var(--v-theme-surface));
-  box-shadow: 0 4px 22px rgba(var(--v-theme-primary), 0.35) !important;
-}
 
 /* space between title and first row */
 .new-patient-card h1 {

@@ -20,10 +20,6 @@
           variant="solo"
           autocomplete="off"
       />
-    </v-row>
-
-    <!-- Add Patient Button (below search) -->
-    <div class="d-flex justify-end mt-3">
       <v-btn
           :to="{ name: 'CreatePatient' }"
           color="primary"
@@ -34,7 +30,7 @@
       >
         {{ $t('search.add_new_patient') }}
       </v-btn>
-    </div>
+    </v-row>
 
     <!-- Results -->
 
