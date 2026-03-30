@@ -82,7 +82,7 @@
 </template>
 
 <script lang="ts" setup>
-import {onMounted, onBeforeUnmount, ref} from "vue"
+import {onMounted, onBeforeUnmount, ref, nextTick} from "vue"
 import i18next from "i18next";
 
 const drawer = ref(false)
@@ -95,10 +95,22 @@ const syncLanguageIndex = (lng: string) => {
 }
 
 
-function switch_language() {
+async function switch_language() {
+  const scrollY = window.scrollY
   curr_language.value++
   curr_language.value = curr_language.value % languages.value.length
-  i18next.changeLanguage(languages.value[curr_language.value])
+  await i18next.changeLanguage(languages.value[curr_language.value])
+
+  // Restore scroll position after language change.
+  // Multiple frames are needed because async data fetches (e.g. model card)
+  // trigger additional re-renders after the first nextTick.
+  const restoreScroll = () => window.scrollTo({ top: scrollY, behavior: 'instant' })
+  await nextTick()
+  restoreScroll()
+  requestAnimationFrame(() => {
+    restoreScroll()
+    requestAnimationFrame(restoreScroll)
+  })
 }
 
 onMounted(() => {

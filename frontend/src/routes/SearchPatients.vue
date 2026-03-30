@@ -20,17 +20,23 @@
           variant="solo"
           autocomplete="off"
       />
+    </v-row>
+
+    <!-- Add patient button below search -->
+    <div class="d-flex justify-end mt-3 mb-2">
       <v-btn
           :to="{ name: 'CreatePatient' }"
           color="primary"
+          variant="outlined"
           density="comfortable"
-          flat
+          size="small"
           rounded="6"
           prepend-icon="mdi-account-plus"
+          class="bg-white"
       >
         {{ $t('search.add_new_patient') }}
       </v-btn>
-    </v-row>
+    </div>
 
     <!-- Results -->
 
@@ -136,8 +142,8 @@ watch(search, (newValue) => {
 
 <style scoped>
 .search-box {
-  padding-right: 8px;
-  margin: 32px 0 32px 0;
+  padding-right: 0;
+  margin: 32px 0 0 0;
   border-radius: 10px;
   border-width: 2px;
   border-style: solid;

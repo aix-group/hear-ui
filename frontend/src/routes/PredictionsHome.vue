@@ -16,30 +16,30 @@
 
 
       <!-- Action Buttons -->
-      <div class="d-flex justify-center ga-4 mt-8">
+      <div class="d-flex justify-center ga-3 mt-6">
         <v-btn
             :to="{ name: 'SearchPatients' }"
-            color="primary"
+            color="grey-darken-1"
             prepend-icon="mdi-magnify"
-            size="large"
-            variant="outlined"
-            density="default"
+            size="small"
+            variant="tonal"
+            density="comfortable"
         >
           {{ $t('predictions_home.action_cards.search_patients.title') }}
         </v-btn>
         <v-btn
             :to="{ name: 'CreatePatient' }"
-            color="primary"
-            size="large"
-            variant="outlined"
-            density="default"
+            color="grey-darken-1"
+            size="small"
+            variant="tonal"
+            density="comfortable"
             prepend-icon="mdi-account-plus"
         >
           {{ $t('predictions_home.action_cards.create_patient.title') }}
         </v-btn>
       </div>
 
-      <v-divider class="my-6 mb-8"/>
+      <v-divider class="my-4 mb-6"/>
 
       <!-- Model Card Section -->
       <v-row>
@@ -147,7 +147,6 @@
                   <v-icon size="17" class="mr-1">mdi-tune-variant</v-icon>
                   {{ $t('predictions_home.model_cards.hyperparameters.title') }}
                 </div>
-                <div class="text-caption mb-3" style="opacity:.9">{{ hyperparamsSummary }}</div>
                 <div class="hp-grid mb-7">
                   <div
                     v-for="hp in hyperparamsToShow"
@@ -416,8 +415,8 @@ const hyperparamsSummary = computed(() => {
   return parts.join(' \u00B7 ')
 })
 
-async function loadModelCard() {
-  loading.value = true
+async function loadModelCard(showSpinner = true) {
+  if (showSpinner) loading.value = true
   error.value = ''
   try {
     const lang = i18next.language?.startsWith('en') ? 'en' : 'de'
@@ -431,7 +430,7 @@ async function loadModelCard() {
   }
 }
 
-watch(() => i18next.language, () => loadModelCard())
+watch(() => i18next.language, () => loadModelCard(false))
 onMounted(() => loadModelCard())
 </script>
 

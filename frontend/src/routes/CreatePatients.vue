@@ -56,11 +56,10 @@
                   @update:model-value="(val: any) => updateDateField(field.normalized, val)"
                   :label="field.label"
                   :placeholder="language.startsWith('en') ? 'MM/DD/YYYY' : 'TT.MM.JJJJ'"
-                  :error-messages="[]"
+                  :error-messages="fieldErrorMap[field.normalized] ?? []"
                   :error="(submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field)) || !!(fieldErrorMap[field.normalized]?.length)"
                   :class="{ 'required-empty': submitAttempted && field.isRequired && !field.isCheckbox && isFieldEmpty(field.normalized, field) }"
                   color="primary"
-                  hide-details
                   variant="outlined"
                   maxlength="10"
                   autocomplete="off"
@@ -177,9 +176,31 @@ i18next.on('languageChanged', (lng) => {
   language.value = lng
 })
 
-// Reload feature labels AND section names whenever the user switches UI language
-watch(language, (lng) => {
-  void featureDefinitionsStore.loadLabels(lng)
+// Reload feature labels AND section names whenever the user switches UI language.
+// Also re-format any already-entered date fields to the new locale's format.
+watch(language, (newLng) => {
+  void featureDefinitionsStore.loadLabels(newLng)
+
+  // Convert date fields: DE (DD.MM.YYYY) ↔ EN (MM/DD/YYYY)
+  const defs = definitions.value ?? []
+  for (const def of defs) {
+    if (def.input_type !== 'date' || !def.normalized) continue
+    const current = (values as any)[def.normalized]
+    if (typeof current !== 'string' || current.length !== 10) continue
+    if (newLng.startsWith('en') && current.includes('.')) {
+      // DD.MM.YYYY → MM/DD/YYYY
+      const parts = current.split('.')
+      if (parts.length === 3) {
+        setFieldValue(def.normalized, `${parts[1]}/${parts[0]}/${parts[2]}`)
+      }
+    } else if (!newLng.startsWith('en') && current.includes('/')) {
+      // MM/DD/YYYY → DD.MM.YYYY
+      const parts = current.split('/')
+      if (parts.length === 3) {
+        setFieldValue(def.normalized, `${parts[1]}.${parts[0]}.${parts[2]}`)
+      }
+    }
+  }
 })
 
 const route = useRoute()
@@ -246,11 +267,41 @@ const getOptionValueByRole = (name: string, role: string, fallback: string) => {
 
 // Computed error map – Vue tracks this as a proper reactive dependency on manualErrors
 // and formErrors. Unlike a plain function call in the template, a computed guarantees
+// Resolve an error token to a translated string in the current language.
+// Tokens avoid storing stale translated strings in manualErrors — instead the
+// computed below re-evaluates on every language change and re-translates.
+const resolveErrorToken = (token: string): string => {
+  if (token.startsWith('__required__:')) {
+    const key = token.slice('__required__:'.length)
+    const msg = i18next.t(key)
+    return msg !== key ? msg : i18next.t('form.error.required_field')
+  }
+  if (token === '__date_incomplete__') {
+    return language.value?.startsWith('en')
+      ? 'Date must be complete (MM/DD/YYYY).'
+      : 'Datum muss vollst\u00e4ndig sein (TT.MM.JJJJ).'
+  }
+  if (token === '__month_invalid__') {
+    return language.value?.startsWith('en')
+      ? 'Invalid month \u2013 must be between 01 and 12.'
+      : 'Ung\u00fcltiger Monat \u2013 muss zwischen 01 und 12 liegen.'
+  }
+  if (token.startsWith('__age_range__:')) {
+    const age = token.slice('__age_range__:'.length)
+    return language.value?.startsWith('en')
+      ? `Cannot save: patient age ${age} is outside the model's training range (18\u201390 years).`
+      : `Speichern nicht m\u00f6glich: Patientenalter ${age} liegt au\u00dferhalb des Trainingsbereichs (18\u201390 Jahre).`
+  }
+  // Not a token (legacy string) — return as-is
+  return token
+}
+
 // the template re-evaluates whenever manualErrors.value is written (e.g. on submit).
 const fieldErrorMap = computed<Record<string, string[]>>(() => {
+  void language.value // register as reactive dep so errors re-translate on language switch
   const map: Record<string, string[]> = {}
-  for (const [name, msg] of Object.entries(manualErrors.value)) {
-    if (msg) map[name] = [msg]
+  for (const [name, token] of Object.entries(manualErrors.value)) {
+    if (token) map[name] = [resolveErrorToken(token)]
   }
   for (const [name, msg] of Object.entries(formErrors.value)) {
     if (!map[name] && msg) map[name] = [msg as string]
@@ -496,15 +547,12 @@ const clearManualError = (name: string) => {
 const MINIMUM_PREDICTION_FIELDS = ['gender', 'age', 'hl_operated_ear']
 
 const highlightEmptyMinimumFields = () => {
-  const fallback = i18next.t('form.error.required_field')
   const errs = { ...manualErrors.value }
   for (const name of MINIMUM_PREDICTION_FIELDS) {
     const val = (values as any)[name]
     const empty = val === undefined || val === null || val === ''
     if (empty) {
-      const key = `form.error.${name}`
-      const msg = i18next.t(key)
-      errs[name] = msg !== key ? msg : fallback
+      errs[name] = `__required__:form.error.${name}`
     }
   }
   manualErrors.value = errs
@@ -512,7 +560,6 @@ const highlightEmptyMinimumFields = () => {
 
 const highlightEmptyRequiredFields = () => {
   const defs = definitions.value ?? []
-  const fallback = i18next.t('form.error.required_field')
   const errs = { ...manualErrors.value }
   for (const def of defs) {
     if (!def?.required || !def?.normalized) continue
@@ -522,9 +569,7 @@ const highlightEmptyRequiredFields = () => {
       ? !Array.isArray(val) || val.length === 0
       : val === undefined || val === null || val === ''
     if (empty) {
-      const key = `form.error.${def.normalized}`
-      const msg = i18next.t(key)
-      errs[def.normalized] = msg !== key ? msg : fallback
+      errs[def.normalized] = `__required__:form.error.${def.normalized}`
     }
   }
   manualErrors.value = errs
@@ -547,6 +592,28 @@ const formatDateInput = (raw: string): string => {
   if (digits.length <= 2) return digits
   if (digits.length <= 4) return `${digits.slice(0, 2)}.${digits.slice(2)}`
   return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`
+}
+
+const validateDateMonth = (name: string, formatted: string): boolean => {
+  // Only validate once month segment is fully entered (2 digits in position)
+  let monthStr: string | null = null
+  if (language.value?.startsWith('en') && formatted.includes('/')) {
+    // MM/DD/YYYY — month is first segment
+    monthStr = formatted.split('/')[0]
+  } else if (formatted.includes('.')) {
+    // DD.MM.YYYY — month is second segment
+    monthStr = formatted.split('.')[1] ?? null
+  }
+  if (monthStr && monthStr.length === 2) {
+    const m = parseInt(monthStr, 10)
+    if (m < 1 || m > 12) {
+      const copy = { ...manualErrors.value }
+      copy[name] = '__month_invalid__'
+      manualErrors.value = copy
+      return false
+    }
+  }
+  return true
 }
 
 const calculateAgeFromDate = (dateStr: string): number | null => {
@@ -594,12 +661,28 @@ const updateDateField = (name: string, val: any) => {
   const str = typeof val === 'string' ? val : ''
   const formatted = formatDateInput(str)
   setFieldValue(name, formatted)
+
+  // Show a live "incomplete" error as soon as the user starts typing but hasn't
+  // finished the full date yet. Clear it once complete or empty.
+  if (formatted.length > 0 && formatted.length < 10) {
+    const copy = { ...manualErrors.value }
+    copy[name] = '__date_incomplete__'
+    manualErrors.value = copy
+    return
+  }
+
   clearManualError(name)
-  // Auto-fill age when birth_date is completely entered
-  if (name === 'birth_date' && formatted.length === 10) {
-    const age = calculateAgeFromDate(formatted)
-    if (age !== null) {
-      setFieldValue('age', age)
+  if (!validateDateMonth(name, formatted)) return
+  // Auto-fill age when birth_date is completely entered; clear age when empty
+  if (name === 'birth_date') {
+    if (formatted.length === 10) {
+      const age = calculateAgeFromDate(formatted)
+      if (age !== null) {
+        setFieldValue('age', age)
+        clearManualError('age')
+      }
+    } else if (formatted.length === 0) {
+      setFieldValue('age', '')
       clearManualError('age')
     }
   }
@@ -884,7 +967,6 @@ const submit = async () => {
   // This avoids all async timing issues with vee-validate error propagation.
   const defs = definitions.value ?? []
   const newErrors: Record<string, string> = {}
-  const fallbackMsg = i18next.t('form.error.required_field')
   for (const def of defs) {
     if (!def?.required || !def?.normalized) continue
     // VCheckbox fields always carry trueValue/falseValue – never empty.
@@ -897,11 +979,25 @@ const submit = async () => {
         ? val === undefined || val === null || val === '' || !Number.isFinite(Number(val))
         : val === undefined || val === null || val === ''
     if (isEmpty && !isCheckboxField(def)) {
-      const fieldKey = `form.error.${def.normalized}`
-      const fieldMsg = i18next.t(fieldKey)
-      newErrors[def.normalized] = fieldMsg !== fieldKey ? fieldMsg : fallbackMsg
+      newErrors[def.normalized] = `__required__:form.error.${def.normalized}`
+    }
+    // Check for incomplete date values (e.g. "10.2" or "10.2." instead of DD.MM.YYYY)
+    if (def.input_type === 'date' && !newErrors[def.normalized]) {
+      const dateVal = (values as any)[def.normalized]
+      if (typeof dateVal === 'string' && dateVal.length > 0 && dateVal.length < 10) {
+        newErrors[def.normalized] = '__date_incomplete__'
+      }
     }
   }
+  // Also block incomplete dates for non-required date fields
+  for (const def of defs) {
+    if (def.input_type !== 'date' || !def.normalized || newErrors[def.normalized]) continue
+    const dateVal = (values as any)[def.normalized]
+    if (typeof dateVal === 'string' && dateVal.length > 0 && dateVal.length < 10) {
+      newErrors[def.normalized] = '__date_incomplete__'
+    }
+  }
+
   manualErrors.value = newErrors
   submitAttempted.value = true
 
@@ -921,10 +1017,11 @@ const submit = async () => {
     effectiveAge = ageVal
   }
   if (effectiveAge !== null && (effectiveAge < 18 || effectiveAge > 90)) {
+    manualErrors.value = { ...manualErrors.value, age: `__age_range__:${effectiveAge}` }
+    // Translate immediately for the snackbar (one-time display)
     const ageErrMsg = language.value?.startsWith('en')
-      ? `Cannot save: patient age ${effectiveAge} is outside the model's training range (18–90 years).`
-      : `Speichern nicht möglich: Patientenalter ${effectiveAge} liegt außerhalb des Trainingsbereichs (18–90 Jahre).`
-    manualErrors.value = { ...manualErrors.value, age: ageErrMsg }
+      ? `Cannot save: patient age ${effectiveAge} is outside the model's training range (18\u201390 years).`
+      : `Speichern nicht m\u00f6glich: Patientenalter ${effectiveAge} liegt au\u00dferhalb des Trainingsbereichs (18\u201390 Jahre).`
     showError(ageErrMsg)
     return
   }
