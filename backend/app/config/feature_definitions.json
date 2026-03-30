@@ -156,6 +156,24 @@
       "validation": {
         "type": "boolean"
       },
+      "options": [
+        {
+          "value": "Vorhanden",
+          "role": "true",
+          "labels": {
+            "de": "Vorhanden",
+            "en": "Present"
+          }
+        },
+        {
+          "value": "Keine",
+          "role": "false",
+          "labels": {
+            "de": "Keine",
+            "en": "None"
+          }
+        }
+      ],
       "encoding": {
         "stored_as_in_input_features": "Vorhanden/Keine",
         "true_values": [
@@ -182,6 +200,24 @@
       "validation": {
         "type": "boolean"
       },
+      "options": [
+        {
+          "value": "Vorhanden",
+          "role": "true",
+          "labels": {
+            "de": "Vorhanden",
+            "en": "Present"
+          }
+        },
+        {
+          "value": "Keine",
+          "role": "false",
+          "labels": {
+            "de": "Keine",
+            "en": "None"
+          }
+        }
+      ],
       "encoding": {
         "stored_as_in_input_features": "Vorhanden/Keine",
         "true_values": [
