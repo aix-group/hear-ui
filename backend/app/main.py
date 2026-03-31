@@ -111,7 +111,7 @@ async def health(request: Request):
 
     # Check database
     try:
-        from sqlmodel import Session, select, text
+        from sqlmodel import Session, text
 
         from app.core.db import engine
 

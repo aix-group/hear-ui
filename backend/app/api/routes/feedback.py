@@ -24,9 +24,13 @@ class PaginatedFeedbackResponse(BaseModel):
 @router.get("/")
 def list_feedbacks(
     session: SessionDep,
-    limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of feedbacks to return"),
+    limit: int = Query(
+        default=100, ge=1, le=1000, description="Maximum number of feedbacks to return"
+    ),
     offset: int = Query(default=0, ge=0, description="Number of feedbacks to skip"),
-    paginated: bool = Query(default=False, description="Return paginated response with metadata"),
+    paginated: bool = Query(
+        default=False, description="Return paginated response with metadata"
+    ),
 ):
     """List all feedbacks with optional pagination."""
     feedbacks = crud.list_feedback(session=session, limit=limit, offset=offset)

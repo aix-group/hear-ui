@@ -156,7 +156,9 @@ def _validate_column_types(df: pd.DataFrame) -> list[str]:
     errors: list[str] = []
     for col in df.columns:
         col_lower = _normalize_header(str(col))
-        expected = EXPECTED_COLUMN_TYPES.get(col_lower) or EXPECTED_COLUMN_TYPES.get(str(col).strip())
+        expected = EXPECTED_COLUMN_TYPES.get(col_lower) or EXPECTED_COLUMN_TYPES.get(
+            str(col).strip()
+        )
         if not expected:
             continue
 
@@ -283,7 +285,9 @@ async def upload_csv_and_predict(
             row_dict = row.to_dict()
 
             non_null_values = {
-                k: v for k, v in row_dict.items() if pd.notna(v) and str(v).strip() != ""
+                k: v
+                for k, v in row_dict.items()
+                if pd.notna(v) and str(v).strip() != ""
             }
             if not non_null_values:
                 continue
@@ -310,8 +314,12 @@ async def upload_csv_and_predict(
                     "prediction": res.get("prediction"),
                     "explanation": res.get("explanation", {}),
                     "error": res.get("error"),
-                    "_patient": patient if persist and res.get("prediction") is not None else None,
-                    "_res": res if persist and res.get("prediction") is not None else None,
+                    "_patient": patient
+                    if persist and res.get("prediction") is not None
+                    else None,
+                    "_res": res
+                    if persist and res.get("prediction") is not None
+                    else None,
                 }
             )
         return results
@@ -330,7 +338,9 @@ async def upload_csv_and_predict(
                 )
                 crud.create_prediction(session=session, prediction_in=pred_in)
             except Exception:
-                logger.exception("Failed to persist prediction for row %s", r.get("row"))
+                logger.exception(
+                    "Failed to persist prediction for row %s", r.get("row")
+                )
 
     # Clean up internal keys before returning
     clean_results = [

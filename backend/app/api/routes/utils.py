@@ -516,8 +516,6 @@ def prepare_input(data: dict[str, Any], request: Request):
             "vector_length": len(feature_vector),
             "expected_length": len(EXPECTED_FEATURES_RF),
         }
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to preprocess input")
-        raise HTTPException(
-            status_code=400, detail="Failed to preprocess input."
-        )
+        raise HTTPException(status_code=400, detail="Failed to preprocess input.")

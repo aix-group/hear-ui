@@ -163,11 +163,13 @@ def create_patient_api(
         raise HTTPException(status_code=422, detail=f"Invalid patient data: {e}")
     except IntegrityError:
         session.rollback()
-        raise HTTPException(status_code=409, detail="A patient with this data already exists.")
-    except OperationalError as e:
+        raise HTTPException(
+            status_code=409, detail="A patient with this data already exists."
+        )
+    except OperationalError:
         logger.exception("Database error while creating patient")
         raise HTTPException(status_code=503, detail="Database temporarily unavailable.")
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to create patient")
         raise HTTPException(
             status_code=500, detail="Failed to create patient due to an internal error."
@@ -373,11 +375,13 @@ def update_patient_api(
         raise HTTPException(status_code=422, detail=f"Invalid update data: {e}")
     except IntegrityError:
         session.rollback()
-        raise HTTPException(status_code=409, detail="Update conflicts with existing data.")
-    except OperationalError as e:
+        raise HTTPException(
+            status_code=409, detail="Update conflicts with existing data."
+        )
+    except OperationalError:
         logger.exception("Database error while updating patient %s", patient_id)
         raise HTTPException(status_code=503, detail="Database temporarily unavailable.")
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to update patient %s", patient_id)
         raise HTTPException(
             status_code=500, detail="Failed to update patient due to an internal error."
@@ -409,10 +413,10 @@ def delete_patient_api(patient_id: UUID, session: SessionDep):
 
     except HTTPException:
         raise
-    except OperationalError as e:
+    except OperationalError:
         logger.exception("Database error while deleting patient %s", patient_id)
         raise HTTPException(status_code=503, detail="Database temporarily unavailable.")
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to delete patient %s", patient_id)
         raise HTTPException(
             status_code=500, detail="Failed to delete patient due to an internal error."
@@ -447,7 +451,9 @@ def predict_patient_api(patient_id: UUID, session: SessionDep):
             raise
         except Exception:
             logger.exception("Prediction failed for patient %s", patient_id)
-            raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+            raise HTTPException(
+                status_code=500, detail="Prediction failed. Please try again later."
+            )
     except HTTPException:
         raise
     except Exception:
@@ -506,7 +512,9 @@ async def explainer_patient_api(
         raise
     except Exception:
         logger.exception("SHAP explanation failed for patient %s", patient_id)
-        raise HTTPException(status_code=500, detail="SHAP explanation failed. Please try again later.")
+        raise HTTPException(
+            status_code=500, detail="SHAP explanation failed. Please try again later."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -551,7 +559,10 @@ async def predict_override_api(
         return {"prediction": prediction, "overrides": body.overrides}
     except Exception:
         logger.exception("predict-override failed for patient %s", patient_id)
-        raise HTTPException(status_code=500, detail="Prediction override failed. Please try again later.")
+        raise HTTPException(
+            status_code=500,
+            detail="Prediction override failed. Please try again later.",
+        )
 
 
 @router.get("/{patient_id}/validate")

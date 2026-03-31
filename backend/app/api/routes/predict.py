@@ -125,9 +125,7 @@ def _calculate_data_completeness(patient_dict: dict, model_wrapper=None) -> dict
     """
     # Derive expected feature count from the loaded model when available
     total_features = (
-        model_wrapper.get_n_features()
-        if model_wrapper is not None
-        else None
+        model_wrapper.get_n_features() if model_wrapper is not None else None
     ) or 39  # fallback if model not loaded
 
     # Count provided features (non-None, non-empty)
@@ -289,7 +287,9 @@ def predict(
         raise HTTPException(status_code=422, detail=f"Incompatible data type: {e}")
     except Exception as e:
         logger.exception("Prediction failed: %s", e)
-        raise HTTPException(status_code=500, detail="Prediction failed due to an internal error.")
+        raise HTTPException(
+            status_code=500, detail="Prediction failed due to an internal error."
+        )
 
 
 def _interpret_prediction(prediction: float, uncertainty: float) -> dict:
@@ -528,4 +528,6 @@ def predict_simple(
         raise
     except Exception as e:
         logger.exception("Simple prediction failed: %s", e)
-        raise HTTPException(status_code=500, detail="Prediction failed due to an internal error.")
+        raise HTTPException(
+            status_code=500, detail="Prediction failed due to an internal error."
+        )

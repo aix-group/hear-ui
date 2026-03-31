@@ -1,14 +1,12 @@
 """Tests for predict batch helper functions and CSV validation."""
 
 import pandas as pd
-import pytest
 
 from app.api.routes.predict_batch import (
     _normalize_header,
     _parse_interval_to_years,
     _to_bool,
     _validate_column_types,
-    VALID_CATEGORICAL_VALUES,
 )
 
 

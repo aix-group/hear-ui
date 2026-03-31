@@ -14,4 +14,7 @@ __all__ = [
     "Patient",
     "PatientCreate",
     "PatientUpdate",
+    # Model Card
+    "ModelCard",
+    "ModelMetrics",
 ]

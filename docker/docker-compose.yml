@@ -24,7 +24,7 @@
 services:
 
   db:
-    image: postgres:17-alpine
+    image: postgres:12
     restart: always
     healthcheck:
       test: ["CMD", "psql", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}", "-c", "SELECT 1"]

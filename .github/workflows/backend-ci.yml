@@ -95,10 +95,7 @@ jobs:
       - name: Run mypy type checking
         run: |
           cd backend
-          mypy app/ --config-file=pyproject.toml --ignore-missing-imports || {
-            echo "Type checking found issues (non-blocking)"
-            exit 0
-          }
+          mypy app/ --config-file=pyproject.toml --ignore-missing-imports
       
       - name: Type Check Summary
         if: always()
@@ -117,7 +114,7 @@ jobs:
     
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:12
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
@@ -242,7 +239,7 @@ jobs:
     
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:12
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db

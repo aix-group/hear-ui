@@ -4,16 +4,21 @@
 import { describe, it, expect, vi, beforeEach, type MockInstance } from 'vitest'
 import { toaster } from '@/components/ui/toaster'
 import useCustomToast from '@/hooks/useCustomToast'
+import * as loggerModule from '@/lib/logger'
 
 describe('toaster', () => {
   it('has a create method', () => {
     expect(typeof toaster.create).toBe('function')
   })
 
-  it('create() logs to console', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  it('create() logs via logger in DEV mode', () => {
+    const spy = vi.spyOn(loggerModule.logger, 'info').mockImplementation(() => {})
+    // Force DEV mode so the log branch executes
+    const originalDev = import.meta.env.DEV
+    ;(import.meta.env as Record<string, unknown>).DEV = true
     toaster.create({ title: 'Test', description: 'Hello', type: 'success' })
     expect(spy).toHaveBeenCalledWith('TOAST', 'Test', 'Hello', 'success')
+    ;(import.meta.env as Record<string, unknown>).DEV = originalDev
     spy.mockRestore()
   })
 })

@@ -27,12 +27,21 @@ def upgrade() -> None:
         ["display_name"],
         unique=False,
     )
+    # Cast json → jsonb to support GIN indexing for fast JSON queries
+    op.execute(
+        "ALTER TABLE patient ALTER COLUMN input_features TYPE jsonb "
+        "USING input_features::text::jsonb"
+    )
     op.execute(
         "CREATE INDEX IF NOT EXISTS idx_patient_input_features "
-        "ON patient USING GIN(input_features)"
+        "ON patient USING GIN(input_features jsonb_path_ops)"
     )
 
 
 def downgrade() -> None:
     op.execute("DROP INDEX IF EXISTS idx_patient_input_features")
+    op.execute(
+        "ALTER TABLE patient ALTER COLUMN input_features TYPE json "
+        "USING input_features::text::json"
+    )
     op.drop_index("idx_patient_display_name", table_name="patient")

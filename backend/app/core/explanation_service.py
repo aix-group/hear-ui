@@ -71,16 +71,22 @@ def compute_shap_explanation(
                     feature_names=feature_names,
                     use_transformed=True,
                 )
-                explanation_result = shap_explainer.explain(preprocessed, return_plot=False)
+                explanation_result = shap_explainer.explain(
+                    preprocessed, return_plot=False
+                )
 
                 feature_importance = explanation_result.get("feature_importance", {})
                 shap_values = explanation_result.get("shap_values", [])
                 base_value = explanation_result.get("base_value", 0.0)
 
                 for i, fname in enumerate(feature_names):
-                    feature_values[fname] = float(sample_vals[i]) if i < len(sample_vals) else 0.0
+                    feature_values[fname] = (
+                        float(sample_vals[i]) if i < len(sample_vals) else 0.0
+                    )
             except Exception as shap_error:
-                logger.warning("SHAP failed, falling back to feature_importances_: %s", shap_error)
+                logger.warning(
+                    "SHAP failed, falling back to feature_importances_: %s", shap_error
+                )
                 importances = model.feature_importances_
                 for i, fname in enumerate(feature_names):
                     val = float(sample_vals[i]) if i < len(sample_vals) else 0.0
@@ -99,7 +105,9 @@ def compute_shap_explanation(
         shap_values = [0.0] * len(feature_names)
 
     # --- top features ---
-    sorted_feats = sorted(feature_importance.items(), key=lambda x: abs(x[1]), reverse=True)
+    sorted_feats = sorted(
+        feature_importance.items(), key=lambda x: abs(x[1]), reverse=True
+    )
     top_features = [
         {"feature": f, "importance": v, "value": feature_values.get(f, 0.0)}
         for f, v in sorted_feats[:5]
@@ -127,6 +135,7 @@ def compute_shap_explanation(
 # Warning generation helpers
 # ---------------------------------------------------------------------------
 
+
 def compute_patient_warnings(
     input_features: dict[str, Any],
     *,
@@ -153,7 +162,10 @@ def compute_patient_warnings(
     _KEY_FIELDS: list[tuple[str, str]] = [
         ("Geschlecht", "Geschlecht"),
         ("Seiten", "Operierte Seite"),
-        ("Diagnose.Höranamnese.Hörminderung operiertes Ohr...", "Hörminderung operiertes Ohr"),
+        (
+            "Diagnose.Höranamnese.Hörminderung operiertes Ohr...",
+            "Hörminderung operiertes Ohr",
+        ),
     ]
     missing_fields: list[str] = []
     for raw_key, display_name in _KEY_FIELDS:
@@ -170,9 +182,17 @@ def compute_patient_warnings(
                 "Hörminderung operiertes Ohr": "Hearing loss (operated ear)",
             }
             eng_names = [translate_map.get(n, n) for n in missing_fields]
-            warnings.append("Missing key fields: " + ", ".join(eng_names) + " — prediction quality may be reduced.")
+            warnings.append(
+                "Missing key fields: "
+                + ", ".join(eng_names)
+                + " — prediction quality may be reduced."
+            )
         else:
-            warnings.append("Fehlende Schlüsselfelder: " + ", ".join(missing_fields) + " – die Vorhersagequalität kann eingeschränkt sein.")
+            warnings.append(
+                "Fehlende Schlüsselfelder: "
+                + ", ".join(missing_fields)
+                + " – die Vorhersagequalität kann eingeschränkt sein."
+            )
 
     return warnings
 
