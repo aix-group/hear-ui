@@ -1084,26 +1084,6 @@ function undoLastWhatIf() {
   onWhatIfChange()
 }
 
-function clearWhatIf(key: string) {
-  whatIfHistory.value.push(JSON.parse(JSON.stringify(whatIfValues.value)))
-  const copy: Record<string, any> = { ...whatIfValues.value }
-  if (initialWhatIfValues.value && Object.prototype.hasOwnProperty.call(initialWhatIfValues.value, key)) {
-    copy[key] = initialWhatIfValues.value[key]
-  } else {
-    delete copy[key]
-  }
-  whatIfValues.value = copy
-  onWhatIfChange()
-}
-
-function toggleChip(key: string, value: any) {
-  if (whatIfValues.value[key] === value && initialWhatIfValues.value?.[key] !== value) {
-    clearWhatIf(key)
-  } else {
-    commitWhatIfChange(key, value)
-  }
-}
-
 function isOverridden(key: string): boolean {
   if (!initialWhatIfValues.value) return false
   return whatIfValues.value[key] !== initialWhatIfValues.value[key]

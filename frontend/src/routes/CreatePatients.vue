@@ -460,7 +460,6 @@ const validationSchema = computed(() => {
     const allowed = getAllowedValues(def)
 
     schema[def.normalized] = (value: unknown) => {
-      // Enum/select fields always receive a fallback via withDefault on submit; skip required-empty check
       if (def.required && isEmptyValue(value, def)) return requiredMessageFor(def)
       if (!isEmptyValue(value, def) && allowed.length > 0) {
         if (def.multiple && Array.isArray(value)) {
@@ -704,13 +703,6 @@ const normalizeImagingValue = (val: unknown): string[] => {
 }
 
 const formFieldNames = computed(() => Object.keys(definitionsByNormalized.value ?? {}))
-
-
-const withDefault = (value: any, fallback = 'Keine') => {
-  if (Array.isArray(value)) return value.length ? value : fallback
-  if (value === undefined || value === null || value === '') return fallback
-  return value
-}
 
 
 const normalizeErrors = (errors: object | null | undefined) => {

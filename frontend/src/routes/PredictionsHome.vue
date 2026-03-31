@@ -408,12 +408,6 @@ const hyperparamsToShow = computed(() => {
   }))
 })
 
-const hyperparamsSummary = computed(() => {
-  const override = locale.value === 'en' ? overrideEn : overrideDe
-  const order = ['n_estimators', 'max_depth', 'max_features', 'min_samples_split', 'min_samples_leaf']
-  const parts = order.map((k) => `${k}=${override[k] ?? (cardData.value?.training?.hyperparameters?.[k] ?? '?')}`)
-  return parts.join(' \u00B7 ')
-})
 
 async function loadModelCard(showSpinner = true) {
   if (showSpinner) loading.value = true

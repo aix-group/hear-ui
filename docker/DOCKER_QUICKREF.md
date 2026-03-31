@@ -1,10 +1,10 @@
-# Docker Compose - Schnellreferenz
+# Docker Compose — Quick Reference
 
-## Grundlegende Befehle
+## Basic Commands
 
-**WICHTIG:** Alle Befehle aus dem Projekt-Root (`hear-ui/`) ausführen!
+**IMPORTANT:** Run all commands from the project root (`hear-ui/`)!
 
-### Starten (Development mit Overrides)
+### Start (Development with Overrides)
 
 ```bash
 docker compose -f docker/docker-compose.yml \
@@ -12,7 +12,7 @@ docker compose -f docker/docker-compose.yml \
   --env-file "$PWD/.env" up -d
 ```
 
-### Starten mit Rebuild
+### Start with Rebuild
 
 ```bash
 docker compose -f docker/docker-compose.yml \
@@ -20,172 +20,248 @@ docker compose -f docker/docker-compose.yml \
   --env-file "$PWD/.env" up -d --build
 ```
 
-### Stoppen
+### Stop
 
 ```bash
 docker compose -f docker/docker-compose.yml \
   --env-file "$PWD/.env" down
 ```
 
-### Stoppen und Volumes löschen
+### Stop and Remove Volumes
 
 ```bash
 docker compose -f docker/docker-compose.yml \
   --env-file "$PWD/.env" down -v
 ```
 
-### Logs anschauen
+### View Logs
 
 ```bash
-# Alle Services
+# All services
 docker compose -f docker/docker-compose.yml \
   --env-file "$PWD/.env" logs -f
 
-# Nur Backend
+# Backend only
 docker compose -f docker/docker-compose.yml \
   --env-file "$PWD/.env" logs -f backend
 
-# Nur Datenbank
-docker compose -f docker/docker-compose.yml \
-  --env-file "$PWD/.env" logs -f db
-```
+# Database only
+docker compos# Docker Compose — Quick Reference
 
-### Status prüfen
+## Basic Commands
 
-```bash
-docker compose -f docker/docker-compose.yml \
-  --env-file "$PWD/.env" ps
-```
+**IMPORTANT:** Run all commands f
 
-### Einzelnen Service bauen
 
-```bash
-docker compose -f docker/docker-compose.yml \
-  --env-file "$PWD/.env" build backend
-```
+## Basic Commands
 
-### Befehl in Container ausführen
+**IMPORTANT:** cke
+**Impose.yml \
+  -
+### Start (Development with Overrides)
 
 ```bash
-# Backend: pytest
-docker compose -f docker/docker-compose.yml \
-  --env-file "$PWD/.env" exec backend pytest
-
-# Datenbank: psql
-docker compose -f docker/docker-compose.yml \
-  --env-file "$PWD/.env" exec db psql -U postgres -d hear_db
+docker compose -fdoc
+```bash
+docker compose -f docker/docymldock --e  -f docker/docker-compose.override.yml \
+  un  --env-file "$PWD/.env" up -d
 ```
+ash
+# B```
 
-## Scripts verwenden (Empfohlen)
+### Start with Rebuild
 
-Alternativ können die vorbereiteten Scripts verwendet werden:
+ -
+#doc
+```docker-compose.yml \dockernv  -f docker/docker-compose.override.yml \
+  ab  --env-file "$PWD/.env" up -d ker/docker-```
+
+### Stop
 
 ```bash
-# Tests ausführen
-./scripts/test.sh
-
-# Nur Build
-./scripts/build.sh
-
-# Deploy vorbereiten
-./scripts/deploy.sh
+docker co/.env" 
+#ec 
+```bas -U postgre  --env-file "$PWD/.env" down
 ```
 
-Die Scripts enthalten bereits die korrekten Pfade.
+### ts (Rec```
 
-## Häufige Probleme
-
-### "required variable ... is missing"
-
-Problem: `.env` Datei wird nicht gefunden
-
-Lösung:
-- Sicherstellen, dass du im Projekt-Root bist: `cd hear-ui`
-- Absoluten Pfad verwenden: `--env-file "$PWD/.env"`
-- Prüfen ob `.env` existiert: `ls -la .env`
-
-### "port is already allocated"
-
-Problem: Container läuft bereits
-
-Lösung:
+### Stop and Remove, use 
+#e p
 ```bash
-# Alte Container stoppen
-docker compose -f docker/docker-compose.yml --env-file "$PWD/.env" down
-
-# Oder manuell
-docker stop $(docker ps -q --filter name=hear-ui)
-docker rm $(docker ps -aq --filter name=hear-ui)
+docker compose -f``bdockerRu  --env-file "$PWD/.env" down -v
 ```
 
-### "network traefik-public not found"
+### Viri```
 
-Problem: Traefik-Network existiert nicht
+### View Logs
 
-Lösung: Für lokale Entwicklung ignorieren (nur Warning). Oder:
+``` deploy
+./
+#rip
+```eploy.sh
+``# 
+The sdocker composy   --env-file "$PWD/.env" logs -f
+
+ubleshooting
+# Backend only
+docker compose  midoing"
+
+Problem  --env-file "$PWD/.env" logs -f n:
+- Make sur
+# Database only
+docker compos# Docker -uidockUse the abso
+## Basic Commands
+
+**IMPORTANT:** Run all commanv` exists: `ls -la .e
+
+## Basic Commands
+
+**IMPORTocated"
+**Ioblem: A contai**Impose.yml \
+  nn  -
+on that por##
+
+
 ```bash
-docker network create traefik-public
+docker compose -fdoc
+ing containers
+doc```bcompose -f dockerdockker-  un  --env-file "$PWD/.env" up -d
+```
+ash
+# B```
+
+### Start with Rebuild
+
+ -
+#-q```
+ash
+# B```
+
+### Start witr rm $asoc# r 
+### q -
+ -
+#doc
+```docker-co
+``#
+
+``` "  ab  --env-file "$PWD/.env" up -d ker/docker-```
+
+### Stop
+
+```boes not 
+### Stop
+
+```bash
+docker co/.env" 
+#ec 
+```bas rning can be ignored.#ec 
+rnatively:
+````as```
+
+### ts (Rec```
+
+### Stopik-public
 ```
 
-## Umgebungsvariablen
-
-Die wichtigsten Variablen in `.env`:
-
+## 
+#vironment Variables#e p
 ```bash
-# Docker Images
-DOCKER_IMAGE_BACKEND=hear-backend
-DOCKER_IMAGE_FRONTEND=hear-frontend
-TAG=local
+docke `.env`:
 
-# Datenbank
-POSTGRES_SERVER=db
-POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=changeme_secure_password_here
-POSTGRES_DB=hear_db
+```doch
+# D```
 
-# Ports (in docker-compose.override.yml)
-POSTGRES_HOST_PORT=5434  # Host-Port für PostgreSQL
+### Viri```
 
-# Security
-SECRET_KEY=your-secret-key-here
-FIRST_SUPERUSER=admin@hear-project.de
-FIRST_SUPERUSER_PASSWORD=ChangeMe123!
+### View Logs
+
+``` deploy
+./
+#rip
+```eplo_FRONTE
+###ear-front
+``` deplocal
+
+. Database
+POSTGRES``# 
+Th=db
+PTheGR
+ubleshooting
+# Backend only
+docker compose  mASSWORD=# Bageme_secudockersword_her
+Problem  --env-file "$# P- Make sur
+# Database only
+docker com
+POSTG# DaHOST_PORT=5434  # Host ## Basic Commands
+
+**IMPORTANT:** RuET_KEY
+**IMPORTANT:** -he
+## Basic Commands
+
+**IMPORTocated"
+**Ioblem: A cPER
+**IMPORTocated"ang**I123!
 ```
 
-## Nützliche Befehle
+##   nn  -
+on that por##
 
-### Health-Check
 
-```bash
-curl http://localhost:8000/api/v1/utils/health-check/
+``` Checkon t`bas
+
+``rl http://lodockost:ing containers
+doc`eadoc``heck/
 ```
-
-### API Dokumentation öffnen
-
-```bash
-open http://localhost:8000/docs
 ```
+ash
+# B```
 
-### pgAdmin öffnen
+### Start with Rebuild
 
-```bash
-open http://localhost:5051
-# Login: admin@example.com / admin
-```
+ -
+#-q```
+ash
+# B```
 
-### Datenbank-Backup
-
-```bash
-docker compose -f docker/docker-compose.yml \
-  --env-file "$PWD/.env" exec -T db \
-  pg_dump -U postgres hear_db > backup.sql
-```
-
-### Datenbank-Restore
+###ocas``# 
+#
+###pen 
+ -
+min
 
 ```bash
-cat backup.sql | docker compose -f docker/docker-compose.yml \
-  --env-file "$PWD/.env" exec -T db \
-  psql -U postgres hear_db
+open ht#p://local# st
+###1
+# ### q -
+ -
+#doc
+```docker- a -
+#
+```#
+### Da``#
+se Backup
+````
+### Stop
+
+```boes not 
+### Stop
+
+```bash
+do.yml \
+  --e
+```ile "$##D/.env" exe
+```bas \
+dock_dum#ec  postgres hea```b rnatively:
+````as```
+ Database Re````as````b
+###cat bac
+### Stopik-pker```
+pose -f docker
+#ock#v-c```bash
+docke `.env`:
+
+ledockWD/.
+``` exec -T db# D` psq
+### postgres hear_db
 ```

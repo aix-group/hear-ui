@@ -46,5 +46,3 @@ Interchangeable (designed to swap with minimal code changes):
 ## Where It Operates
 - Local dev: Docker Compose with exposed ports in `docker/docker-compose.override.yml`.
 - Production: Docker Compose with Traefik routing and HTTPS.
-
-If you want this as a separate diagram file (e.g. `docs/system.mmd` or `docs/system.svg`), tell me the preferred format and I will generate it.

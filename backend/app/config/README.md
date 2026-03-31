@@ -92,5 +92,3 @@ Common fields in each feature:
 - `type: boolean` renders as a checkbox.
 - `enum` + `options` renders as a select; `multiple: true` renders as multi-select.
 - `other_field` + `is_other` shows a free-text input when the "other" option is chosen.
-
-ok

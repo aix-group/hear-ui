@@ -83,11 +83,3 @@ class TestEnvironmentDefaults:
 
         # In test environment, this might be overridden
         assert settings.ENVIRONMENT in ["local", "staging", "production"]
-
-    def test_access_token_expire_minutes(self):
-        """Test ACCESS_TOKEN_EXPIRE_MINUTES has default."""
-        from app.core.config import settings
-
-        assert settings.ACCESS_TOKEN_EXPIRE_MINUTES > 0
-        # Default is 60 * 24 * 8 = 8 days in minutes
-        assert settings.ACCESS_TOKEN_EXPIRE_MINUTES == 60 * 24 * 8

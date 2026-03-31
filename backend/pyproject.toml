@@ -1,8 +1,10 @@
 [project]
 name = "app"
-version = "0.1.0"
-description = ""
+version = "1.0.0"
+description = "FastAPI backend for the HEAR-UI cochlear implant outcome prediction system"
 requires-python = ">=3.12,<4.0"
+license = {text = "MIT"}
+keywords = ["healthcare", "machine-learning", "fastapi", "cochlear-implant", "shap"]
 dependencies = [
     "fastapi[standard]<1.0.0,>=0.114.2",
     "python-multipart<1.0.0,>=0.0.7",

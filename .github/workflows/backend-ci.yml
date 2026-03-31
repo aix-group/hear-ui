@@ -24,6 +24,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# CI credentials – override via GitHub Settings → Secrets for private forks.
+# The fallback values are safe test-only defaults so public forks work out of the box.
+env:
+  CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY || 'test-secret-key-for-ci-minimum-32-characters-long' }}
+
 jobs:
   # ============================================
   # 1. LINT - Statische Code-Analyse (Ruff)
@@ -178,9 +183,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           SQLALCHEMY_DATABASE_URI: postgresql://postgres:postgres@localhost:5432/test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           POSTGRES_SERVER: localhost
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -286,9 +289,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
@@ -305,9 +306,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
@@ -323,9 +322,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
@@ -343,9 +340,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
@@ -413,9 +408,7 @@ jobs:
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=change_me
           POSTGRES_DB=hear_db
-          SECRET_KEY=development-secret-key-replace-in-production-min-32-chars-long
-          FIRST_SUPERUSER=admin@hear-project.de
-          FIRST_SUPERUSER_PASSWORD=admin123
+          SECRET_KEY=$CI_SECRET_KEY
           DATABASE_URL=postgresql+asyncpg://postgres:change_me@db:5432/hear_db
           FRONTEND_HOST=http://localhost:5173
           DOCKER_IMAGE_BACKEND=hear-backend
@@ -687,9 +680,7 @@ jobs:
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=test123
           POSTGRES_DB=hear_db
-          SECRET_KEY=test-secret-key-minimum-32-characters-long
-          FIRST_SUPERUSER=admin@hear-project.de
-          FIRST_SUPERUSER_PASSWORD=admin123
+          SECRET_KEY=$CI_SECRET_KEY
           FRONTEND_HOST=http://localhost:5173
           DOCKER_IMAGE_BACKEND=hear-backend
           DOCKER_IMAGE_FRONTEND=hear-frontend
@@ -748,9 +739,7 @@ jobs:
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=smoke_test_pwd
           POSTGRES_DB=smoke_test_db
-          SECRET_KEY=smoke-test-secret-key-minimum-32-characters-long
-          FIRST_SUPERUSER=admin@hear-project.de
-          FIRST_SUPERUSER_PASSWORD=admin123
+          SECRET_KEY=$CI_SECRET_KEY
           DATABASE_URL=postgresql+asyncpg://postgres:smoke_test_pwd@db:5432/smoke_test_db
           FRONTEND_HOST=http://localhost:5173
           DOCKER_IMAGE_BACKEND=hear-backend

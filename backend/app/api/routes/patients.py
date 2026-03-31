@@ -3,12 +3,11 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Body, HTTPException, Query, Request, status
 from pydantic import BaseModel
-from sqlmodel import Session
 
 from app import crud
-from app.api.deps import get_db
+from app.api.deps import SessionDep
 from app.models import Patient, PatientCreate, PatientUpdate
 
 router = APIRouter(prefix="/patients", tags=["patients"])
@@ -87,6 +86,7 @@ class PaginatedPatientsResponse(BaseModel):
 
 @router.post("/", response_model=Patient, status_code=status.HTTP_201_CREATED)
 def create_patient_api(
+    session: SessionDep,
     patient_in: PatientCreate = Body(
         ...,
         example={
@@ -98,7 +98,6 @@ def create_patient_api(
             "display_name": "Muster, Anna",
         },
     ),
-    session: Session = Depends(get_db),
 ):
     """Create a new patient record via JSON (no CSV upload).
 
@@ -153,7 +152,7 @@ def create_patient_api(
 
 @router.get("/")
 def list_patients_api(
-    session: Session = Depends(get_db),
+    session: SessionDep,
     limit: int = Query(
         default=100, ge=1, le=1000, description="Maximum number of patients to return"
     ),
@@ -188,8 +187,8 @@ def list_patients_api(
 
 @router.get("/search")
 def search_patients_api(
+    session: SessionDep,
     q: str = Query(..., min_length=1, description="Search query for patient name"),
-    session: Session = Depends(get_db),
     limit: int = Query(
         default=1000, ge=1, le=5000, description="Maximum number of patients to scan"
     ),
@@ -284,7 +283,7 @@ def search_patients_api(
 
 
 @router.get("/{patient_id}", response_model=Patient)
-def get_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
+def get_patient_api(patient_id: UUID, session: SessionDep):
     p = crud.get_patient(session=session, patient_id=patient_id)
     if not p:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -294,6 +293,7 @@ def get_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
 @router.put("/{patient_id}", response_model=Patient)
 def update_patient_api(
     patient_id: UUID,
+    session: SessionDep,
     patient_update: PatientUpdate = Body(
         ...,
         example={
@@ -305,7 +305,6 @@ def update_patient_api(
             "display_name": "Mustermann, Max",
         },
     ),
-    session: Session = Depends(get_db),
 ):
     """Update an existing patient's data.
 
@@ -353,7 +352,7 @@ def update_patient_api(
 
 
 @router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
+def delete_patient_api(patient_id: UUID, session: SessionDep):
     """Delete a patient from the database.
 
     Args:
@@ -385,7 +384,7 @@ def delete_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
 
 
 @router.get("/{patient_id}/predict")
-def predict_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
+def predict_patient_api(patient_id: UUID, session: SessionDep):
     """Return prediction for a stored patient (uses existing compute helper)."""
     try:
         p = crud.get_patient(session=session, patient_id=patient_id)
@@ -432,7 +431,7 @@ def predict_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
 
 @router.get("/{patient_id}/explainer")
 async def explainer_patient_api(
-    patient_id: UUID, request: Request, session: Session = Depends(get_db)
+    patient_id: UUID, request: Request, session: SessionDep
 ):
     """Return SHAP explanation for a stored patient by delegating to the SHAP route.
 
@@ -737,7 +736,7 @@ class _WhatIfRequest(BaseModel):
 async def predict_override_api(
     patient_id: UUID,
     body: _WhatIfRequest,
-    session: Session = Depends(get_db),
+    session: SessionDep,
 ):
     """Return a new prediction for a patient with some features overridden.
 
@@ -774,7 +773,7 @@ async def predict_override_api(
 
 
 @router.get("/{patient_id}/validate")
-def validate_patient_api(patient_id: UUID, session: Session = Depends(get_db)):
+def validate_patient_api(patient_id: UUID, session: SessionDep):
     """Validate stored patient `input_features` against expected model inputs.
 
     Returns a JSON object with `ok: bool` and `missing_features: list`.
