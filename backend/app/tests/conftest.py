@@ -207,6 +207,14 @@ def client(postgres_container) -> Generator[TestClient, None, None]:
     try:
         from app.main import app
 
+        # Disable rate limiters during tests
+        if hasattr(app.state, "limiter"):
+            app.state.limiter.enabled = False
+        from app.api.routes import predict as _predict_mod
+
+        if hasattr(_predict_mod, "limiter"):
+            _predict_mod.limiter.enabled = False
+
         with TestClient(app) as c:
             yield c
     finally:
