@@ -545,7 +545,7 @@
         {
           "value": "Taubheit (Profound HL)",
           "labels": {
-            "de": "Taubheit (Profound HL)",
+            "de": "Taubheit (tiefgreifend HL)",
             "en": "Profound HL"
           }
         },
@@ -680,7 +680,7 @@
         {
           "value": "Congenital",
           "labels": {
-            "de": "Congenital",
+            "de": "Angeboren",
             "en": "Congenital"
           }
         },
@@ -740,7 +740,7 @@
         {
           "value": "Progredient",
           "labels": {
-            "de": "Progredient",
+            "de": "Fortschreitend",
             "en": "Progressive"
           }
         },
@@ -1048,7 +1048,7 @@
         {
           "value": "Taubheit (Profound HL)",
           "labels": {
-            "de": "Taubheit (Profound HL)",
+            "de": "Taubheit (tiefgreifend HL)",
             "en": "Profound HL"
           }
         }
@@ -1136,8 +1136,8 @@
         {
           "value": "MED-EL Implantattyp / Elektrodentyp",
           "labels": {
-            "de": "MED-EL Implantattyp / Elektrodentyp",
-            "en": "MED-EL implant type / electrode"
+            "de": "MED-EL Implantat / Elektrode",
+            "en": "MED-EL Implant / Electrode"
           }
         },
         {

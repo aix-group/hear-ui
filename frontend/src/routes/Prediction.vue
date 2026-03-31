@@ -216,27 +216,31 @@
                   </template>
                   <!-- Categorical select -->
                   <template v-else-if="feat.options">
-                    <div class="whatif-control">
-                      <v-select
-                        v-model="whatIfValues[feat.rawKey]"
-                        :label="feat.label"
-                        :items="feat.options"
-                        item-title="title"
-                        item-value="value"
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        class="mb-2"
-                        autocomplete="off"
-                        no-filter
-                        style="flex:1"
-                        :menu-props="{ closeOnContentClick: true }"
-                        @update:model-value="onWhatIfChange"
-                      />
-                      <v-btn v-if="feat.normalized !== 'age'" icon size="small" variant="plain" class="v-field__clear whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
+                    <div class="text-caption mb-1 d-flex align-center justify-space-between">
+                      <span>{{ feat.label }}</span>
+                      <v-btn v-if="feat.normalized !== 'age'" icon size="x-small" variant="plain" class="whatif-reset-btn" title="Reset override" @click="clearWhatIf(feat.rawKey)">
                         <v-icon class="whatif-reset-icon" size="14">mdi-close</v-icon>
                       </v-btn>
                     </div>
+                    <v-chip-group
+                      v-model="whatIfValues[feat.rawKey]"
+                      selected-class="text-primary"
+                      column
+                      mandatory
+                      @update:model-value="onWhatIfChange"
+                    >
+                      <v-chip
+                        v-for="opt in feat.options"
+                        :key="opt.value"
+                        :value="opt.value"
+                        variant="outlined"
+                        size="small"
+                        filter
+                        class="whatif-chip"
+                      >
+                        {{ opt.title }}
+                      </v-chip>
+                    </v-chip-group>
                   </template>
                 </v-col>
               </v-row>
@@ -1127,6 +1131,16 @@ onBeforeUnmount(() => {
 .whatif-control .v-select,
 .whatif-control .v-field {
   padding-right: 36px; /* leave space for the overlayed button */
+}
+
+/* Chip styling for categorical What-If controls */
+.whatif-chip {
+  font-size: 0.75rem !important;
+  transition: all 150ms ease;
+}
+.whatif-chip.v-chip--selected {
+  font-weight: 600;
+  border-width: 2px;
 }
 
 
