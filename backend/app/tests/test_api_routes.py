@@ -20,18 +20,7 @@ def mock_session():
     return session
 
 
-@pytest.fixture
-def sample_patient_data():
-    """Sample patient input features."""
-    return {
-        "Alter [J]": 45,
-        "Geschlecht": "w",
-        "Primäre Sprache": "Deutsch",
-        "Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)...": "postlingual",
-        "Diagnose.Höranamnese.Ursache....Ursache...": "Unbekannt",
-        "Symptome präoperativ.Tinnitus...": "ja",
-        "Behandlung/OP.CI Implantation": "Cochlear",
-    }
+# sample_patient_data is provided by conftest.py — do not redefine here
 
 
 @pytest.fixture

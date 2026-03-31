@@ -76,65 +76,11 @@
 
         <!-- Graph -->
         <v-col class="graph-col" cols="5">
-          <v-sheet class="graph-sheet" rounded="lg">
-            <!-- Title -->
-            <h4 class="graph-title">
-              {{ $t('prediction.result.graph.title') }}
-            </h4>
-
-            <v-sheet class="graph-canvas" rounded="lg" elevation="0">
-              <!-- GRAPH AREA -->
-              <div class="graph-placeholder graph-placeholder-relative"
-                   :style="{'--patient-x-position': patientX + '%'}">
-                <svg
-                  class="graph-svg"
-                  viewBox="0 33.33 100 66.67"
-                >
-                  <!-- curved “probability” line -->
-                  <path
-                    class="graph-curve"
-                    :d="graphPath"
-                  />
-
-                  <!-- vertical dotted line at patient % -->
-                  <line
-                    class="graph-patient-line"
-                    :x1="patientX"
-                    y1="0"
-                    :x2="patientX"
-                    y2="100"
-                  />
-
-                  <!-- blue patient dot -->
-                  <circle
-                    class="graph-patient-dot"
-                    :cx="patientX"
-                    :cy="patientY"
-                    r="1.5"
-                  />
-                </svg>
-
-                <!-- label: 'Patient: XX%' -->
-                <div class="graph-patient-label" :class="recommended ? 'label-left' : 'label-right'">
-                  {{ $t('prediction.result.graph.patient') }} {{ patientPercent }}%
-                </div>
-              </div>
-
-
-              <!-- X-axis -->
-              <div class="graph-x-axis"></div>
-              <div class="graph-scale">
-                <span>0</span>
-                <span>100</span>
-              </div>
-            </v-sheet>
-
-
-            <!-- Caption -->
-            <p class="graph-caption">
-              {{ $t('prediction.result.graph.description', { threshold: thresholdPercent ?? 0 }) }}
-            </p>
-          </v-sheet>
+          <PredictionGraph
+            :predictionResult="predictionResult"
+            :recommended="recommended"
+            :threshold="threshold"
+          />
         </v-col>
 
 
@@ -144,24 +90,16 @@
       />
 
       <!-- Explanations -->
-      <v-row
-        justify="start"
-        align="center"
-        no-gutters
-      >
+      <v-row justify="start" align="center" no-gutters>
         <v-col cols="12">
-          <h2 class="mb-2">
-            {{ $t('prediction.explanations.title') }}
-          </h2>
-          <p class="text-body-2 text-medium-emphasis mb-4">
-            {{ $t('prediction.explanations.subtitle') }}
-          </p>
-
-          <!-- Plotly SHAP-style bar chart -->
-          <div
-            ref="explanationPlot"
-            :style="{ width: '100%', height: explanationPlotHeight + 'px' }"
-          ></div>
+          <ExplanationChart
+            ref="explanationChartRef"
+            :matchedFeatures="matchedFeatures"
+            :featureLabels="featureLabels"
+            :featureImportances="featureImportances"
+            :sectionBoundaries="sectionBoundaries"
+            :language="language"
+          />
         </v-col>
       </v-row>
 
@@ -508,10 +446,13 @@
 <script lang="ts" setup>
 import {useRoute, useRouter} from 'vue-router'
 import {computed, onMounted, onBeforeUnmount, ref, watch} from 'vue'
-import * as Plotly from 'plotly.js-dist-min'
 import {API_BASE} from "@/lib/api";
+import {logger} from "@/lib/logger";
 import i18next from 'i18next'
 import FeedbackForm from '@/components/FeedbackForm.vue'
+import PredictionGraph from '@/components/PredictionGraph.vue'
+import ExplanationChart from '@/components/ExplanationChart.vue'
+import type { MatchedFeature } from '@/components/ExplanationChart.vue'
 import {useFeatureDefinitions} from '@/lib/featureDefinitions'
 import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
 import {formatBirthDateLocale} from '@/utils'
@@ -727,42 +668,15 @@ const patient_birth_date = computed(() => formatBirthDateLocale(rawBirthDate.val
 const {definitions, labels, sections} = useFeatureDefinitions()
 
 const threshold = ref<number | null>(null)
-const thresholdPercent = computed(() => {
-  if (threshold.value === null) return null
-  return Math.round(threshold.value * 100)
-})
 const predictionResult = computed(() => prediction.value?.result ?? 0)
 const recommended = computed(() => {
   if (threshold.value === null) return false
   return predictionResult.value > threshold.value
 })
 
-const GRAPH_SCALE_FACTOR = 200 // Larger number = flatter curve
-const MAX_Y_COORD = 96 // Max Y coordinate in SVG viewBox
-
-// 0–100 %
-const patientPercent = computed(() => Math.round(predictionResult.value * 100))
-
-// x coordinate in SVG (viewBox width = 100)
-const patientX = computed(() => patientPercent.value)
-
-const patientY = computed(() => {
-  const x = patientX.value
-  return MAX_Y_COORD - (x * x / GRAPH_SCALE_FACTOR)
-})
-
-const graphPath = computed(() => {
-  let path = `M 0 ${MAX_Y_COORD}`
-  for (let x = 1; x <= 100; x += 5) {
-    const y = MAX_Y_COORD - (x * x / GRAPH_SCALE_FACTOR)
-    path += ` L ${x},${y}`
-  }
-  return path
-})
-
 /* ---------- Plotly Explanations chart ---------- */
 
-const explanationPlot = ref<HTMLDivElement | null>(null)
+const explanationChartRef = ref<InstanceType<typeof ExplanationChart> | null>(null)
 
 const matchedFeatures = computed(() => {
   const byKey = prediction.value?.params ?? {}
@@ -1100,8 +1014,8 @@ async function callWhatIf() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     whatIfPrediction.value = data.prediction ?? null
-  } catch (e) {
-    console.error('what-if failed', e)
+  } catch {
+    // what-if error silently ignored; UI shows original prediction
   } finally {
     whatIfLoading.value = false
   }
@@ -1208,170 +1122,7 @@ const featureLabels = computed(() => {
   })
 })
 
-const explanationPlotHeight = computed(() => {
-  const numFeatures = featureLabels.value.length
-  if (numFeatures === 0) return 320 // Default height if no features
-
-  const barHeight = 40 // Height per bar in px
-  const verticalPadding = 80 // Top and bottom padding for title, labels etc.
-  return numFeatures * barHeight + verticalPadding
-})
-
-function renderExplanationPlot() {
-  if (!explanationPlot.value) return
-  if (featureLabels.value.length === 0) {
-    Plotly.purge(explanationPlot.value)
-    return
-  }
-
-  // wrap label into <br>-separated lines
-  function wrapLabel(label: string, maxChars = 32) {
-    const words = label.split(/\s+/)
-    const lines: string[] = []
-    let line = ""
-
-    for (const w of words) {
-      const next = line ? `${line} ${w}` : w
-      if (next.length > maxChars) {
-        if (line) lines.push(line)
-        line = w
-      } else {
-        line = next
-      }
-    }
-    if (line) lines.push(line)
-    return lines.join("<br>")
-  }
-
-  const yVals = featureLabels.value.map((_, i) => i)
-  const wrapped = featureLabels.value.map((l) => wrapLabel(l, 44))
-
-  // Split into positive (red) and negative (blue) trace for cleaner legend
-  const posIdx = featureImportances.value.map((v, i) => v >= 0 ? i : -1).filter(i => i >= 0)
-  const negIdx = featureImportances.value.map((v, i) => v < 0 ? i : -1).filter(i => i >= 0)
-
-  const data: Plotly.Data[] = [
-    {
-      type: "bar",
-      orientation: "h",
-      name: language.value?.startsWith('en') ? "Increases probability" : "Erh\u00f6ht Wahrscheinlichkeit",
-      x: posIdx.map(i => featureImportances.value[i]),
-      y: posIdx.map(i => yVals[i]),
-      marker: { color: 'rgba(221, 5, 74, 0.78)', line: { width: 0 } },
-      customdata: posIdx.map(i => featureLabels.value[i]),
-      hovertemplate: language.value?.startsWith('en') ? "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>" : "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
-      showlegend: true,
-    },
-    {
-      type: "bar",
-      orientation: "h",
-      name: language.value?.startsWith('en') ? "Decreases probability" : "Senkt Wahrscheinlichkeit",
-      x: negIdx.map(i => featureImportances.value[i]),
-      y: negIdx.map(i => yVals[i]),
-      marker: { color: 'rgba(33, 150, 243, 0.78)', line: { width: 0 } },
-      customdata: negIdx.map(i => featureLabels.value[i]),
-      hovertemplate: language.value?.startsWith('en') ? "<b>%{customdata}</b><br>Contribution: %{x:.4f}<extra></extra>" : "<b>%{customdata}</b><br>Beitrag: %{x:.4f}<extra></extra>",
-      showlegend: true,
-    },
-  ]
-
-  // left-side, wrapped, left-aligned labels
-  const annotations: Partial<Plotly.Annotations[number]>[] = wrapped.map((txt, i) => ({
-    xref: "paper",
-    yref: "y",
-    x: 0,
-    xanchor: "right",
-    xshift: -10,
-    y: i,
-    text: txt,
-    showarrow: false,
-    align: "left",
-    valign: "middle",
-    font: { size: 11, color: '#333' },
-  }))
-
-  // Section header annotations on the right side outside chart area
-  sectionBoundaries.value.forEach(({ yStart, label, isPositive }) => {
-    annotations.push({
-      xref: 'paper',
-      yref: 'y',
-      x: 1.02,
-      xanchor: 'left',
-      xshift: 0,
-      y: yStart,
-      text: `<b>${label}</b>`,
-      showarrow: false,
-      align: 'left',
-      valign: 'middle',
-      font: { size: 12, color: isPositive ? '#DD054A' : '#2196F3', family: 'Inter, Roboto, system-ui' },
-      // Make the label visually distinct: add a lightly shaded background and border
-      bgcolor: isPositive ? 'rgba(221,5,74,0.06)' : 'rgba(33,150,243,0.06)',
-      bordercolor: isPositive ? '#DD054A' : '#2196F3',
-      borderwidth: 1,
-      borderpad: 6,
-    })
-  })
-
-  const layout: Partial<Plotly.Layout> = {
-    height: explanationPlotHeight.value,
-    xaxis: {
-      title: { text: language.value?.startsWith('en') ? "Contribution to prediction" : "Beitrag zur Vorhersage", font: { size: 12, color: '#666' } },
-      automargin: true,
-      zeroline: true,
-      zerolinewidth: 2,
-      zerolinecolor: '#999',
-      gridcolor: '#eee',
-      gridwidth: 1,
-    },
-    yaxis: {
-      showticklabels: false,
-      automargin: false,
-    },
-    legend: {
-      orientation: 'h',
-      yanchor: 'bottom',
-      y: 1.02,
-      xanchor: 'left',
-      x: 0,
-      font: { size: 11 },
-    },
-    annotations,
-    margin: {
-      // Dynamic left margin: ~7 px per character of the longest label line,
-      // clamped between 240 and 520 px so short labels don't waste space and
-      // long labels are never clipped.
-      l: Math.max(
-        240,
-        Math.min(
-          520,
-          Math.max(...wrapped.map((lbl) =>
-            Math.max(...lbl.split('<br>').map((s) => s.replace(/<[^>]+>/g, '').length))
-          )) * 7
-        )
-      ),
-      // Dynamic right margin so section header labels are fully visible.
-      // Each char ≈ 8 px at font-size 11; add 32 px buffer; min 160, max 280.
-      r: sectionBoundaries.value.length
-        ? Math.max(160, Math.min(280, Math.max(...sectionBoundaries.value.map((b) => b.label.length)) * 8 + 32))
-        : 40,
-      t: 10,
-      b: 40,
-    },
-    bargap: 0.28,
-  }
-
-  const config: Partial<Plotly.Config> = {
-    displayModeBar: false,
-    responsive: true,
-  }
-
-  Plotly.react(explanationPlot.value, data, layout, config)
-}
-
-// Re-render Plotly when labels/values/language change
-watch([featureLabels, featureImportances], () => {
-  renderExplanationPlot()
-})
+// Re-render chart when labels/values/language change (handled by ExplanationChart component via watch)
 
 watch(language, () => {
   void featureDefinitionsStore.loadLabels(language.value)
@@ -1406,7 +1157,7 @@ onMounted(async () => {
         threshold.value = thresholdData.threshold;
       }
     } else {
-      console.warn("Failed to load prediction threshold");
+      logger.warn("Failed to load prediction threshold");
     }
 
     const response = await fetch(
@@ -1439,7 +1190,7 @@ onMounted(async () => {
       feature_values: filteredValues
     };
     predictionWarnings.value = Array.isArray(data.warnings) ? data.warnings : [];
-    renderExplanationPlot()
+    // ExplanationChart re-renders reactively via its own watchers
 
     const response2 = await fetch(
         `${API_BASE}/api/v1/patients/${encodeURIComponent(patient_id.value)}`,
@@ -1464,9 +1215,8 @@ onMounted(async () => {
     rawBirthDate.value = data2.input_features?.['Geburtsdatum'] ?? null
     patientInputFeatures.value = data2.input_features ?? {}
 
-  } catch (err: any) {
-    console.error(err);
-    error.value = err?.message ?? "Failed to load patient";
+  } catch (err: unknown) {
+    error.value = err instanceof Error ? err.message : "Failed to load patient";
   } finally {
     loading.value = false;
   }
@@ -1512,62 +1262,6 @@ onBeforeUnmount(() => {
 .graph-col {
   display: flex;
   justify-content: flex-end; /* align to the right like in Figma */
-}
-
-/* Outer square card */
-.graph-sheet {
-  border: 1px solid #000; /* black border */
-  border-radius: 12px; /* rounded corners */
-  padding: 16px;
-  width: 100%;
-  max-width: 360px; /* tweak to match your layout */
-  aspect-ratio: 1 / 1; /* keep it roughly square */
-  display: flex;
-  flex-direction: column;
-}
-
-/* h4-style title */
-.graph-title {
-  font-weight: 600;
-  margin: 0 0 12px 0;
-}
-
-/* Inner sheet where the graph will be drawn */
-.graph-canvas {
-  flex: 1;
-  margin-bottom: 12px;
-}
-
-/* Caption text under the graph */
-.graph-caption {
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* Graph drawing area (empty for now) */
-.graph-placeholder {
-  flex: 1;
-  width: 100%;
-  margin-bottom: 12px;
-}
-
-/* Thin horizontal gray axis line */
-.graph-x-axis {
-  width: 100%;
-  height: 1px;
-  background-color: #d0d0d0; /* light gray like in mockup */
-  margin-bottom: 4px;
-}
-
-/* 0 --- 100 aligned left/right */
-.graph-scale {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  font-size: 12px;
-  color: #666;
-  padding: 0 2px;
-  margin-bottom: 4px;
 }
 
 /* What-If toggle bar */
@@ -1977,71 +1671,6 @@ onBeforeUnmount(() => {
 /* Other-text input */
 .whatif-other-field :deep(.v-field) {
   font-size: 0.9rem;
-}
-
-
-/* SVG fills area */
-.graph-svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* MAIN CURVE – this was missing, so it got filled black */
-.graph-curve {
-  fill: none; /* prevent black wedge */
-  stroke: #000;
-  stroke-width: 0.7;
-}
-
-/* vertical dotted line at patient value */
-.graph-patient-line {
-  stroke: #bdbdbd;
-  stroke-width: 0.4;
-  stroke-dasharray: 1.5 1.5;
-}
-
-/* blue dot */
-.graph-patient-dot {
-  fill: rgb(var(--v-theme-primary));
-}
-
-/* 'Patient: 87%' label */
-.graph-patient-label {
-  position: absolute;
-  top: 2px;
-  color: #000;
-}
-
-.label-left {
-  left: var(--patient-x-position);
-  transform: translateX(-110%); /* shift left by 110% of its own width */
-}
-
-.label-right {
-  left: var(--patient-x-position);
-  transform: translateX(10%); /* shift right by 10% of its own width */
-}
-
-.graph-placeholder-relative {
-  position: relative;
-}
-
-/* axis + scale */
-.graph-x-axis {
-  width: 100%;
-  height: 1px;
-  background-color: #d0d0d0;
-  margin-bottom: 4px;
-}
-
-.graph-scale {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  font-size: 12px;
-  color: #666;
-  padding: 0 2px;
-  margin-bottom: 4px;
 }
 
 /* Age hint under slider */

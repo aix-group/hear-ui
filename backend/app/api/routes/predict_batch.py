@@ -10,6 +10,21 @@ from app.models.prediction import PredictionCreate
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 
+# Maximum file size for CSV uploads (10 MB)
+MAX_CSV_SIZE_BYTES = 10 * 1024 * 1024
+
+# Maximum number of rows allowed in a single batch upload
+MAX_BATCH_ROWS = 5000
+
+# Validation constraints for numeric fields
+NUMERIC_CONSTRAINTS: dict[str, tuple[float, float]] = {
+    "age": (0, 120),
+    "alter": (0, 120),
+    "Alter [J]": (0, 120),
+    "measure  pre-op": (0, 100),
+    "abstand": (0, 36500),  # days — max ~100 years
+}
+
 # Basic CSV -> internal column mapping. Extend as needed.
 COLUMN_MAPPING = {
     "alter": "age",
@@ -125,16 +140,36 @@ async def upload_csv_and_predict(
     according to `COLUMN_MAPPING` (case-insensitive) and then for each row calls
     `compute_prediction_and_explanation` (existing function).
     """
+    import asyncio
+
     # Use the canonical model wrapper from app state
     model_wrapper = request.app.state.model_wrapper
 
     if not model_wrapper or not model_wrapper.is_loaded():
         raise HTTPException(status_code=503, detail="Model not loaded")
 
-    # read CSV into DataFrame
+    # Validate file type
+    if file.content_type and file.content_type not in (
+        "text/csv",
+        "application/vnd.ms-excel",
+        "application/octet-stream",
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type: {file.content_type}. Expected CSV.",
+        )
+
+    # Read CSV into DataFrame
     try:
         contents = await file.read()
+        if len(contents) > MAX_CSV_SIZE_BYTES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"CSV file too large ({len(contents)} bytes). Maximum is {MAX_CSV_SIZE_BYTES} bytes.",
+            )
         df = pd.read_csv(BytesIO(contents))
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Failed to read CSV: {exc}")
 
@@ -144,60 +179,103 @@ async def upload_csv_and_predict(
     if df.empty:
         return {"count": 0, "results": []}
 
-    results = []
+    if len(df) > MAX_BATCH_ROWS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"CSV contains {len(df)} rows. Maximum is {MAX_BATCH_ROWS}.",
+        )
 
-    for idx, row in df.iterrows():
-        # Skip rows where essential fields are missing
-        row_dict = row.to_dict()
+    # Validate numeric field ranges
+    validation_errors: list[str] = []
+    for col in df.columns:
+        col_stripped = str(col).strip()
+        col_lower = col_stripped.lower()
+        constraint_key = None
+        for key in NUMERIC_CONSTRAINTS:
+            if key.lower() == col_lower or key == col_stripped:
+                constraint_key = key
+                break
+        if constraint_key:
+            lo, hi = NUMERIC_CONSTRAINTS[constraint_key]
+            numeric_vals = pd.to_numeric(df[col], errors="coerce").dropna()
+            out_of_range = numeric_vals[(numeric_vals < lo) | (numeric_vals > hi)]
+            if not out_of_range.empty:
+                validation_errors.append(
+                    f"Column '{col}': {len(out_of_range)} values outside allowed range [{lo}, {hi}]"
+                )
 
-        # Check if row has any meaningful data
-        non_null_values = {
-            k: v for k, v in row_dict.items() if pd.notna(v) and str(v).strip() != ""
-        }
-        if not non_null_values:
-            continue
+    if validation_errors:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Validation errors: {'; '.join(validation_errors)}",
+        )
 
-        # Build patient dict directly from CSV columns (German names)
-        patient = {}
-        for col, val in row_dict.items():
-            if pd.isna(val):
+    # Run row-by-row predictions in a thread pool to avoid blocking the event loop
+    def _process_rows():
+        results = []
+        for idx, row in df.iterrows():
+            row_dict = row.to_dict()
+
+            non_null_values = {
+                k: v for k, v in row_dict.items() if pd.notna(v) and str(v).strip() != ""
+            }
+            if not non_null_values:
                 continue
-            patient[col] = val
 
-        try:
-            # Use model_wrapper.predict which handles preprocessing
-            pred_res = model_wrapper.predict(patient)
+            patient = {}
+            for col, val in row_dict.items():
+                if pd.isna(val):
+                    continue
+                patient[col] = val
+
             try:
-                prediction_value = float(pred_res[0])
-            except (TypeError, IndexError):
-                prediction_value = float(pred_res)
-            res = {"prediction": prediction_value, "explanation": {}}
-        except Exception as e:
-            # Log error but continue with other rows
-            res = {"prediction": None, "error": str(e)}
+                pred_res = model_wrapper.predict(patient)
+                try:
+                    prediction_value = float(pred_res[0])
+                except (TypeError, IndexError):
+                    prediction_value = float(pred_res)
+                res = {"prediction": prediction_value, "explanation": {}}
+            except Exception as e:
+                res = {"prediction": None, "error": str(e)}
 
-        if persist and res.get("prediction") is not None:
+            results.append(
+                {
+                    "row": int(idx),
+                    "prediction": res.get("prediction"),
+                    "explanation": res.get("explanation", {}),
+                    "error": res.get("error"),
+                    "_patient": patient if persist and res.get("prediction") is not None else None,
+                    "_res": res if persist and res.get("prediction") is not None else None,
+                }
+            )
+        return results
+
+    loop = asyncio.get_event_loop()
+    results = await loop.run_in_executor(None, _process_rows)
+
+    # Persist predictions (DB calls) back on the main thread
+    for r in results:
+        if r.get("_patient") and r.get("_res"):
             try:
                 pred_in = PredictionCreate(
-                    input_features=patient,
-                    prediction=float(res.get("prediction", 0.0)),
-                    explanation=res.get("explanation", {}),
+                    input_features=r["_patient"],
+                    prediction=float(r["_res"].get("prediction", 0.0)),
+                    explanation=r["_res"].get("explanation", {}),
                 )
                 crud.create_prediction(session=session, prediction_in=pred_in)
             except Exception:
-                # don't fail whole batch for single-row DB errors
                 pass
 
-        results.append(
-            {
-                "row": int(idx),
-                "prediction": res.get("prediction"),
-                "explanation": res.get("explanation", {}),
-                "error": res.get("error"),
-            }
-        )
+    # Clean up internal keys before returning
+    clean_results = [
+        {
+            "row": r["row"],
+            "prediction": r["prediction"],
+            "explanation": r["explanation"],
+            "error": r.get("error"),
+        }
+        for r in results
+        if r.get("prediction") is not None or r.get("error")
+    ]
 
-    # Filter out None results
-    results = [r for r in results if r.get("prediction") is not None or r.get("error")]
-
-    return {"count": len(results), "results": results}
+    return {"count": len(clean_results), "results": clean_results}

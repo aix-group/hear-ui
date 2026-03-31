@@ -114,19 +114,23 @@ def _validate_minimum_input(patient_dict: dict) -> tuple[bool, str | None]:
     return True, None
 
 
-def _calculate_data_completeness(patient_dict: dict) -> dict:
+def _calculate_data_completeness(patient_dict: dict, model_wrapper=None) -> dict:
     """Calculate how complete the patient data is.
 
     Returns:
         Dict with completeness metrics
     """
-    # Total expected features for the RF model
-    TOTAL_FEATURES = 39
+    # Derive expected feature count from the loaded model when available
+    total_features = (
+        model_wrapper.get_n_features()
+        if model_wrapper is not None
+        else None
+    ) or 39  # fallback if model not loaded
 
     # Count provided features (non-None, non-empty)
     provided = len([v for v in patient_dict.values() if v is not None and v != ""])
 
-    completeness_percent = (provided / TOTAL_FEATURES) * 100
+    completeness_percent = (provided / total_features) * 100
 
     # Classify completeness level
     if completeness_percent >= 80:
@@ -145,7 +149,7 @@ def _calculate_data_completeness(patient_dict: dict) -> dict:
     return {
         "completeness_percent": round(completeness_percent, 1),
         "provided_features": provided,
-        "total_features": TOTAL_FEATURES,
+        "total_features": total_features,
         "level": level,
         "level_de": level_de,
         "confidence": confidence,
@@ -202,7 +206,7 @@ def predict(
             raise HTTPException(status_code=503, detail="Model not loaded")
 
         # Calculate data completeness
-        completeness = _calculate_data_completeness(patient_dict)
+        completeness = _calculate_data_completeness(patient_dict, model_wrapper)
 
         # If caller requested a confidence interval, use predict_with_confidence
         if include_confidence:
@@ -281,7 +285,8 @@ def predict(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        logger.exception("Prediction failed: %s", e)
+        raise HTTPException(status_code=500, detail="Prediction failed due to an internal error.")
 
 
 def _interpret_prediction(prediction: float, uncertainty: float) -> dict:
@@ -518,4 +523,5 @@ def predict_simple(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        logger.exception("Simple prediction failed: %s", e)
+        raise HTTPException(status_code=500, detail="Prediction failed due to an internal error.")

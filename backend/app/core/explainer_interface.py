@@ -61,12 +61,12 @@ class ExplainerInterface(ABC):
         Returns:
             Explanation object with feature importance and metadata
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_method_name(self) -> str:
         """Return the name of this explanation method."""
-        pass
+        raise NotImplementedError
 
     def supports_visualization(self) -> bool:
         """Whether this explainer can generate visualizations.

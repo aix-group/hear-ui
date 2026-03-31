@@ -46,222 +46,84 @@ docker compose -f docker/docker-compose.yml \
   --env-file "$PWD/.env" logs -f backend
 
 # Database only
-docker compos# Docker Compose — Quick Reference
-
-## Basic Commands
-
-**IMPORTANT:** Run all commands f
-
-
-## Basic Commands
-
-**IMPORTANT:** cke
-**Impose.yml \
-  -
-### Start (Development with Overrides)
-
-```bash
-docker compose -fdoc
-```bash
-docker compose -f docker/docymldock --e  -f docker/docker-compose.override.yml \
-  un  --env-file "$PWD/.env" up -d
-```
-ash
-# B```
-
-### Start with Rebuild
-
- -
-#doc
-```docker-compose.yml \dockernv  -f docker/docker-compose.override.yml \
-  ab  --env-file "$PWD/.env" up -d ker/docker-```
-
-### Stop
-
-```bash
-docker co/.env" 
-#ec 
-```bas -U postgre  --env-file "$PWD/.env" down
+docker compose -f docker/docker-compose.yml \
+  --env-file "$PWD/.env" logs -f db
 ```
 
-### ts (Rec```
+## Service Access (Development)
 
-### Stop and Remove, use 
-#e p
-```bash
-docker compose -f``bdockerRu  --env-file "$PWD/.env" down -v
-```
+| Service   | URL                          | Notes                            |
+|-----------|------------------------------|----------------------------------|
+| Frontend  | http://localhost:5173        | Vite dev proxy                   |
+| Backend   | http://localhost:8000        | FastAPI (Swagger at `/docs`)     |
+| Database  | `localhost:5434`             | PostgreSQL (override port)       |
+| pgAdmin   | http://localhost:5051        | Credentials from `.env`          |
 
-### Viri```
+## Database
 
-### View Logs
-
-``` deploy
-./
-#rip
-```eploy.sh
-``# 
-The sdocker composy   --env-file "$PWD/.env" logs -f
-
-ubleshooting
-# Backend only
-docker compose  midoing"
-
-Problem  --env-file "$PWD/.env" logs -f n:
-- Make sur
-# Database only
-docker compos# Docker -uidockUse the abso
-## Basic Commands
-
-**IMPORTANT:** Run all commanv` exists: `ls -la .e
-
-## Basic Commands
-
-**IMPORTocated"
-**Ioblem: A contai**Impose.yml \
-  nn  -
-on that por##
-
+### Connect via psql
 
 ```bash
-docker compose -fdoc
-ing containers
-doc```bcompose -f dockerdockker-  un  --env-file "$PWD/.env" up -d
+psql -h localhost -p 5434 -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 ```
-ash
-# B```
 
-### Start with Rebuild
-
- -
-#-q```
-ash
-# B```
-
-### Start witr rm $asoc# r 
-### q -
- -
-#doc
-```docker-co
-``#
-
-``` "  ab  --env-file "$PWD/.env" up -d ker/docker-```
-
-### Stop
-
-```boes not 
-### Stop
+### Run Migrations
 
 ```bash
-docker co/.env" 
-#ec 
-```bas rning can be ignored.#ec 
-rnatively:
-````as```
-
-### ts (Rec```
-
-### Stopik-public
+docker compose -f docker/docker-compose.yml \
+  --env-file "$PWD/.env" exec backend alembic -c /app/alembic.ini upgrade head
 ```
 
-## 
-#vironment Variables#e p
-```bash
-docke `.env`:
-
-```doch
-# D```
-
-### Viri```
-
-### View Logs
-
-``` deploy
-./
-#rip
-```eplo_FRONTE
-###ear-front
-``` deplocal
-
-. Database
-POSTGRES``# 
-Th=db
-PTheGR
-ubleshooting
-# Backend only
-docker compose  mASSWORD=# Bageme_secudockersword_her
-Problem  --env-file "$# P- Make sur
-# Database only
-docker com
-POSTG# DaHOST_PORT=5434  # Host ## Basic Commands
-
-**IMPORTANT:** RuET_KEY
-**IMPORTANT:** -he
-## Basic Commands
-
-**IMPORTocated"
-**Ioblem: A cPER
-**IMPORTocated"ang**I123!
-```
-
-##   nn  -
-on that por##
-
-
-``` Checkon t`bas
-
-``rl http://lodockost:ing containers
-doc`eadoc``heck/
-```
-```
-ash
-# B```
-
-### Start with Rebuild
-
- -
-#-q```
-ash
-# B```
-
-###ocas``# 
-#
-###pen 
- -
-min
+### Reset Database (Destructive!)
 
 ```bash
-open ht#p://local# st
-###1
-# ### q -
- -
-#doc
-```docker- a -
-#
-```#
-### Da``#
-se Backup
-````
-### Stop
+docker compose -f docker/docker-compose.yml \
+  --env-file "$PWD/.env" down -v
+docker compose -f docker/docker-compose.yml \
+  -f docker/docker-compose.override.yml \
+  --env-file "$PWD/.env" up -d
+```
 
-```boes not 
-### Stop
+## Troubleshooting
+
+### Problem: "port is already allocated"
+
+Another process is using the port. Find and stop it:
 
 ```bash
-do.yml \
-  --e
-```ile "$##D/.env" exe
-```bas \
-dock_dum#ec  postgres hea```b rnatively:
-````as```
- Database Re````as````b
-###cat bac
-### Stopik-pker```
-pose -f docker
-#ock#v-c```bash
-docke `.env`:
+# Find what's using port 5434
+lsof -i :5434
 
-ledockWD/.
-``` exec -T db# D` psq
-### postgres hear_db
+# Or change the port in .env
+POSTGRES_HOST_PORT=5435
+```
+
+### Problem: Backend cannot connect to database
+
+1. Make sure `.env` exists: `ls -la .env`
+2. Verify database is healthy: `docker compose ... ps`
+3. Check database logs: `docker compose ... logs db`
+
+### Problem: Containers won't start
+
+```bash
+# Remove all containers and rebuild
+docker compose -f docker/docker-compose.yml \
+  -f docker/docker-compose.override.yml \
+  --env-file "$PWD/.env" down
+docker compose -f docker/docker-compose.yml \
+  -f docker/docker-compose.override.yml \
+  --env-file "$PWD/.env" up -d --build
+```
+
+### Problem: Stale images
+
+```bash
+# Remove unused images
+docker image prune -f
+
+# Force rebuild without cache
+docker compose -f docker/docker-compose.yml \
+  -f docker/docker-compose.override.yml \
+  --env-file "$PWD/.env" build --no-cache
 ```

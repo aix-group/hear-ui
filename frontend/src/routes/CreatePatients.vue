@@ -28,6 +28,7 @@
           density="compact"
           class="mb-4"
           icon="mdi-information-outline"
+          role="status"
         >
           <strong>{{ $t('form.minimum_fields_title') }}:</strong>
           {{ $t('form.minimum_fields_banner') }}
@@ -41,6 +42,8 @@
           density="compact"
           class="mb-4"
           icon="mdi-alert-outline"
+          role="alert"
+          aria-live="assertive"
         >
           {{ ageWarningMessage }}
         </v-alert>
@@ -317,6 +320,10 @@ const buildItems = (def: any) => {
   }))
 }
 
+// Backend data-level option values (not UI labels — these match the API's German option values)
+const OPTION_VALUE_PRESENT = 'Vorhanden'
+const OPTION_VALUE_NONE = 'Keine'
+
 const isCheckboxField = (def: any) => {
   if (def?.type === 'boolean') return true
   if (!Array.isArray(def?.options) || def?.multiple) return false
@@ -324,8 +331,8 @@ const isCheckboxField = (def: any) => {
   if (roles.includes('true') && roles.includes('false')) return true
   if (def.options.length === 2) {
     const values = def.options.map((opt: any) => String(opt?.value ?? '').toLowerCase())
-    const hasPresent = values.includes('vorhanden')
-    const hasNone = values.includes('kein') || values.includes('keine')
+    const hasPresent = values.includes(OPTION_VALUE_PRESENT.toLowerCase())
+    const hasNone = values.includes('kein') || values.includes(OPTION_VALUE_NONE.toLowerCase())
     return hasPresent && hasNone
   }
   return false
@@ -333,20 +340,20 @@ const isCheckboxField = (def: any) => {
 
 const getCheckboxValues = (def: any) => {
   if (!Array.isArray(def?.options)) {
-    return {trueValue: 'Vorhanden', falseValue: 'Keine'}
+    return {trueValue: OPTION_VALUE_PRESENT, falseValue: OPTION_VALUE_NONE}
   }
   const values = def.options.map((opt: any) => opt?.value)
   const trueValue =
-    values.find((val: any) => String(val).toLowerCase() === 'vorhanden') ??
+    values.find((val: any) => String(val).toLowerCase() === OPTION_VALUE_PRESENT.toLowerCase()) ??
     values[0] ??
-    'Vorhanden'
+    OPTION_VALUE_PRESENT
   const falseValue =
     values.find((val: any) => {
       const lower = String(val).toLowerCase()
-      return lower === 'kein' || lower === 'keine'
+      return lower === 'kein' || lower === OPTION_VALUE_NONE.toLowerCase()
     }) ??
     values[1] ??
-    'Keine'
+    OPTION_VALUE_NONE
   return {trueValue, falseValue}
 }
 
@@ -400,10 +407,10 @@ const sectionedDefinitions = computed(() => {
         clearable: !isCheckboxField(def) && Array.isArray(def?.options),
         trueValue: isCheckboxField(def)
           ? getCheckboxValues(def).trueValue
-          : getOptionValueByRole(def.normalized, 'true', 'Vorhanden'),
+          : getOptionValueByRole(def.normalized, 'true', OPTION_VALUE_PRESENT),
         falseValue: isCheckboxField(def)
           ? getCheckboxValues(def).falseValue
-          : getOptionValueByRole(def.normalized, 'false', 'Keine'),
+          : getOptionValueByRole(def.normalized, 'false', OPTION_VALUE_NONE),
         otherField: def.other_field,
         otherLabel: def.other_field ? labelFor(def.other_field, def.other_field) : undefined,
       }})
@@ -783,7 +790,7 @@ const buildInputFeatures = (values: Record<string, any>) => {
     } else if (def.input_type === 'number') {
       value = Number(value)
     } else if (typeof value === 'boolean') {
-      value = getOptionValueByRole(def.normalized, value ? 'true' : 'false', value ? 'Vorhanden' : 'Keine')
+      value = getOptionValueByRole(def.normalized, value ? 'true' : 'false', value ? OPTION_VALUE_PRESENT : OPTION_VALUE_NONE)
     } else if (Array.isArray(def.options)) {
       // For enum fields, only use a fallback that is actually a valid option value
       const optionValues = def.options.map((opt: any) => opt.value)
@@ -856,7 +863,7 @@ const populateFormForEdit = (patient: any) => {
       const optionValues = def.options.map((opt: any) => opt.value)
       if (optionValues.includes(rawValue)) {
         setFieldValue(def.normalized, rawValue)
-      } else if (def.other_field && rawValue !== undefined && rawValue !== null && rawValue !== '' && rawValue !== 'Keine') {
+      } else if (def.other_field && rawValue !== undefined && rawValue !== null && rawValue !== '' && rawValue !== OPTION_VALUE_NONE) {
         const otherOptions = getOtherValues(def.normalized).value
         if (otherOptions.length) {
           setFieldValue(def.normalized, otherOptions[0])
@@ -872,7 +879,7 @@ const populateFormForEdit = (patient: any) => {
     }
 
     // For non-enum text fields, treat stored 'Keine' as empty in edit mode
-    const cleanValue = rawValue === 'Keine' ? '' : (rawValue ?? '')
+    const cleanValue = rawValue === OPTION_VALUE_NONE ? '' : (rawValue ?? '')
     setFieldValue(def.normalized, cleanValue)
   }
 
@@ -943,8 +950,8 @@ const onSubmit = handleSubmit(
         submitAttempted.value = false
         await router.push({name: 'PatientDetail', params: {id: data.id}, query: {created: '1'}})
       }
-    } catch (err: any) {
-      showError(err?.message ?? i18next.t('form.error.submit_failed'))
+    } catch (err: unknown) {
+      showError(err instanceof Error ? err.message : i18next.t('form.error.submit_failed'))
     }
   },
   (ctx) => {
@@ -1046,7 +1053,6 @@ onMounted(async () => {
       const data = await response.json()
       populateFormForEdit(data)
     } catch (err) {
-      console.error(err)
       showError(err instanceof Error ? err.message : 'Failed to load patient')
     }
   } else if (copyFromId.value) {
@@ -1068,8 +1074,8 @@ onMounted(async () => {
       if (otherSide) setFieldValue('operated_side', otherSide)
       // Reset snapshot so this is treated as a brand-new patient (never as an edit)
       initialSnapshot.value = null
-    } catch (err) {
-      console.error('Failed to copy patient data:', err)
+    } catch {
+      // Copy-from-patient error silently handled; form starts empty
     }
   }
 })

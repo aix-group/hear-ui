@@ -12,6 +12,7 @@
       <v-text-field
           v-model="search"
           :placeholder="$t('search.text')"
+          :aria-label="$t('search.text')"
           density="comfortable"
           flat
           hide-details
@@ -45,6 +46,8 @@
         :elevation="12"
         align="stretch"
         border
+        role="region"
+        :aria-label="$t('search.text')"
         class="search-box result_list"
         rounded="lg"
     >
@@ -73,6 +76,7 @@
 <script lang="ts" setup>
 import {ref, watch} from "vue";
 import {API_BASE} from "@/lib/api";
+import {logger} from "@/lib/logger";
 import i18next from 'i18next';
 import {formatBirthDateLocale} from '@/utils';
 
@@ -131,7 +135,7 @@ watch(search, (newValue) => {
           : [];
 
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       filteredData.value = [];
     }
   }, 200);

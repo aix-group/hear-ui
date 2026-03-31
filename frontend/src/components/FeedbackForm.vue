@@ -9,18 +9,20 @@
           type="button"
           class="feedback-btn agree"
           :class="{ active: formData.accepted === true }"
+          :aria-pressed="formData.accepted === true"
           @click="formData.accepted = true"
         >
-          <v-icon size="18" class="mr-1">mdi-thumb-up-outline</v-icon>
+          <v-icon size="18" class="mr-1" aria-hidden="true">mdi-thumb-up-outline</v-icon>
           {{ $t('prediction.feedback.agree') }}
         </button>
         <button
           type="button"
           class="feedback-btn disagree"
           :class="{ active: formData.accepted === false }"
+          :aria-pressed="formData.accepted === false"
           @click="formData.accepted = false"
         >
-          <v-icon size="18" class="mr-1">mdi-thumb-down-outline</v-icon>
+          <v-icon size="18" class="mr-1" aria-hidden="true">mdi-thumb-down-outline</v-icon>
           {{ $t('prediction.feedback.disagree') }}
         </button>
       </div>
@@ -34,6 +36,7 @@
         id="comment"
         v-model="formData.comment"
         rows="4"
+        :aria-invalid="!!error"
         :placeholder="$t('prediction.feedback.comment_placeholder')"
         :disabled="submitting"
       ></textarea>
@@ -46,6 +49,7 @@
       type="submit"
       class="submit-btn"
       :disabled="formData.accepted === null || submitting"
+      :aria-busy="submitting"
     >
       <span v-if="!submitting">
           <v-icon size="18" class="mr-1">mdi-send-outline</v-icon>
@@ -57,7 +61,7 @@
       </span>
     </button>
 
-    <p v-if="error" class="error-message">
+    <p v-if="error" class="error-message" role="alert" aria-live="assertive">
       {{ error }}
     </p>
   </form>
@@ -67,6 +71,7 @@
 import { ref, reactive } from 'vue'
 import i18next from 'i18next'
 import { API_BASE } from '@/lib/api'
+import { logger } from '@/lib/logger'
 
 interface Props {
   predictionData: {
@@ -129,7 +134,7 @@ const submitFeedback = async () => {
 
     emit('feedbackSubmitted')
   } catch (err) {
-    console.error('Error submitting feedback:', err)
+    logger.error('Error submitting feedback:', err)
     error.value = i18next.t('prediction.feedback.submit_error')
   } finally {
     submitting.value = false

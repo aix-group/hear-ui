@@ -1,6 +1,7 @@
 """Utility routes for feature names and model metadata."""
 
 import hashlib
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +11,8 @@ from pydantic import BaseModel
 from app.core.feature_config import load_feature_config
 
 router = APIRouter(prefix="/utils", tags=["utils"])
+
+logger = logging.getLogger(__name__)
 
 
 def _get_model_wrapper(request: Request):
@@ -514,6 +517,7 @@ def prepare_input(data: dict[str, Any], request: Request):
             "expected_length": len(EXPECTED_FEATURES_RF),
         }
     except Exception as e:
+        logger.exception("Failed to preprocess input")
         raise HTTPException(
-            status_code=400, detail=f"Failed to preprocess input: {str(e)}"
+            status_code=400, detail="Failed to preprocess input."
         )

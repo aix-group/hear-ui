@@ -1,4 +1,5 @@
 import logging
+import uuid
 from contextlib import asynccontextmanager
 
 import sentry_sdk
@@ -29,7 +30,14 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown (nothing to clean up currently)
+    # Shutdown: release resources gracefully
+    logger.info("Shutting down — releasing model resources")
+    if model_wrapper.is_loaded():
+        try:
+            model_wrapper.unload() if hasattr(model_wrapper, "unload") else None
+        except Exception:
+            pass
+    logger.info("Shutdown complete")
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -57,11 +65,21 @@ if settings.all_cors_origins:
         CORSMiddleware,
         allow_origins=settings.all_cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"],
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    """Attach a unique request ID to every request for tracing across logs."""
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 
 @app.get("/", include_in_schema=False)
@@ -71,13 +89,31 @@ async def root_redirect():
 
 
 @app.get("/health", tags=["health"])
-async def health():
-    """Global health check endpoint.
+async def health(request: Request):
+    """Health check endpoint for load balancers, Kubernetes probes, and Docker.
 
-    Standard health check at root level for load balancers,
-    Kubernetes probes, and Docker health checks.
+    Checks database connectivity and model status.
     """
-    return {"status": "ok"}
+    status_detail: dict = {"status": "ok"}
+
+    # Check model
+    wrapper = getattr(request.app.state, "model_wrapper", None)
+    status_detail["model_loaded"] = bool(wrapper and wrapper.is_loaded())
+
+    # Check database
+    try:
+        from sqlmodel import Session, select, text
+
+        from app.core.db import engine
+
+        with Session(engine) as session:
+            session.exec(text("SELECT 1"))
+        status_detail["database"] = "connected"
+    except Exception as exc:
+        status_detail["database"] = f"error: {exc}"
+        status_detail["status"] = "degraded"
+
+    return status_detail
 
 
 @app.exception_handler(Exception)

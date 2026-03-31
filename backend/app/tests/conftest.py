@@ -236,15 +236,21 @@ def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]
 
 @pytest.fixture
 def sample_patient_data() -> dict:
-    """Sample patient data for testing predictions."""
+    """Sample patient data for testing predictions and CRUD operations.
+
+    This is the single authoritative test fixture for patient data.
+    Includes enough fields for both predict validation and patient CRUD tests.
+    """
     return {
         "Alter [J]": 45,
         "Geschlecht": "w",
         "Seiten": "L",
         "Primäre Sprache": "Deutsch",
         "Diagnose.Höranamnese.Hörminderung operiertes Ohr...": "Hochgradiger HV",
+        "Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)...": "postlingual",
         "Diagnose.Höranamnese.Ursache....Ursache...": "Unbekannt",
         "Diagnose.Höranamnese.Versorgung Gegenohr...": "Hörgerät",
+        "Symptome präoperativ.Tinnitus...": "ja",
         "Behandlung/OP.CI Implantation": "Behandlung/OP.CI Implantation.Cochlear... Nucleus Profile CI532 (Slim Modiolar)",
         "outcome_measurments.pre.measure.": 10,
         "abstand": 365,

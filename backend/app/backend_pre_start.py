@@ -44,7 +44,7 @@ if __name__ == "__main__":
     for attempt in range(1, max_retries + 1):
         try:
             init()
-            print("DB_READY")
+            logger.info("DB_READY")
             sys.exit(0)
         except Exception as e:
             last_exc = e

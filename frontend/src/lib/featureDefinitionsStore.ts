@@ -1,6 +1,7 @@
 import {ref, computed, readonly, type Ref} from 'vue'
 import i18next from 'i18next'
 import {API_BASE} from '@/lib/api'
+import {logger} from '@/lib/logger'
 
 export type FeatureOption = {
   value: string
@@ -71,7 +72,7 @@ const loadDefinitions = async () => {
     sectionOrder.value = Array.isArray(data?.section_order) ? data.section_order : []
     error.value = null
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     definitions.value = []
     sectionOrder.value = []
     error.value = err instanceof Error ? err.message : String(err)
@@ -101,7 +102,7 @@ const loadLabels = async (locale?: string) => {
     sections.value = data?.sections ?? {}
     error.value = null
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     labels.value = {}
     sections.value = {}
     error.value = err instanceof Error ? err.message : String(err)

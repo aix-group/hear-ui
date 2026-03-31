@@ -1,12 +1,13 @@
 // src/router/index.ts
 import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
 import HomePage from "@/routes/HomePage.vue";
-import CreatePatients from "@/routes/CreatePatients.vue";
-import SearchPatients from "@/routes/SearchPatients.vue";
-import Prediction from "@/routes/Prediction.vue";
-import PatientDetails from "@/routes/PatientDetails.vue";
-import PredictionsHome from "@/routes/PredictionsHome.vue";
-import NotFound from "@/routes/NotFound.vue";
+
+const CreatePatients = () => import("@/routes/CreatePatients.vue");
+const SearchPatients = () => import("@/routes/SearchPatients.vue");
+const Prediction = () => import("@/routes/Prediction.vue");
+const PatientDetails = () => import("@/routes/PatientDetails.vue");
+const PredictionsHome = () => import("@/routes/PredictionsHome.vue");
+const NotFound = () => import("@/routes/NotFound.vue");
 
 const routes: RouteRecordRaw[] = [
     {

@@ -86,7 +86,7 @@ pnpm test              # Run all tests
 pnpm test:coverage     # With V8 coverage report
 ```
 
-**Results**: 87 tests passed | 95% statement coverage (12 test files)
+**Results**: 153 tests passed (20 test files)
 
 ### E2E Tests (Playwright)
 

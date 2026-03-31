@@ -16,7 +16,7 @@ All notable changes to the HEAR-UI project are documented in this file.
 
 ### Changed
 - Backend test coverage: 75% (600+ tests across 62 files)
-- Frontend test coverage: 96% statement coverage (97 tests across 12 files)
+- Frontend test coverage: 153 tests across 20 files
 - Unified prediction model to 5-fold cross-validation (N=235)
 
 ### Fixed

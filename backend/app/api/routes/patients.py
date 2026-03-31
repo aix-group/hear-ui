@@ -156,7 +156,7 @@ def create_patient_api(
     except Exception as e:
         logger.exception("Failed to create patient")
         raise HTTPException(
-            status_code=500, detail=f"Failed to create patient: {str(e)}"
+            status_code=500, detail="Failed to create patient due to an internal error."
         )
 
 
@@ -262,10 +262,10 @@ def search_patients_api(
                 }
             )
         return results
-    except Exception:
-        # If DB-side search is not available or fails (e.g., SQLite/dev),
+    except AttributeError:
+        # DB-side search not available (e.g., SQLite/dev) —
         # fall back to the conservative Python scanning approach below.
-        pass
+        logger.debug("DB-side search not available, falling back to Python scan")
 
     for p in patients:
         if not getattr(p, "input_features", None):
@@ -357,7 +357,7 @@ def update_patient_api(
     except Exception as e:
         logger.exception("Failed to update patient %s", patient_id)
         raise HTTPException(
-            status_code=500, detail=f"Failed to update patient: {str(e)}"
+            status_code=500, detail="Failed to update patient due to an internal error."
         )
 
 
@@ -389,7 +389,7 @@ def delete_patient_api(patient_id: UUID, session: SessionDep):
     except Exception as e:
         logger.exception("Failed to delete patient %s", patient_id)
         raise HTTPException(
-            status_code=500, detail=f"Failed to delete patient: {str(e)}"
+            status_code=500, detail="Failed to delete patient due to an internal error."
         )
 
 
