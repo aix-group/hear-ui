@@ -137,6 +137,16 @@ def create_patient_api(
                 ),
             )
 
+        # Silently prevent duplicates (same display_name + Geburtsdatum)
+        birth_date = (patient_in.input_features or {}).get("Geburtsdatum")
+        existing = crud.find_duplicate_patient(
+            session=session,
+            display_name=patient_in.display_name,
+            birth_date=birth_date,
+        )
+        if existing:
+            return existing
+
         # Create patient in database
         patient = crud.create_patient(session=session, patient_in=patient_in)
         return patient

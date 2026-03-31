@@ -182,8 +182,16 @@
             </v-icon>
           </div>
 
-          <v-expand-transition>
-            <div v-if="whatIfOpen" class="whatif-panel">
+            <Transition
+              @enter="onAccordionEnter"
+              @after-enter="onAccordionAfterEnter"
+              @leave="onAccordionLeave"
+              @after-leave="onAccordionAfterLeave"
+            >
+            <div
+              v-show="whatIfOpen"
+              class="whatif-panel"
+            >
               <p class="text-body-2 text-medium-emphasis mb-4">{{ $t('prediction.whatif.description') }}</p>
 
               <!-- Plausibility warnings -->
@@ -231,8 +239,16 @@
                         </v-icon>
                       </div>
 
-                      <v-expand-transition>
-                        <div v-if="openGroups[group.key]" class="whatif-group-body">
+                        <Transition
+                          @enter="onAccordionEnter"
+                          @after-enter="onAccordionAfterEnter"
+                          @leave="onAccordionLeave"
+                          @after-leave="onAccordionAfterLeave"
+                        >
+                        <div
+                          v-show="openGroups[group.key]"
+                          class="whatif-group-body"
+                        >
                           <div
                             v-for="feat in group.features"
                             :key="feat.rawKey"
@@ -341,7 +357,7 @@
                             </template>
                           </div>
                         </div>
-                      </v-expand-transition>
+                        </Transition>
                     </div>
                   </form>
                 </div>
@@ -430,7 +446,7 @@
                 </div>
               </div>
             </div>
-          </v-expand-transition>
+            </Transition>
         </v-col>
       </v-row>
 
@@ -608,6 +624,44 @@ const openGroups = ref<Record<string, boolean>>({
 
 function toggleGroup(key: string) {
   openGroups.value = { ...openGroups.value, [key]: !openGroups.value[key] }
+}
+
+// Smooth accordion transition helpers (avoid max-height lag)
+function onAccordionEnter(el: Element) {
+  const e = el as HTMLElement
+  e.style.height = '0'
+  e.style.opacity = '0'
+  e.style.overflow = 'hidden'
+  // Force reflow so browser registers the initial 0-height before transitioning
+  e.getBoundingClientRect()
+  e.style.transition = 'height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease'
+  e.style.height = e.scrollHeight + 'px'
+  e.style.opacity = '1'
+}
+function onAccordionAfterEnter(el: Element) {
+  const e = el as HTMLElement
+  e.style.height = 'auto'
+  e.style.overflow = ''
+  e.style.transition = ''
+  e.style.opacity = ''
+}
+function onAccordionLeave(el: Element) {
+  const e = el as HTMLElement
+  e.style.height = e.scrollHeight + 'px'
+  e.style.overflow = 'hidden'
+  e.style.opacity = '1'
+  // Force reflow so the browser registers the explicit height before we transition
+  e.getBoundingClientRect()
+  e.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease'
+  e.style.height = '0'
+  e.style.opacity = '0'
+}
+function onAccordionAfterLeave(el: Element) {
+  const e = el as HTMLElement
+  e.style.height = ''
+  e.style.overflow = ''
+  e.style.transition = ''
+  e.style.opacity = ''
 }
 
 // Group classification for What-If features
@@ -982,6 +1036,14 @@ watch(computedPatientAge, (age) => {
     initialWhatIfValues.value = { ...initialWhatIfValues.value, [ageKey]: age }
   }
 }, { immediate: true })
+
+// Cancel pending debounce and reset loading state when the panel is closed
+watch(whatIfOpen, (open) => {
+  if (!open) {
+    if (whatIfDebounce) clearTimeout(whatIfDebounce)
+    whatIfLoading.value = false
+  }
+})
 
 watch(whatIfFeatures, (feats) => {
   if (feats.length === 0) return
@@ -1537,7 +1599,7 @@ onBeforeUnmount(() => {
   border-top: none;
   border-radius: 0 0 10px 10px;
   padding: 20px;
-  overflow: visible !important;
+  overflow: hidden;
 }
 
 /* What-If two-column layout */
@@ -1746,8 +1808,8 @@ onBeforeUnmount(() => {
 
 /* Group body (accordion content) */
 .whatif-group-body {
+  overflow: hidden;
   padding: 4px 0 8px;
-  overflow: visible !important;
 }
 .whatif-group {
   margin-bottom: 8px;

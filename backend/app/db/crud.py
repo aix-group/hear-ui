@@ -72,6 +72,20 @@ def list_predictions(
 # ------------------------------------------------------------
 # Patient CRUD
 # ------------------------------------------------------------
+def find_duplicate_patient(
+    session: Session, display_name: str | None, birth_date: str | None
+) -> Patient | None:
+    """Return an existing patient with same display_name AND Geburtsdatum, or None."""
+    if not display_name or not birth_date:
+        return None
+    statement = select(Patient).where(Patient.display_name == display_name)
+    for patient in session.exec(statement).all():
+        features = patient.input_features or {}
+        if features.get("Geburtsdatum") == birth_date:
+            return patient
+    return None
+
+
 def create_patient(session: Session, patient_in: PatientCreate) -> Patient:
     db_obj = Patient(**patient_in.model_dump())
     session.add(db_obj)
