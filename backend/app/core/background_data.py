@@ -127,7 +127,7 @@ def create_synthetic_background(
                     )
             else:
                 # Try to transform with full pipeline
-                transformed = pipeline.transform(raw_df)
+                transformed = pipeline.transform(raw_df)  # type: ignore[attr-defined]
         except Exception as e:
             logger.warning("Could not transform background data: %s", e)
             transformed = None

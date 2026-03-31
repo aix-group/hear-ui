@@ -66,7 +66,7 @@ app = FastAPI(
 
 # Rate limiting
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
 # Set all CORS enabled origins
 if settings.all_cors_origins:
@@ -116,7 +116,7 @@ async def health(request: Request):
         from app.core.db import engine
 
         with Session(engine) as session:
-            session.exec(text("SELECT 1"))
+            session.exec(text("SELECT 1"))  # type: ignore[call-overload]
         status_detail["database"] = "connected"
     except Exception as exc:
         status_detail["database"] = f"error: {exc}"

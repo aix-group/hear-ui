@@ -131,7 +131,7 @@ class ExplainerFactory:
             )
 
         explainer_class = cls._registry[method_lower]
-        return explainer_class(model=model, **kwargs)
+        return explainer_class(model=model, **kwargs)  # type: ignore[call-arg]
 
     @classmethod
     def list_available_methods(cls) -> list[str]:

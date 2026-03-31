@@ -78,7 +78,7 @@ class Settings(BaseSettings):
 
 
 # Create instance
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]
 
 if settings.SECRET_KEY == _FALLBACK_SECRET_KEY:
     _config_logger.warning(

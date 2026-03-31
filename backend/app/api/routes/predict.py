@@ -124,9 +124,14 @@ def _calculate_data_completeness(patient_dict: dict, model_wrapper=None) -> dict
         Dict with completeness metrics
     """
     # Derive expected feature count from the loaded model when available
-    total_features = (
-        model_wrapper.get_n_features() if model_wrapper is not None else None
-    ) or 39  # fallback if model not loaded
+    total_features: int = 39  # default fallback
+    if model_wrapper is not None:
+        try:
+            n = model_wrapper.get_n_features()
+            if isinstance(n, (int, float)) and n > 0:
+                total_features = int(n)
+        except Exception:
+            pass  # use default fallback
 
     # Count provided features (non-None, non-empty)
     provided = len([v for v in patient_dict.values() if v is not None and v != ""])

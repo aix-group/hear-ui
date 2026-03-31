@@ -37,7 +37,7 @@ def list_feedback(
     session: Session, limit: int = 100, offset: int = 0
 ) -> list[Feedback]:
     statement = select(Feedback).offset(offset).limit(limit)
-    return session.exec(statement).all()
+    return session.exec(statement).all()  # type: ignore[return-value]
 
 
 def count_feedback(session: Session) -> int:
@@ -71,7 +71,7 @@ def list_predictions(
     session: Session, limit: int = 100, offset: int = 0
 ) -> list[Prediction]:
     statement = select(Prediction).offset(offset).limit(limit)
-    return session.exec(statement).all()
+    return session.exec(statement).all()  # type: ignore[return-value]
 
 
 # ------------------------------------------------------------
@@ -85,7 +85,7 @@ def find_duplicate_patient(
         return None
     statement = select(Patient).where(
         Patient.display_name == display_name,
-        Patient.input_features["Geburtsdatum"].astext == birth_date,
+        Patient.input_features["Geburtsdatum"].astext == birth_date,  # type: ignore[index]
     )
     return session.exec(statement).first()
 
@@ -109,7 +109,7 @@ def get_patient(session: Session, patient_id: uuid.UUID | str) -> Patient | None
 
 def list_patients(session: Session, limit: int = 100, offset: int = 0) -> list[Patient]:
     statement = select(Patient).offset(offset).limit(limit)
-    return session.exec(statement).all()
+    return session.exec(statement).all()  # type: ignore[return-value]
 
 
 def search_patients_by_name(
@@ -126,9 +126,9 @@ def search_patients_by_name(
     # Prefix search on display_name – since the format is "Nachname, Vorname",
     # this matches patients whose last name starts with the query (alphabetical
     # directory-style filtering). Case-insensitive via ilike.
-    stmt = select(Patient).where(Patient.display_name.ilike(f"{q}%"))
+    stmt = select(Patient).where(Patient.display_name.ilike(f"{q}%"))  # type: ignore[union-attr]
     stmt = stmt.offset(offset).limit(limit)
-    return session.exec(stmt).all()
+    return session.exec(stmt).all()  # type: ignore[return-value]
 
 
 def count_patients(session: Session) -> int:

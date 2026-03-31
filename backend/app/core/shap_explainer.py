@@ -291,9 +291,9 @@ class ShapExplainer:
         # Fallback: KernelExplainer (slower but works for any model)
         logger.info("Using KernelExplainer on final estimator")
         predict_fn = (
-            estimator.predict_proba
+            estimator.predict_proba  # type: ignore[union-attr]
             if hasattr(estimator, "predict_proba")
-            else estimator.predict
+            else estimator.predict  # type: ignore[union-attr]
         )
 
         try:
