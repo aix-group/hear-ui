@@ -30,8 +30,8 @@ def test_search_patients_matches_name():
     p2 = make_patient_with_name("Anna Beispiel")
 
     with patch("app.api.routes.patients.crud") as mock_crud:
-        # Mock DB-side search to raise so fallback is triggered
-        mock_crud.search_patients_by_name.side_effect = Exception(
+        # Mock DB-side search to raise AttributeError so fallback is triggered
+        mock_crud.search_patients_by_name.side_effect = AttributeError(
             "DB search not available"
         )
         mock_crud.list_patients.return_value = [p1, p2]
@@ -58,8 +58,8 @@ def test_search_patients_fallback_uses_any_string_value():
     )
 
     with patch("app.api.routes.patients.crud") as mock_crud:
-        # Mock DB-side search to raise so fallback is triggered
-        mock_crud.search_patients_by_name.side_effect = Exception(
+        # Mock DB-side search to raise AttributeError so fallback is triggered
+        mock_crud.search_patients_by_name.side_effect = AttributeError(
             "DB search not available"
         )
         mock_crud.list_patients.return_value = [p]
