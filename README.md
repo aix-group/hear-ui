@@ -6,7 +6,7 @@
 
 **HEAR-UI** is an AI-assisted clinical decision support system designed to estimate Cochlear Implant outcomes and explain predictions using explainable AI (XAI). It provides machine learning-based outcome predictions, interactive SHAP explanations, patient management, and clinical feedback collection — all engineered as a **decision support tool** where the final decision always rests with the medical professional.
 
-**More information:** [Demo video](https://www.youtube.com/watch?v=y3joL_4FiKk) | [System Design](SYSTEM_DESIGN.md) | [Final Report](Report.pdf) | [User Manual](USER_MANUAL.md) | [Changelog](CHANGELOG.md)
+**More information:** [Demo video](https://www.youtube.com/watch?v=y3joL_4FiKk) | [System Design](docs/SYSTEM_DESIGN.md) | [Final Report](docs/Report.pdf) | [User Manual](docs/USER_MANUAL.md) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md)
 
 ## Quickstart
 
@@ -103,7 +103,7 @@ Refer to the following documents for detailed setup and development workflows:
 
 - [Backend](./backend/README.md) — API development, testing, migrations
 - [Frontend](./frontend/README.md) — Vue.js components, styling, state management
-- [System Design](SYSTEM_DESIGN.md) — architecture, data flow, ML pipeline
+- [System Design](docs/SYSTEM_DESIGN.md) — architecture, data flow, ML pipeline
 
 
 ## Testing & Quality Assurance
@@ -188,8 +188,10 @@ hear-ui/
 │   └── docker-compose.override.yml
 ├── .github/workflows/          # CI/CD pipelines (GitHub Actions)
 ├── patientsData/               # Sample patient CSV data
+├── docs/                       # Documentation (report, user manual, system design)
 ├── scripts/                    # Utility scripts (data generation, testing, deployment)
-└── SYSTEM_DESIGN.md            # Detailed architecture documentation
+├── CHANGELOG.md                # Project changelog
+└── CONTRIBUTING.md             # Contribution guidelines
 ```
 
 **Data Flow:**
@@ -203,10 +205,10 @@ hear-ui/
 
 ## Contributing
 
-We welcome contributions! Please review the development setup in the respective directories:
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-- **Backend contributions**: See [backend/README.md](./backend/README.md)
-- **Frontend contributions**: See [frontend/README.md](./frontend/README.md)
+- **Backend development**: See [backend/README.md](./backend/README.md)
+- **Frontend development**: See [frontend/README.md](./frontend/README.md)
 
 ## License
 
