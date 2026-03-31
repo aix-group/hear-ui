@@ -165,7 +165,7 @@
 
 
 <script lang="ts" setup>
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import {VCheckbox, VCombobox, VSelect, VTextField} from 'vuetify/components'
 import {useForm} from 'vee-validate'
 import i18next from 'i18next'
@@ -175,9 +175,10 @@ import {useFeatureDefinitions} from '@/lib/featureDefinitions'
 import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
 
 const language = ref(i18next.language)
-i18next.on('languageChanged', (lng) => {
+const onLanguageChanged = (lng: string) => {
   language.value = lng
-})
+}
+i18next.on('languageChanged', onLanguageChanged)
 
 // Reload feature labels AND section names whenever the user switches UI language.
 // Also re-format any already-entered date fields to the new locale's format.
@@ -1078,6 +1079,10 @@ onMounted(async () => {
       // Copy-from-patient error silently handled; form starts empty
     }
   }
+})
+
+onBeforeUnmount(() => {
+  i18next.off('languageChanged', onLanguageChanged)
 })
 </script>
 

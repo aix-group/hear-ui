@@ -31,10 +31,12 @@ services:
     ports:
       - "5173:80"
 
-  # pgAdmin - PostgreSQL administration tool
+  # pgAdmin - PostgreSQL administration tool (optional)
+  # Start with: docker compose --profile tools up -d
   # Access: http://localhost:5051
   # Login credentials are read from .env (PGADMIN_EMAIL / PGADMIN_PASSWORD)
   pgadmin:
+    profiles: ["tools"]
     image: dpage/pgadmin4:latest
     restart: always
     ports:

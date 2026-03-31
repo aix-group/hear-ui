@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import {onBeforeUnmount} from 'vue'
 import i18next from 'i18next'
 import AppLayout from '@/layouts/AppLayout.vue'
 import {provideFeatureDefinitions} from '@/lib/featureDefinitions'
@@ -17,7 +18,12 @@ const loadFeatureData = async (locale?: string) => {
 
 void loadFeatureData(i18next.language)
 
-i18next.on('languageChanged', (lng) => {
+const onLanguageChanged = (lng: string) => {
   void featureDefinitionsStore.loadLabels(lng)
+}
+i18next.on('languageChanged', onLanguageChanged)
+
+onBeforeUnmount(() => {
+  i18next.off('languageChanged', onLanguageChanged)
 })
 </script>

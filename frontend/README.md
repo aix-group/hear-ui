@@ -107,7 +107,6 @@ frontend/
 │   ├── i18n.ts              # i18next configuration
 │   ├── components/          # Reusable UI components
 │   │   ├── FeedbackForm.vue   # Clinical feedback form
-│   │   ├── FeedbackDialog.vue # Feedback dialog wrapper
 │   │   └── ModelCard.vue      # Model information card
 │   ├── routes/              # Page-level views
 │   │   ├── HomePage.vue       # Landing page

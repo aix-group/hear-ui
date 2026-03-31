@@ -80,7 +80,9 @@
 
     <!-- Main Content (your router pages render here) -->
     <v-main id="main-content" class="pa-4" role="main">
-      <router-view/>
+      <ErrorBoundary>
+        <router-view/>
+      </ErrorBoundary>
     </v-main>
   </v-app>
 </template>
@@ -88,6 +90,7 @@
 <script lang="ts" setup>
 import {onMounted, onBeforeUnmount, ref, nextTick} from "vue"
 import i18next from "i18next";
+import ErrorBoundary from "@/components/ErrorBoundary.vue"
 
 const drawer = ref(false)
 const curr_language = ref(0)

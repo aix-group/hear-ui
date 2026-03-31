@@ -8,6 +8,8 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.api.deps import SessionDep
 from app.models import Prediction
@@ -15,6 +17,7 @@ from app.models import Prediction
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/predict", tags=["prediction"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 class PatientData(BaseModel):
@@ -157,6 +160,7 @@ def _calculate_data_completeness(patient_dict: dict, model_wrapper=None) -> dict
 
 
 @router.post("/")
+@limiter.limit("30/minute")
 def predict(
     patient: PatientData,
     db: SessionDep,
@@ -184,13 +188,8 @@ def predict(
         is_valid, error_msg = _validate_minimum_input(patient_dict)
         if not is_valid:
             raise HTTPException(
-                status_code=422,  # Unprocessable Entity
-                detail={
-                    "error": "insufficient_data",
-                    "message": error_msg,
-                    "provided_fields": list(patient_dict.keys()),
-                    "provided_count": len(patient_dict),
-                },
+                status_code=422,
+                detail=f"Insufficient data: {error_msg} (provided {len(patient_dict)} field(s): {', '.join(patient_dict.keys())})",
             )
 
         # Use the canonical model wrapper from app state
@@ -284,6 +283,10 @@ def predict(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=f"Invalid input data: {e}")
+    except TypeError as e:
+        raise HTTPException(status_code=422, detail=f"Incompatible data type: {e}")
     except Exception as e:
         logger.exception("Prediction failed: %s", e)
         raise HTTPException(status_code=500, detail="Prediction failed due to an internal error.")
@@ -463,6 +466,7 @@ def compute_prediction_and_explanation(
 
 
 @router.post("/simple", summary="Get Prediction Only (No Explainer)")
+@limiter.limit("30/minute")
 def predict_simple(
     patient: PatientData,
     request: Request,

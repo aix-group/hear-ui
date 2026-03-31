@@ -46,7 +46,7 @@ class TestPatientsRoutesCoverage:
         # Create invalid CSV (missing required columns)
         csv_content = b"Name,Age\nJohn,30\n"
         files = {"file": ("invalid.csv", BytesIO(csv_content), "text/csv")}
-        response = client.post("/api/v1/patients/upload-csv", files=files)
+        response = client.post("/api/v1/batch/upload-csv", files=files)
         # Should return error (400, 422, 500) or 404/405 if endpoint doesn't exist
         assert response.status_code in [400, 404, 405, 422, 500]
 
@@ -156,7 +156,7 @@ class TestErrorHandlerCoverage:
     def test_upload_csv_with_empty_file(self, client: TestClient):
         """Test uploading empty CSV file."""
         files = {"file": ("empty.csv", BytesIO(b""), "text/csv")}
-        response = client.post("/api/v1/patients/upload-csv", files=files)
+        response = client.post("/api/v1/batch/upload-csv", files=files)
         # Should return error or 404 if endpoint doesn't exist
         assert response.status_code in [400, 404, 405, 422, 500]
 

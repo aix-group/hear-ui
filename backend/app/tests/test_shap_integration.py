@@ -200,7 +200,7 @@ def test_predict_batch_endpoint(client: TestClient):
 
     files = {"file": ("test.csv", csv_content, "text/csv")}
 
-    response = client.post("/api/v1/patients/upload", files=files)
+    response = client.post("/api/v1/batch/upload", files=files)
 
     assert response.status_code == 200
     data = response.json()

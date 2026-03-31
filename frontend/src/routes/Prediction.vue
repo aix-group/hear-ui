@@ -45,7 +45,7 @@
         <!-- Result -->
         <v-col cols="7">
           <h2>{{ $t('prediction.result.title') }}</h2>
-          <h1 class="prediction-value">{{ (predictionResult * 100).toFixed(0) }}%</h1>
+          <h1 class="prediction-value" :aria-label="$t('prediction.result.probability') + ': ' + (predictionResult * 100).toFixed(0) + '%'">{{ (predictionResult * 100).toFixed(0) }}%</h1>
           <p>{{ $t('prediction.result.probability') }}</p>
 
           <v-divider
@@ -54,6 +54,8 @@
 
           <div
             class="prediction-status"
+            role="status"
+            :aria-label="recommended ? $t('prediction.result.status.recommended') : $t('prediction.result.status.not_recommended')"
             :class="recommended ? 'status-success' : 'status-error'"
           >
             {{
@@ -93,7 +95,6 @@
       <v-row justify="start" align="center" no-gutters>
         <v-col cols="12">
           <ExplanationChart
-            ref="explanationChartRef"
             :matchedFeatures="matchedFeatures"
             :featureLabels="featureLabels"
             :featureImportances="featureImportances"
@@ -222,6 +223,7 @@
                                   :min="ageSliderMin"
                                   :max="ageSliderMax"
                                   :step="feat.sliderStep"
+                                  :aria-label="feat.label"
                                   thumb-label="always"
                                   color="primary"
                                   density="default"
@@ -255,6 +257,7 @@
                                   :min="feat.sliderMin"
                                   :max="feat.sliderMax"
                                   :step="feat.sliderStep"
+                                  :aria-label="feat.label"
                                   thumb-label="always"
                                   color="primary"
                                   density="default"
@@ -275,6 +278,7 @@
                                 :items="feat.options"
                                 item-title="title"
                                 item-value="value"
+                                :aria-label="feat.label"
                                 density="comfortable"
                                 variant="outlined"
                                 hide-details
@@ -285,6 +289,7 @@
                               <v-text-field
                                 v-if="feat.otherFieldRaw && feat.options.some((o: any) => o.isOther && o.value === whatIfValues[feat.rawKey])"
                                 :model-value="whatIfValues[feat.otherFieldRaw] ?? ''"
+                                :aria-label="$t('prediction.whatif.other_specify')"
                                 density="comfortable"
                                 variant="outlined"
                                 hide-details
@@ -452,7 +457,6 @@ import i18next from 'i18next'
 import FeedbackForm from '@/components/FeedbackForm.vue'
 import PredictionGraph from '@/components/PredictionGraph.vue'
 import ExplanationChart from '@/components/ExplanationChart.vue'
-import type { MatchedFeature } from '@/components/ExplanationChart.vue'
 import {useFeatureDefinitions} from '@/lib/featureDefinitions'
 import {featureDefinitionsStore} from '@/lib/featureDefinitionsStore'
 import {formatBirthDateLocale} from '@/utils'
@@ -675,8 +679,6 @@ const recommended = computed(() => {
 })
 
 /* ---------- Plotly Explanations chart ---------- */
-
-const explanationChartRef = ref<InstanceType<typeof ExplanationChart> | null>(null)
 
 const matchedFeatures = computed(() => {
   const byKey = prediction.value?.params ?? {}
@@ -1224,6 +1226,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   i18next.off('languageChanged', onLanguageChanged)
+  if (whatIfDebounce) clearTimeout(whatIfDebounce)
+  if (ageMinTooltipTimeout) clearTimeout(ageMinTooltipTimeout)
 })
 </script>
 

@@ -174,7 +174,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import i18next from "i18next";
 import {API_BASE} from "@/lib/api";
@@ -184,19 +184,27 @@ import {featureDefinitionsStore} from "@/lib/featureDefinitionsStore";
 import {formatBirthDateLocale} from "@/utils";
 
 const language = ref(i18next.language)
-i18next.on('languageChanged', (lng) => {
+const onLanguageChanged = (lng: string) => {
   language.value = lng
-})
+}
+i18next.on('languageChanged', onLanguageChanged)
 watch(language, (lng) => {
   void featureDefinitionsStore.loadLabels(lng)
 })
+
+interface PatientRecord {
+  id: string
+  name?: string
+  display_name?: string
+  input_features?: Record<string, unknown>
+}
 
 const route = useRoute();
 const router = useRouter();
 
 const rawId = route.params.id;
 const patient_id = ref<string>(Array.isArray(rawId) ? rawId[0] : rawId ?? "");
-const patient = ref<any>(null);
+const patient = ref<PatientRecord | null>(null);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
 const deleteError = ref<string | null>(null);
@@ -394,6 +402,10 @@ onMounted(async () => {
     logger.error(err);
   }
 });
+
+onBeforeUnmount(() => {
+  i18next.off('languageChanged', onLanguageChanged)
+})
 
 </script>
 

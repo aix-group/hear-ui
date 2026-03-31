@@ -4,10 +4,16 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Body, HTTPException, Query, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from app import crud
 from app.api.deps import SessionDep
+from app.core.explanation_service import (
+    compute_patient_warnings,
+    compute_shap_explanation,
+    get_model_wrapper,
+)
 from app.models import Patient, PatientCreate, PatientUpdate
 
 router = APIRouter(prefix="/patients", tags=["patients"])
@@ -34,18 +40,18 @@ def _extract_birth_year(patient) -> int | None:
     birth_date = features.get("Geburtsdatum")
     if birth_date and isinstance(birth_date, str) and birth_date.strip():
         bd = birth_date.strip()
-        # DD.MM.YYYY
-        if len(bd) == 10 and bd[2] == "." and bd[5] == ".":
-            try:
-                return int(bd[6:10])
-            except ValueError:
-                pass
-        # YYYY-MM-DD
-        if len(bd) >= 4:
-            try:
-                return int(bd[:4])
-            except ValueError:
-                pass
+        # Try DD.MM.YYYY format
+        try:
+            parsed = datetime.strptime(bd, "%d.%m.%Y")
+            return parsed.year
+        except ValueError:
+            pass
+        # Try YYYY-MM-DD format
+        try:
+            parsed = datetime.strptime(bd[:10], "%Y-%m-%d")
+            return parsed.year
+        except ValueError:
+            pass
     age = features.get("Alter [J]")
     if age is not None:
         try:
@@ -132,8 +138,8 @@ def create_patient_api(
             raise HTTPException(
                 status_code=422,
                 detail=(
-                    f"Mindestfelder für Vorhersage fehlen: {', '.join(missing)}. "
-                    "Bitte mindestens Geschlecht, Alter und Hörminderung (operiertes Ohr) angeben."
+                    f"Missing required prediction fields: {', '.join(missing)}. "
+                    "Please provide at least gender, age, and hearing loss (operated ear)."
                 ),
             )
 
@@ -153,6 +159,14 @@ def create_patient_api(
 
     except HTTPException:
         raise
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=f"Invalid patient data: {e}")
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=409, detail="A patient with this data already exists.")
+    except OperationalError as e:
+        logger.exception("Database error while creating patient")
+        raise HTTPException(status_code=503, detail="Database temporarily unavailable.")
     except Exception as e:
         logger.exception("Failed to create patient")
         raise HTTPException(
@@ -294,6 +308,7 @@ def search_patients_api(
 
 @router.get("/{patient_id}", response_model=Patient)
 def get_patient_api(patient_id: UUID, session: SessionDep):
+    """Retrieve a single patient by UUID. Returns 404 if not found."""
     p = crud.get_patient(session=session, patient_id=patient_id)
     if not p:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -354,6 +369,14 @@ def update_patient_api(
 
     except HTTPException:
         raise
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=f"Invalid update data: {e}")
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=409, detail="Update conflicts with existing data.")
+    except OperationalError as e:
+        logger.exception("Database error while updating patient %s", patient_id)
+        raise HTTPException(status_code=503, detail="Database temporarily unavailable.")
     except Exception as e:
         logger.exception("Failed to update patient %s", patient_id)
         raise HTTPException(
@@ -386,6 +409,9 @@ def delete_patient_api(patient_id: UUID, session: SessionDep):
 
     except HTTPException:
         raise
+    except OperationalError as e:
+        logger.exception("Database error while deleting patient %s", patient_id)
+        raise HTTPException(status_code=503, detail="Database temporarily unavailable.")
     except Exception as e:
         logger.exception("Failed to delete patient %s", patient_id)
         raise HTTPException(
@@ -406,22 +432,12 @@ def predict_patient_api(patient_id: UUID, session: SessionDep):
         if not input_features:
             raise HTTPException(status_code=400, detail="Patient has no input features")
 
-        # Prefer the app-level model wrapper (app.state) so we rely on the same
-        # wrapper instance the rest of the application uses (and its load status).
-        try:
-            from app.main import app as fastapi_app
-
-            wrapper = getattr(fastapi_app.state, "model_wrapper", None)
-        except Exception:
-            wrapper = None
-
+        wrapper = get_model_wrapper()
         if not wrapper or not wrapper.is_loaded():
             raise HTTPException(status_code=503, detail="Model not loaded")
 
         try:
-            # Use clip=True to enforce probability bounds [1%, 99%]
             model_res = wrapper.predict(input_features, clip=True)
-            # extract a scalar prediction from different possible return types
             try:
                 prediction = float(model_res[0])
             except (TypeError, IndexError):
@@ -429,25 +445,27 @@ def predict_patient_api(patient_id: UUID, session: SessionDep):
             return {"prediction": prediction, "explanation": {}}
         except HTTPException:
             raise
-        except Exception as e:
+        except Exception:
             logger.exception("Prediction failed for patient %s", patient_id)
-            raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
+            raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error in predict_patient_api for %s", patient_id)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal error occurred.")
 
 
 @router.get("/{patient_id}/explainer")
 async def explainer_patient_api(
     patient_id: UUID, request: Request, session: SessionDep
 ):
-    """Return SHAP explanation for a stored patient by delegating to the SHAP route.
+    """Return SHAP explanation for a stored patient.
 
-    This constructs a `ShapVisualizationRequest` from the saved input_features
-    and calls the existing SHAP handler.
+    Delegates to the shared explanation service to avoid duplicating
+    SHAP logic that also exists in the /explainer endpoint.
     """
+    from app.api.routes.explainer import ShapVisualizationResponse
+
     p = crud.get_patient(session=session, patient_id=patient_id)
     if not p:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -457,15 +475,7 @@ async def explainer_patient_api(
     if not input_features:
         raise HTTPException(status_code=400, detail="Patient has no input features")
 
-    # Use the SAME input_features that the /predict endpoint uses
-    # This ensures consistent preprocessing and model predictions
-    try:
-        from app.main import app as fastapi_app
-
-        wrapper = getattr(fastapi_app.state, "model_wrapper", None)
-    except Exception:
-        wrapper = None
-
+    wrapper = get_model_wrapper()
     if not wrapper or not wrapper.is_loaded():
         raise HTTPException(
             status_code=503,
@@ -473,262 +483,30 @@ async def explainer_patient_api(
         )
 
     try:
-        import numpy as np
+        result = compute_shap_explanation(input_features, wrapper)
 
-        from app.core.rf_dataset_adapter import EXPECTED_FEATURES_RF
-
-        # Use wrapper.predict() with clip=True to ensure consistent behavior
-        # with /predict/simple endpoint (clips to [1%, 99%])
-        model_res = wrapper.predict(input_features, clip=True)
-
-        try:
-            prediction = float(model_res[0])
-        except (TypeError, IndexError):
-            prediction = float(model_res)
-
-        # Now prepare preprocessed data separately for feature importance calculation
-        preprocessed = wrapper.prepare_input(input_features)
-
-        # Get SHAP-based feature importance (shows both positive AND negative contributions)
-        feature_importance = {}
-        feature_values = {}
-        shap_values = []
-        base_value = 0.0
-
-        try:
-            from app.core.shap_explainer import ShapExplainer
-
-            model = wrapper.model
-
-            # Get sample values from preprocessed data
-            if hasattr(preprocessed, "values"):
-                sample_vals = preprocessed.values.flatten()
-            elif hasattr(preprocessed, "flatten"):
-                sample_vals = preprocessed.flatten()
-            else:
-                sample_vals = np.array(preprocessed).flatten()
-
-            # Use SHAP TreeExplainer for Random Forest (provides both positive and negative contributions)
-            if hasattr(model, "feature_importances_"):
-                try:
-                    logger.info(
-                        "Attempting SHAP TreeExplainer for patient %s", patient_id
-                    )
-                    # Initialize SHAP explainer
-                    shap_explainer = ShapExplainer(
-                        model=model,
-                        feature_names=EXPECTED_FEATURES_RF,
-                        use_transformed=True,
-                    )
-
-                    # Compute SHAP values
-                    explanation_result = shap_explainer.explain(
-                        preprocessed, return_plot=False
-                    )
-
-                    feature_importance = explanation_result.get(
-                        "feature_importance", {}
-                    )
-                    shap_values = explanation_result.get("shap_values", [])
-                    base_value = explanation_result.get("base_value", 0.0)
-
-                    # Store actual feature values
-                    feature_values = {}
-                    for i, fname in enumerate(EXPECTED_FEATURES_RF):
-                        val = sample_vals[i] if i < len(sample_vals) else 0.0
-                        feature_values[fname] = float(val)
-
-                    positive_count = sum(
-                        1 for v in feature_importance.values() if v > 0
-                    )
-                    negative_count = sum(
-                        1 for v in feature_importance.values() if v < 0
-                    )
-                    logger.info(
-                        "✅ SHAP SUCCESS for patient %s: %d features, positive=%d, negative=%d",
-                        patient_id,
-                        len(feature_importance),
-                        positive_count,
-                        negative_count,
-                    )
-                    # Log top 10 features for debugging
-                    sorted_fi = sorted(
-                        feature_importance.items(),
-                        key=lambda x: abs(x[1]),
-                        reverse=True,
-                    )[:10]
-                    logger.debug(
-                        "SHAP Patient %s — Total features: %d, positive: %d, negative: %d",
-                        patient_id,
-                        len(feature_importance),
-                        positive_count,
-                        negative_count,
-                    )
-                    for fname, val in sorted_fi:
-                        sign = "+" if val > 0 else "-" if val < 0 else " "
-                        logger.debug("  %s%.4f  %s", sign, abs(val), fname)
-
-                except Exception as shap_error:
-                    logger.error(
-                        "❌ SHAP explanation failed, falling back to feature_importances_: %s",
-                        shap_error,
-                        exc_info=True,
-                    )
-                    # Fallback to feature_importances_ if SHAP fails
-                    importances = model.feature_importances_
-                    for i, fname in enumerate(EXPECTED_FEATURES_RF):
-                        val = sample_vals[i] if i < len(sample_vals) else 0.0
-                        importance = (
-                            float(importances[i]) if i < len(importances) else 0.0
-                        )
-                        contribution = importance * val
-                        feature_importance[fname] = contribution
-                        feature_values[fname] = float(val)
-                        shap_values.append(contribution)
-            else:
-                # For non-tree models, use feature_importances_ fallback
-                logger.info(
-                    "Model does not have feature_importances_, using empty explanation"
-                )
-                feature_importance = dict.fromkeys(EXPECTED_FEATURES_RF, 0.0)
-                feature_values = dict.fromkeys(EXPECTED_FEATURES_RF, 0.0)
-                shap_values = [0.0] * len(EXPECTED_FEATURES_RF)
-
-        except Exception as e:
-            logger.warning("Failed to compute feature importance: %s", e)
-            # Provide empty but valid response
-            feature_importance = dict.fromkeys(EXPECTED_FEATURES_RF, 0.0)
-            feature_values = dict.fromkeys(EXPECTED_FEATURES_RF, 0.0)
-            shap_values = [0.0] * len(EXPECTED_FEATURES_RF)
-
-        # Get top 5 features by absolute importance
-        sorted_feats = sorted(
-            feature_importance.items(), key=lambda x: abs(x[1]), reverse=True
-        )
-        top_features = [
-            {"feature": f, "importance": v, "value": feature_values.get(f, 0.0)}
-            for f, v in sorted_feats[:5]
-        ]
-
-        # ── Out-of-scope warnings ──────────────────────────────────────────
-        from datetime import date as _date
-
-        from app.api.routes.explainer import ShapVisualizationResponse
-
-        warnings: list[str] = []
-        patient_age: float | None = None
-        bd = input_features.get("Geburtsdatum") or ""
-        if bd and isinstance(bd, str):
-            try:
-                bd = bd.strip()
-                if len(bd) == 10 and bd[2] == ".":  # DD.MM.YYYY
-                    yr = int(bd[6:10])
-                elif len(bd) >= 4 and (
-                    bd[4] == "-" or len(bd) == 4
-                ):  # YYYY-MM-DD or YYYY
-                    yr = int(bd[:4])
-                else:
-                    yr = None
-                if yr:
-                    patient_age = float(_date.today().year - yr)
-            except (ValueError, TypeError):
-                pass
-        if patient_age is None:
-            # Use `is not None` (not `or`) so that age=0 is not treated as missing
-            raw_age_alt = input_features.get("Alter [J]")
-            raw_age = (
-                raw_age_alt if raw_age_alt is not None else input_features.get("age")
-            )
-            try:
-                if raw_age is not None:
-                    candidate = float(raw_age)
-                    if candidate >= 0:  # skip NaN / negative artefacts
-                        patient_age = candidate
-            except (ValueError, TypeError):
-                pass
-        if patient_age is not None:
-            if patient_age < 18:
-                warnings.append(
-                    f"Patient ist {int(patient_age)} Jahre alt – das Modell wurde ausschließlich "
-                    "an Erwachsenen (≥\u202618 Jahre) trainiert. Die Vorhersage ist möglicherweise nicht valide."
-                )
-            elif patient_age > 90:
-                warnings.append(
-                    f"Patient ist {int(patient_age)} Jahre alt – der Trainingsbereich des Modells liegt "
-                    "typischerweise unter 90 Jahren. Die Vorhersage mit Vorsicht interpretieren."
-                )
-
-        # ── Fehlende Schlüsselfelder Warnung ──────────────────────────────
-        # Prüfe ob die drei Mindestfelder für eine valide Vorhersage gesetzt sind.
-        _KEY_FIELDS: list[tuple[str, str]] = [
-            ("Geschlecht", "Geschlecht"),
-            ("Seiten", "Operierte Seite"),
-            (
-                "Diagnose.Höranamnese.Hörminderung operiertes Ohr...",
-                "Hörminderung operiertes Ohr",
-            ),
-        ]
-        missing_fields: list[str] = []
-        for raw_key, display_name in _KEY_FIELDS:
-            val = input_features.get(raw_key)
-            if val is None or str(val).strip() in ("", "Keine", "0"):
-                missing_fields.append(display_name)
-        if missing_fields:
-            # If the request prefers English, translate the short warning and field names
-            accept_lang = (request.headers.get("accept-language") or "").lower()
-            wants_en = accept_lang.startswith("en")
-            if wants_en:
-                # Simple mapping of German display names to English equivalents
-                translate_map = {
-                    "Geschlecht": "Gender",
-                    "Operierte Seite": "Operated side",
-                    "Hörminderung operiertes Ohr": "Hearing loss (operated ear)",
-                }
-                eng_names = [translate_map.get(n, n) for n in missing_fields]
-                warnings.append(
-                    "Missing key fields: "
-                    + ", ".join(eng_names)
-                    + " — prediction quality may be reduced."
-                )
-            else:
-                warnings.append(
-                    "Fehlende Schlüsselfelder: "
-                    + ", ".join(missing_fields)
-                    + " – die Vorhersagequalität kann eingeschränkt sein."
-                )
-        # ──────────────────────────────────────────────────────────────────
-
-        # Build standardized aligned-list schema (same ordering via EXPECTED_FEATURES_RF)
-        features_list: list[str] = list(EXPECTED_FEATURES_RF)
-        values_list: list[float] = [
-            float(feature_values.get(n, 0.0)) for n in features_list
-        ]
-        attributions_list: list[float] = [
-            float(feature_importance.get(n, 0.0)) for n in features_list
-        ]
+        accept_lang = request.headers.get("accept-language") or ""
+        warnings = compute_patient_warnings(input_features, accept_language=accept_lang)
 
         return ShapVisualizationResponse(
-            prediction=prediction,
-            # Standardized aligned-list schema
-            features=features_list,
-            values=values_list,
-            attributions=attributions_list,
-            base_value=base_value,
-            # Optional extras
+            prediction=result["prediction"],
+            features=result["features"],
+            values=result["values"],
+            attributions=result["attributions"],
+            base_value=result["base_value"],
             plot_base64=None,
-            top_features=top_features,
+            top_features=result["top_features"],
             warnings=warnings,
-            # Backward-compatible
-            feature_importance=feature_importance,
-            feature_values=feature_values,
-            shap_values=shap_values,
+            feature_importance=result["feature_importance"],
+            feature_values=result["feature_values"],
+            shap_values=result["shap_values"],
         )
 
     except HTTPException:
         raise
-    except Exception as exc:
+    except Exception:
         logger.exception("SHAP explanation failed for patient %s", patient_id)
-        raise HTTPException(status_code=500, detail=f"SHAP explanation failed: {exc}")
+        raise HTTPException(status_code=500, detail="SHAP explanation failed. Please try again later.")
 
 
 # ---------------------------------------------------------------------------
@@ -760,13 +538,7 @@ async def predict_override_api(
 
     merged = {**(p.input_features or {}), **body.overrides}
 
-    try:
-        from app.main import app as fastapi_app
-
-        wrapper = getattr(fastapi_app.state, "model_wrapper", None)
-    except Exception:
-        wrapper = None
-
+    wrapper = get_model_wrapper()
     if not wrapper or not wrapper.is_loaded():
         raise HTTPException(status_code=503, detail="Model not loaded")
 
@@ -777,9 +549,9 @@ async def predict_override_api(
         except (TypeError, IndexError):
             prediction = float(model_res)
         return {"prediction": prediction, "overrides": body.overrides}
-    except Exception as exc:
+    except Exception:
         logger.exception("predict-override failed for patient %s", patient_id)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Prediction override failed. Please try again later.")
 
 
 @router.get("/{patient_id}/validate")
@@ -814,6 +586,6 @@ def validate_patient_api(patient_id: UUID, session: SessionDep):
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error in validate_patient_api for %s", patient_id)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal error occurred.")

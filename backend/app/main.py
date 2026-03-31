@@ -6,11 +6,16 @@ import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.routing import APIRoute
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api import api_router
 from app.core.config import settings
 from app.core.model_wrapper import ModelWrapper
+
+limiter = Limiter(key_func=get_remote_address)
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +63,10 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
     lifespan=lifespan,
 )
+
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Set all CORS enabled origins
 if settings.all_cors_origins:
@@ -127,11 +136,26 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     HTTPException is excluded since FastAPI handles it natively with proper status codes.
     """
     from fastapi import HTTPException
+    from fastapi.exceptions import RequestValidationError
 
     if isinstance(exc, HTTPException):
         return JSONResponse(
             status_code=exc.status_code,
             content={"detail": exc.detail},
+        )
+    if isinstance(exc, RequestValidationError):
+        return JSONResponse(
+            status_code=422,
+            content={
+                "detail": "Validation error",
+                "errors": exc.errors(),
+            },
+        )
+    if isinstance(exc, ValueError):
+        logger.warning("Value error: %s %s — %s", request.method, request.url, exc)
+        return JSONResponse(
+            status_code=422,
+            content={"detail": f"Invalid input: {exc}"},
         )
     logger.exception(
         "Unhandled exception while processing request %s %s",

@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from "vue";
+import {ref, watch, onBeforeUnmount} from "vue";
 import {API_BASE} from "@/lib/api";
 import {logger} from "@/lib/logger";
 import i18next from 'i18next';
@@ -82,10 +82,12 @@ import {formatBirthDateLocale} from '@/utils';
 
 const search = ref("");
 const language = ref(i18next.language)
-i18next.on('languageChanged', (lng) => { language.value = lng })
+const onLanguageChanged = (lng: string) => { language.value = lng }
+i18next.on('languageChanged', onLanguageChanged)
 
 const filteredData = ref<Array<{ id: string; name: string; birthYear?: number | null; birthDate?: string | null }>>([])
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+let abortController: AbortController | null = null
 
 const formatBirthDate = (raw: string | null | undefined): string | null => {
   return formatBirthDateLocale(raw, language.value)
@@ -93,12 +95,14 @@ const formatBirthDate = (raw: string | null | undefined): string | null => {
 
 watch(search, (newValue) => {
   if (debounceTimer) clearTimeout(debounceTimer);
+  if (abortController) abortController.abort();
 
   debounceTimer = setTimeout(async () => {
     if (newValue.length < 1) {
       filteredData.value = [];
       return;
     }
+    abortController = new AbortController();
     try {
       const response = await fetch(
           `${API_BASE}/api/v1/patients/search?q=${encodeURIComponent(newValue)}`,
@@ -107,6 +111,7 @@ watch(search, (newValue) => {
             headers: {
               accept: "application/json",
             },
+            signal: abortController.signal,
           }
       );
 
@@ -135,12 +140,18 @@ watch(search, (newValue) => {
           : [];
 
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       logger.error(err);
       filteredData.value = [];
     }
   }, 200);
 });
 
+onBeforeUnmount(() => {
+  i18next.off('languageChanged', onLanguageChanged)
+  if (debounceTimer) clearTimeout(debounceTimer)
+  if (abortController) abortController.abort()
+})
 
 </script>
 

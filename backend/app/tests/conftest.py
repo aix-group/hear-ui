@@ -106,7 +106,7 @@ def postgres_container():
     try:
         # Start PostgreSQL container
         _postgres_container = PostgresContainer(
-            image="postgres:15-alpine",
+            image="postgres:17-alpine",
             username="test",
             password="test",
             dbname="testdb",

@@ -1,14 +1,18 @@
+import logging
 from io import BytesIO
 
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlmodel import Session
 
 from app import crud
 from app.api.deps import get_db
 from app.models.prediction import PredictionCreate
 
-router = APIRouter(prefix="/patients", tags=["patients"])
+router = APIRouter(prefix="/batch", tags=["prediction"])
+limiter = Limiter(key_func=get_remote_address)
 
 # Maximum file size for CSV uploads (10 MB)
 MAX_CSV_SIZE_BYTES = 10 * 1024 * 1024
@@ -127,7 +131,61 @@ def _normalize_header(h: str) -> str:
     return s.strip().lower()
 
 
+# Expected types for known columns (used for CSV validation)
+EXPECTED_COLUMN_TYPES: dict[str, str] = {
+    "alter": "numeric",
+    "age": "numeric",
+    "Alter [J]": "numeric",
+    "geschlecht": "categorical",
+    "primäre sprache": "categorical",
+    "tinnitus": "categorical",
+    "schwindel": "categorical",
+    "measure  pre-op": "numeric",
+    "abstand": "numeric",
+}
+
+VALID_CATEGORICAL_VALUES: dict[str, set[str]] = {
+    "geschlecht": {"m", "w", "d", "männlich", "weiblich", "male", "female", "divers"},
+    "tinnitus": {"ja", "nein", "yes", "no", "vorhanden", "kein"},
+    "schwindel": {"ja", "nein", "yes", "no", "vorhanden", "kein"},
+}
+
+
+def _validate_column_types(df: pd.DataFrame) -> list[str]:
+    """Validate that column values match expected types."""
+    errors: list[str] = []
+    for col in df.columns:
+        col_lower = _normalize_header(str(col))
+        expected = EXPECTED_COLUMN_TYPES.get(col_lower) or EXPECTED_COLUMN_TYPES.get(str(col).strip())
+        if not expected:
+            continue
+
+        if expected == "numeric":
+            non_null = df[col].dropna()
+            if not non_null.empty:
+                coerced = pd.to_numeric(non_null, errors="coerce")
+                bad_count = coerced.isna().sum() - non_null.isna().sum()
+                if bad_count > 0:
+                    errors.append(
+                        f"Column '{col}': {bad_count} non-numeric values found (expected numeric)"
+                    )
+
+        elif expected == "categorical":
+            allowed = VALID_CATEGORICAL_VALUES.get(col_lower)
+            if allowed:
+                non_null = df[col].dropna().astype(str).str.strip().str.lower()
+                invalid = non_null[~non_null.isin(allowed)]
+                if not invalid.empty:
+                    bad_vals = invalid.unique()[:5]
+                    errors.append(
+                        f"Column '{col}': invalid values {list(bad_vals)} "
+                        f"(allowed: {sorted(allowed)})"
+                    )
+    return errors
+
+
 @router.post("/upload", summary="Upload CSV and run batch predictions")
+@limiter.limit("10/minute")
 async def upload_csv_and_predict(
     request: Request,
     session: Session = Depends(get_db),
@@ -210,6 +268,14 @@ async def upload_csv_and_predict(
             detail=f"Validation errors: {'; '.join(validation_errors)}",
         )
 
+    # Validate column types (numeric vs categorical)
+    type_errors = _validate_column_types(df)
+    if type_errors:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Type validation errors: {'; '.join(type_errors)}",
+        )
+
     # Run row-by-row predictions in a thread pool to avoid blocking the event loop
     def _process_rows():
         results = []
@@ -250,10 +316,10 @@ async def upload_csv_and_predict(
             )
         return results
 
-    loop = asyncio.get_event_loop()
-    results = await loop.run_in_executor(None, _process_rows)
+    results = await asyncio.to_thread(_process_rows)
 
     # Persist predictions (DB calls) back on the main thread
+    logger = logging.getLogger(__name__)
     for r in results:
         if r.get("_patient") and r.get("_res"):
             try:
@@ -264,7 +330,7 @@ async def upload_csv_and_predict(
                 )
                 crud.create_prediction(session=session, prediction_in=pred_in)
             except Exception:
-                pass
+                logger.exception("Failed to persist prediction for row %s", r.get("row"))
 
     # Clean up internal keys before returning
     clean_results = [

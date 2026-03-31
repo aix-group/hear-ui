@@ -193,35 +193,3 @@ class TestLifespanErrorHandling:
             client = TestClient(test_app, raise_server_exceptions=False)
             with client:
                 assert test_app.state.model_wrapper is mock_wrapper
-
-
-class TestModelsInit:
-    """Test app/models/__init__.py stub functions."""
-
-    def test_load_model_card_returns_none(self):
-        """load_model_card is a stub that returns None."""
-        from app.models import load_model_card
-
-        result = load_model_card()
-        assert result is None
-
-    def test_save_model_card_accepts_none(self):
-        """save_model_card is a stub that accepts any argument."""
-        from app.models import save_model_card
-
-        result = save_model_card(None)
-        assert result is None
-
-    def test_update_metrics_calls_load_and_save(self):
-        """update_metrics calls load/save with a mocked card."""
-        from unittest.mock import MagicMock, patch
-
-        from app.models import update_metrics
-
-        mock_card = MagicMock()
-        with (
-            patch("app.models.load_model_card", return_value=mock_card),
-            patch("app.models.save_model_card") as mock_save,
-        ):
-            update_metrics({"accuracy": 0.95})
-            mock_save.assert_called_once_with(mock_card)

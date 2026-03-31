@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC
 
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
 from app.models import (
     Feedback,
@@ -38,6 +38,11 @@ def list_feedback(
 ) -> list[Feedback]:
     statement = select(Feedback).offset(offset).limit(limit)
     return session.exec(statement).all()
+
+
+def count_feedback(session: Session) -> int:
+    statement = select(func.count()).select_from(Feedback)
+    return session.exec(statement).one()
 
 
 # ------------------------------------------------------------
@@ -78,12 +83,11 @@ def find_duplicate_patient(
     """Return an existing patient with same display_name AND Geburtsdatum, or None."""
     if not display_name or not birth_date:
         return None
-    statement = select(Patient).where(Patient.display_name == display_name)
-    for patient in session.exec(statement).all():
-        features = patient.input_features or {}
-        if features.get("Geburtsdatum") == birth_date:
-            return patient
-    return None
+    statement = select(Patient).where(
+        Patient.display_name == display_name,
+        Patient.input_features["Geburtsdatum"].astext == birth_date,
+    )
+    return session.exec(statement).first()
 
 
 def create_patient(session: Session, patient_in: PatientCreate) -> Patient:
@@ -129,8 +133,6 @@ def search_patients_by_name(
 
 def count_patients(session: Session) -> int:
     """Count total number of patients in database."""
-    from sqlalchemy import func
-
     statement = select(func.count()).select_from(Patient)
     return session.exec(statement).one()
 

@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger'
+
 type ToastOptions = {
     title?: string
     description?: string
@@ -8,8 +10,7 @@ export const toaster = {
     create: (opts: ToastOptions) => {
         // Minimal placeholder — replace with a proper UI toast library in production.
         if (import.meta.env.DEV) {
-            // eslint-disable-next-line no-console
-            console.log("TOAST", opts.title, opts.description, opts.type)
+            logger.info("TOAST", opts.title, opts.description, opts.type)
         }
     },
 }

@@ -22,6 +22,7 @@ dependencies = [
     "shap>=0.41.0",
     "pydantic-settings<3.0.0,>=2.2.1",
     "sentry-sdk[fastapi]<2.0.0,>=1.40.6",
+    "slowapi>=0.1.9",
 ]
 
 [tool.uv]
