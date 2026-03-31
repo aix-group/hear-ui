@@ -378,7 +378,7 @@ export const request = <T>(
 
                 catchErrorCodes(options, result)
 
-                resolve(result.body)
+                resolve(result.body as T)
             }
         } catch (error) {
             reject(error)

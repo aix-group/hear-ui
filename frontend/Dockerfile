@@ -23,11 +23,19 @@ FROM nginx:1
 COPY --from=build-stage /app/dist/ /usr/share/nginx/html
 
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx-global.conf /etc/nginx/nginx.conf
 COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
 
 # Run as non-root user for security
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \
-    touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
+    touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid && \
+    # Ensure temp dirs exist with correct permissions for read-only filesystem
+    mkdir -p /var/cache/nginx/client_temp \
+             /var/cache/nginx/proxy_temp \
+             /var/cache/nginx/fastcgi_temp \
+             /var/cache/nginx/uwsgi_temp \
+             /var/cache/nginx/scgi_temp && \
+    chown -R nginx:nginx /var/cache/nginx
 USER nginx

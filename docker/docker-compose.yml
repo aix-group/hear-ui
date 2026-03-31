@@ -168,6 +168,7 @@ services:
     tmpfs:
       - /tmp
       - /var/cache/nginx
+      - /var/run
       - /run
     labels:
       - traefik.enable=true
