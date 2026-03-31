@@ -25,4 +25,7 @@ def test_global_health_endpoint(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    data = response.json()
+    assert data["status"] in ("ok", "degraded")
+    assert "model_loaded" in data
+    assert "database" in data
