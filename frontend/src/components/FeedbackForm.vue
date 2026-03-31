@@ -11,7 +11,7 @@
           :class="{ active: formData.accepted === true }"
           @click="formData.accepted = true"
         >
-          <span class="icon">👍</span>
+          <v-icon size="18" class="mr-1">mdi-thumb-up-outline</v-icon>
           {{ $t('prediction.feedback.agree') }}
         </button>
         <button
@@ -20,7 +20,7 @@
           :class="{ active: formData.accepted === false }"
           @click="formData.accepted = false"
         >
-          <span class="icon">👎</span>
+          <v-icon size="18" class="mr-1">mdi-thumb-down-outline</v-icon>
           {{ $t('prediction.feedback.disagree') }}
         </button>
       </div>
@@ -48,8 +48,8 @@
       :disabled="formData.accepted === null || submitting"
     >
       <span v-if="!submitting">
-        <span class="icon">📤</span>
-        {{ $t('prediction.feedback.submit') }}
+          <v-icon size="18" class="mr-1">mdi-send-outline</v-icon>
+          {{ $t('prediction.feedback.submit') }}
       </span>
       <span v-else class="loading-spinner">
         <span class="spinner"></span>

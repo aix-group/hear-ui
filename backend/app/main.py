@@ -23,13 +23,9 @@ async def lifespan(app: FastAPI):
     # Startup
     try:
         model_wrapper.load()
-        app.state.model_wrapper = model_wrapper
-    except FileNotFoundError:
-        # Model not present in the environment; keep the attribute for consistency
-        app.state.model_wrapper = model_wrapper
-    except Exception:
-        # In case of other errors, still expose the wrapper (it will raise on use)
-        app.state.model_wrapper = model_wrapper
+    except Exception as e:
+        logger.warning("Model load failed: %s", e)
+    app.state.model_wrapper = model_wrapper
 
     yield
 

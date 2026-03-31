@@ -91,7 +91,7 @@ jobs:
         run: |
           cd backend
           mypy app/ --config-file=pyproject.toml --ignore-missing-imports || {
-            echo "ℹ️ Type checking found issues (non-blocking)"
+            echo "Type checking found issues (non-blocking)"
             exit 0
           }
       
@@ -351,7 +351,7 @@ jobs:
           cd backend
           echo "Testing downgrade SQL generation..."
           alembic downgrade head:-1 --sql > downgrade_preview.sql || {
-            echo "ℹ️ No downgrade path or single migration (OK for initial migration)"
+            echo "No downgrade path or single migration (OK for initial migration)"
             exit 0
           }
           echo "Downgrade path verified"

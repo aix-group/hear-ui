@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 # ============================================================================
 # FEATURE MAPPING STATUS (Feb 2026):
-# ✅ Features 1-32: Mapped to CSV columns (excluding ID, post24, post12)
-# ❌ Features 33-39: MISSING - Need training notebook from Khawla Elhadri
+# [OK] Features 1-32: Mapped to CSV columns (excluding ID, post24, post12)
+# [MISSING] Features 33-39: MISSING - Need training notebook from Khawla Elhadri
 #
 # ANALYSIS: placeholder features have significant importance in the model:
 # - _placeholder_39: 0.0400 importance (10th most important!)

@@ -1,5 +1,3 @@
-"use client"
-
 import {toaster} from "@/components/ui/toaster"
 
 const useCustomToast = () => {
