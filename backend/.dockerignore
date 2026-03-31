@@ -6,3 +6,11 @@ app.egg-info
 .coverage
 htmlcov
 .venv
+.pytest_cache
+.ruff_cache
+*.egg-info
+coverage.xml
+.env
+.env.*
+tests/
+*.md

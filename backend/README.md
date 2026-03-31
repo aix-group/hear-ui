@@ -98,7 +98,7 @@ curl -X POST http://localhost:8000/api/v1/predict/ \
 # SHAP explanation
 curl -X POST http://localhost:8000/api/v1/explainer/explain \
   -H "Content-Type: application/json" \
-  -d '{"age": 45, "gender": "w", "implant_type": "Cochlear"}'
+  -d '{"Alter [J]": 45, "Geschlecht": "w", "Behandlung/OP.CI Implantation": "Cochlear"}'
 ```
 
 ---

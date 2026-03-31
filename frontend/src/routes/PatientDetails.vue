@@ -130,9 +130,10 @@
       <v-dialog
           v-model="deleteDialog"
           max-width="520"
+          aria-labelledby="delete-dialog-title"
       >
-        <v-card rounded="lg">
-          <v-card-title class="text-h6">
+        <v-card rounded="lg" role="dialog" aria-modal="true">
+          <v-card-title id="delete-dialog-title" class="text-h6">
             {{ $t('patient_details.delete_confirm_title') }}
           </v-card-title>
           <v-card-text>
@@ -143,6 +144,8 @@
                 v-if="deleteError"
                 type="error"
                 variant="tonal"
+                role="alert"
+                aria-live="polite"
             >
               {{ deleteError }}
             </v-alert>
@@ -171,28 +174,37 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import i18next from "i18next";
 import {API_BASE} from "@/lib/api";
+import {logger} from "@/lib/logger";
 import {useFeatureDefinitions} from "@/lib/featureDefinitions";
 import {featureDefinitionsStore} from "@/lib/featureDefinitionsStore";
 import {formatBirthDateLocale} from "@/utils";
 
 const language = ref(i18next.language)
-i18next.on('languageChanged', (lng) => {
+const onLanguageChanged = (lng: string) => {
   language.value = lng
-})
+}
+i18next.on('languageChanged', onLanguageChanged)
 watch(language, (lng) => {
   void featureDefinitionsStore.loadLabels(lng)
 })
+
+interface PatientRecord {
+  id: string
+  name?: string
+  display_name?: string
+  input_features?: Record<string, unknown>
+}
 
 const route = useRoute();
 const router = useRouter();
 
 const rawId = route.params.id;
 const patient_id = ref<string>(Array.isArray(rawId) ? rawId[0] : rawId ?? "");
-const patient = ref<any>(null);
+const patient = ref<PatientRecord | null>(null);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
 const deleteError = ref<string | null>(null);
@@ -339,9 +351,9 @@ const confirmDelete = async () => {
 
     deleteDialog.value = false;
     await router.push({name: "SearchPatients"});
-  } catch (err: any) {
-    console.error(err);
-    deleteError.value = err?.message ?? "Failed to delete patient.";
+  } catch (err: unknown) {
+    logger.error(err);
+    deleteError.value = err instanceof Error ? err.message : "Failed to delete patient.";
   } finally {
     deleteLoading.value = false;
   }
@@ -386,10 +398,14 @@ onMounted(async () => {
 
     patient.value = await response.json();
 
-  } catch (err: any) {
-    console.error(err);
+  } catch (err: unknown) {
+    logger.error(err);
   }
 });
+
+onBeforeUnmount(() => {
+  i18next.off('languageChanged', onLanguageChanged)
+})
 
 </script>
 

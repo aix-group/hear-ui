@@ -24,9 +24,9 @@ def init(engine: object | None = None) -> None:
 
     # Try to open a session and run a lightweight statement to validate connectivity
     try:
-        with Session(engine) as session:
+        with Session(engine) as session:  # type: ignore[arg-type]
             # Execute a trivial statement - using SQLModel/SQLAlchemy layer
-            session.exec(select(1))
+            session.exec(select(1))  # type: ignore[arg-type]
             logger.info("Database connection check succeeded.")
     except Exception as e:
         logger.error("Database connection check failed: %s", e)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     for attempt in range(1, max_retries + 1):
         try:
             init()
-            print("DB_READY")
+            logger.info("DB_READY")
             sys.exit(0)
         except Exception as e:
             last_exc = e

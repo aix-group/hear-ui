@@ -61,12 +61,12 @@ class ExplainerInterface(ABC):
         Returns:
             Explanation object with feature importance and metadata
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_method_name(self) -> str:
         """Return the name of this explanation method."""
-        pass
+        raise NotImplementedError
 
     def supports_visualization(self) -> bool:
         """Whether this explainer can generate visualizations.
@@ -131,7 +131,7 @@ class ExplainerFactory:
             )
 
         explainer_class = cls._registry[method_lower]
-        return explainer_class(model=model, **kwargs)
+        return explainer_class(model=model, **kwargs)  # type: ignore[call-arg]
 
     @classmethod
     def list_available_methods(cls) -> list[str]:

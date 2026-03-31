@@ -106,7 +106,7 @@ def postgres_container():
     try:
         # Start PostgreSQL container
         _postgres_container = PostgresContainer(
-            image="postgres:15-alpine",
+            image="postgres:17-alpine",
             username="test",
             password="test",
             dbname="testdb",
@@ -207,6 +207,14 @@ def client(postgres_container) -> Generator[TestClient, None, None]:
     try:
         from app.main import app
 
+        # Disable rate limiters during tests
+        if hasattr(app.state, "limiter"):
+            app.state.limiter.enabled = False
+        from app.api.routes import predict as _predict_mod
+
+        if hasattr(_predict_mod, "limiter"):
+            _predict_mod.limiter.enabled = False
+
         with TestClient(app) as c:
             yield c
     finally:
@@ -236,15 +244,21 @@ def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]
 
 @pytest.fixture
 def sample_patient_data() -> dict:
-    """Sample patient data for testing predictions."""
+    """Sample patient data for testing predictions and CRUD operations.
+
+    This is the single authoritative test fixture for patient data.
+    Includes enough fields for both predict validation and patient CRUD tests.
+    """
     return {
         "Alter [J]": 45,
         "Geschlecht": "w",
         "Seiten": "L",
         "Primäre Sprache": "Deutsch",
         "Diagnose.Höranamnese.Hörminderung operiertes Ohr...": "Hochgradiger HV",
+        "Diagnose.Höranamnese.Beginn der Hörminderung (OP-Ohr)...": "postlingual",
         "Diagnose.Höranamnese.Ursache....Ursache...": "Unbekannt",
         "Diagnose.Höranamnese.Versorgung Gegenohr...": "Hörgerät",
+        "Symptome präoperativ.Tinnitus...": "ja",
         "Behandlung/OP.CI Implantation": "Behandlung/OP.CI Implantation.Cochlear... Nucleus Profile CI532 (Slim Modiolar)",
         "outcome_measurments.pre.measure.": 10,
         "abstand": 365,

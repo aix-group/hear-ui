@@ -1,6 +1,7 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
+from pydantic import BaseModel
 
 from app import crud
 from app.api.deps import SessionDep
@@ -10,10 +11,41 @@ router = APIRouter(prefix="/feedback", tags=["feedback"])
 logger = logging.getLogger(__name__)
 
 
-@router.get("/", response_model=list[Feedback])
-def list_feedbacks(session: SessionDep, limit: int = 100, offset: int = 0):
-    """List all feedbacks with pagination."""
-    return crud.list_feedback(session=session, limit=limit, offset=offset)
+class PaginatedFeedbackResponse(BaseModel):
+    """Paginated response for feedback list."""
+
+    items: list[Feedback]
+    total: int
+    limit: int
+    offset: int
+    has_more: bool
+
+
+@router.get("/")
+def list_feedbacks(
+    session: SessionDep,
+    limit: int = Query(
+        default=100, ge=1, le=1000, description="Maximum number of feedbacks to return"
+    ),
+    offset: int = Query(default=0, ge=0, description="Number of feedbacks to skip"),
+    paginated: bool = Query(
+        default=False, description="Return paginated response with metadata"
+    ),
+):
+    """List all feedbacks with optional pagination."""
+    feedbacks = crud.list_feedback(session=session, limit=limit, offset=offset)
+
+    if paginated:
+        total = crud.count_feedback(session=session)
+        return PaginatedFeedbackResponse(
+            items=feedbacks,
+            total=total,
+            limit=limit,
+            offset=offset,
+            has_more=(offset + len(feedbacks)) < total,
+        )
+
+    return feedbacks
 
 
 @router.post("/", response_model=Feedback, status_code=status.HTTP_201_CREATED)
@@ -24,12 +56,11 @@ def create_feedback(feedback_in: FeedbackCreate, session: SessionDep):
     try:
         db_obj = crud.create_feedback(session=session, feedback_in=feedback_in)
         return db_obj
-    except Exception as exc:  # pragma: no cover - defensive
+    except Exception:  # pragma: no cover - defensive
         logger.exception("Failed to create feedback")
-        # Keep returning a 500 to the client, but log the full traceback server-side
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(exc),
+            detail="An internal error occurred. Please try again later.",
         )
 
 

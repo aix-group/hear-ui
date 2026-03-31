@@ -1,15 +1,21 @@
 import logging
+import uuid
 from contextlib import asynccontextmanager
 
 import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.routing import APIRoute
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api import api_router
 from app.core.config import settings
 from app.core.model_wrapper import ModelWrapper
+
+limiter = Limiter(key_func=get_remote_address)
 
 logger = logging.getLogger(__name__)
 
@@ -23,17 +29,20 @@ async def lifespan(app: FastAPI):
     # Startup
     try:
         model_wrapper.load()
-        app.state.model_wrapper = model_wrapper
-    except FileNotFoundError:
-        # Model not present in the environment; keep the attribute for consistency
-        app.state.model_wrapper = model_wrapper
-    except Exception:
-        # In case of other errors, still expose the wrapper (it will raise on use)
-        app.state.model_wrapper = model_wrapper
+    except Exception as e:
+        logger.warning("Model load failed: %s", e)
+    app.state.model_wrapper = model_wrapper
 
     yield
 
-    # Shutdown (nothing to clean up currently)
+    # Shutdown: release resources gracefully
+    logger.info("Shutting down — releasing model resources")
+    if model_wrapper.is_loaded():
+        try:
+            model_wrapper.unload() if hasattr(model_wrapper, "unload") else None
+        except Exception:
+            pass
+    logger.info("Shutdown complete")
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -55,17 +64,31 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+
 # Set all CORS enabled origins
 if settings.all_cors_origins:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.all_cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"],
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    """Attach a unique request ID to every request for tracing across logs."""
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 
 @app.get("/", include_in_schema=False)
@@ -75,13 +98,31 @@ async def root_redirect():
 
 
 @app.get("/health", tags=["health"])
-async def health():
-    """Global health check endpoint.
+async def health(request: Request):
+    """Health check endpoint for load balancers, Kubernetes probes, and Docker.
 
-    Standard health check at root level for load balancers,
-    Kubernetes probes, and Docker health checks.
+    Checks database connectivity and model status.
     """
-    return {"status": "ok"}
+    status_detail: dict = {"status": "ok"}
+
+    # Check model
+    wrapper = getattr(request.app.state, "model_wrapper", None)
+    status_detail["model_loaded"] = bool(wrapper and wrapper.is_loaded())
+
+    # Check database
+    try:
+        from sqlmodel import Session, text
+
+        from app.core.db import engine
+
+        with Session(engine) as session:
+            session.exec(text("SELECT 1"))  # type: ignore[call-overload]
+        status_detail["database"] = "connected"
+    except Exception as exc:
+        status_detail["database"] = f"error: {exc}"
+        status_detail["status"] = "degraded"
+
+    return status_detail
 
 
 @app.exception_handler(Exception)
@@ -95,11 +136,26 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     HTTPException is excluded since FastAPI handles it natively with proper status codes.
     """
     from fastapi import HTTPException
+    from fastapi.exceptions import RequestValidationError
 
     if isinstance(exc, HTTPException):
         return JSONResponse(
             status_code=exc.status_code,
             content={"detail": exc.detail},
+        )
+    if isinstance(exc, RequestValidationError):
+        return JSONResponse(
+            status_code=422,
+            content={
+                "detail": "Validation error",
+                "errors": exc.errors(),
+            },
+        )
+    if isinstance(exc, ValueError):
+        logger.warning("Value error: %s %s — %s", request.method, request.url, exc)
+        return JSONResponse(
+            status_code=422,
+            content={"detail": f"Invalid input: {exc}"},
         )
     logger.exception(
         "Unhandled exception while processing request %s %s",

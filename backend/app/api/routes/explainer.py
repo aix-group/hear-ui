@@ -210,9 +210,15 @@ async def get_shap_explanation(
 
     except HTTPException:
         raise
-    except Exception as exc:
+    except ValueError as e:
+        raise HTTPException(
+            status_code=422, detail=f"Invalid input for explanation: {e}"
+        )
+    except TypeError as e:
+        raise HTTPException(status_code=422, detail=f"Incompatible data type: {e}")
+    except Exception:
         logger.exception("Explanation generation failed")
         raise HTTPException(
             status_code=500,
-            detail=f"Explanation failed: {str(exc)}",
+            detail="Explanation failed. Please try again later.",
         )

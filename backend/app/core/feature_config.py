@@ -55,7 +55,7 @@ def load_feature_config() -> dict[str, Any] | None:
             if not name:
                 continue
 
-            mapping[name] = label
+            mapping[name] = label  # type: ignore[assignment]
             metadata[name] = {k: v for k, v in entry.items() if k != "name"}
             categories.setdefault(cat, []).append(name)
 

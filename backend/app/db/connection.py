@@ -20,9 +20,9 @@ from pathlib import Path
 base_file = Path(__file__).resolve().parent / "db" / "base.py"
 
 spec = importlib.util.spec_from_file_location("app.db.base", str(base_file))
-module = importlib.util.module_from_spec(spec)
+module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
 # Execute the module in its own namespace
-spec.loader.exec_module(module)  # type: ignore[attr-defined]
+spec.loader.exec_module(module)  # type: ignore[attr-defined, union-attr]
 
 # Register the loaded module under the expected name so `from app.db.base`
 # works even though this file exists.

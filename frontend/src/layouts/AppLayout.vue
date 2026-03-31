@@ -1,4 +1,5 @@
 <template>
+  <a href="#main-content" class="skip-to-main">Skip to main content</a>
   <v-app id="hear-ui">
     <!-- Navigation Drawer -->
     <v-navigation-drawer
@@ -7,6 +8,7 @@
         color="primary"
         width="260"
         app
+        aria-label="Main navigation"
     >
       <v-list
           density="comfortable"
@@ -50,7 +52,7 @@
 
     <!-- Top App Bar -->
     <v-app-bar color="primary" app :elevation="0">
-      <v-app-bar-nav-icon @click="drawer = !drawer"/>
+      <v-app-bar-nav-icon aria-label="Toggle navigation menu" @click="drawer = !drawer"/>
       <v-app-bar-title class="text-white" :to="{ name: 'Home' }">
         <router-link :to="{ name: 'Home' }" class="d-flex align-center">
           <v-img
@@ -58,6 +60,7 @@
               contain
               max-height="40"
               max-width="120"
+              alt="HearUI Logo"
           />
         </router-link>
 
@@ -68,6 +71,7 @@
              size="large"
              rounded="xs"
              class="language-button"
+             :aria-label="`Change language, current: ${languages[curr_language]}`"
              @click="switch_language"
       >
         {{ languages[curr_language] }}
@@ -75,8 +79,10 @@
     </v-app-bar>
 
     <!-- Main Content (your router pages render here) -->
-    <v-main class="pa-4">
-      <router-view/>
+    <v-main id="main-content" class="pa-4" role="main">
+      <ErrorBoundary>
+        <router-view/>
+      </ErrorBoundary>
     </v-main>
   </v-app>
 </template>
@@ -84,6 +90,7 @@
 <script lang="ts" setup>
 import {onMounted, onBeforeUnmount, ref, nextTick} from "vue"
 import i18next from "i18next";
+import ErrorBoundary from "@/components/ErrorBoundary.vue"
 
 const drawer = ref(false)
 const curr_language = ref(0)
@@ -137,6 +144,30 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+}
+.skip-to-main:focus {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  width: auto;
+  height: auto;
+  padding: 8px 16px;
+  background: #fff;
+  color: #1976d2;
+  font-weight: 600;
+  border: 2px solid #1976d2;
+  border-radius: 4px;
+  text-decoration: none;
+}
 
 .nav-item {
   border-radius: 0 999px 999px 0;

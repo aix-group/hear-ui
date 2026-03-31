@@ -37,7 +37,7 @@ class ModelAdapter(ABC):
         Returns:
             Predictions as numpy array
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
@@ -49,7 +49,7 @@ class ModelAdapter(ABC):
         Returns:
             Probability array (shape: (n_samples, n_classes) or (n_samples,))
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_model_type(self) -> str:
@@ -58,7 +58,7 @@ class ModelAdapter(ABC):
         Returns:
             String identifier ("sklearn", "pytorch", "tensorflow", "onnx", etc.)
         """
-        pass
+        raise NotImplementedError
 
     def get_feature_importance(self) -> np.ndarray | None:
         """Get model's feature importance if available.
@@ -147,7 +147,7 @@ class DatasetAdapter(ABC):
         Returns:
             Preprocessed feature array (shape: (1, n_features))
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_feature_names(self) -> list[str]:
@@ -156,7 +156,7 @@ class DatasetAdapter(ABC):
         Returns:
             List of feature names in the order expected by the model
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_feature_schema(self) -> dict[str, Any]:
@@ -165,7 +165,7 @@ class DatasetAdapter(ABC):
         Returns:
             Dictionary describing feature types, allowed values, defaults, etc.
         """
-        pass
+        raise NotImplementedError
 
     def validate_input(self, raw_input: dict) -> tuple[bool, str | None]:
         """Validate raw input against schema.

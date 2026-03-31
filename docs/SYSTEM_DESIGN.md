@@ -18,7 +18,7 @@ HEAR-UI is a Dockerized, web-based system that serves cochlear-implant outcome p
 5. Results are returned to the frontend; optional persistence saves a record in Postgres.
 
 ## What Is Configurable
-- Model file path: `MODEL_PATH` env var (default `backend/app/models/logreg_best_model.pkl`).
+- Model file path: `MODEL_PATH` env var (default `backend/app/models/random_forest_final.pkl`).
 - SHAP background data: `SHAP_BACKGROUND_FILE` env var or synthetic fallback.
 - Explainer method: query param `method=shap|coefficient|lime` on `/explainer/explain`.
 - CORS + frontend URL: `FRONTEND_HOST`, `BACKEND_CORS_ORIGINS`.
@@ -30,7 +30,7 @@ HEAR-UI is a Dockerized, web-based system that serves cochlear-implant outcome p
 ## Static vs Interchangeable
 Static (assumed stable in current code):
 - API contract structure in `backend/app/api/routes/*`.
-- 68-feature preprocessing in `backend/app/core/preprocessor.py`.
+- 39-feature preprocessing in `backend/app/core/rf_dataset_adapter.py`.
 - DB schema and Alembic migrations in `backend/app/alembic`.
 
 Interchangeable (designed to swap with minimal code changes):
@@ -46,5 +46,3 @@ Interchangeable (designed to swap with minimal code changes):
 ## Where It Operates
 - Local dev: Docker Compose with exposed ports in `docker/docker-compose.override.yml`.
 - Production: Docker Compose with Traefik routing and HTTPS.
-
-If you want this as a separate diagram file (e.g. `docs/system.mmd` or `docs/system.svg`), tell me the preferred format and I will generate it.

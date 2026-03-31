@@ -24,6 +24,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# CI credentials – override via GitHub Settings → Secrets for private forks.
+# The fallback values are safe test-only defaults so public forks work out of the box.
+env:
+  CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY || 'test-secret-key-for-ci-minimum-32-characters-long' }}
+
 jobs:
   # ============================================
   # 1. LINT - Statische Code-Analyse (Ruff)
@@ -90,10 +95,7 @@ jobs:
       - name: Run mypy type checking
         run: |
           cd backend
-          mypy app/ --config-file=pyproject.toml --ignore-missing-imports || {
-            echo "ℹ️ Type checking found issues (non-blocking)"
-            exit 0
-          }
+          mypy app/ --config-file=pyproject.toml --ignore-missing-imports
       
       - name: Type Check Summary
         if: always()
@@ -112,7 +114,7 @@ jobs:
     
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:12
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
@@ -178,9 +180,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           SQLALCHEMY_DATABASE_URI: postgresql://postgres:postgres@localhost:5432/test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           POSTGRES_SERVER: localhost
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -239,7 +239,7 @@ jobs:
     
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:12
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
@@ -286,9 +286,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
@@ -305,9 +303,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
@@ -323,9 +319,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
@@ -343,15 +337,13 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: migration_test_db
-          SECRET_KEY: test-secret-key-for-ci-minimum-32-characters-long
-          FIRST_SUPERUSER: admin@example.com
-          FIRST_SUPERUSER_PASSWORD: admin123
+          SECRET_KEY: ${{ env.CI_SECRET_KEY }}
           PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
           echo "Testing downgrade SQL generation..."
           alembic downgrade head:-1 --sql > downgrade_preview.sql || {
-            echo "ℹ️ No downgrade path or single migration (OK for initial migration)"
+            echo "No downgrade path or single migration (OK for initial migration)"
             exit 0
           }
           echo "Downgrade path verified"
@@ -413,9 +405,7 @@ jobs:
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=change_me
           POSTGRES_DB=hear_db
-          SECRET_KEY=development-secret-key-replace-in-production-min-32-chars-long
-          FIRST_SUPERUSER=admin@hear-project.de
-          FIRST_SUPERUSER_PASSWORD=admin123
+          SECRET_KEY=$CI_SECRET_KEY
           DATABASE_URL=postgresql+asyncpg://postgres:change_me@db:5432/hear_db
           FRONTEND_HOST=http://localhost:5173
           DOCKER_IMAGE_BACKEND=hear-backend
@@ -687,9 +677,7 @@ jobs:
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=test123
           POSTGRES_DB=hear_db
-          SECRET_KEY=test-secret-key-minimum-32-characters-long
-          FIRST_SUPERUSER=admin@hear-project.de
-          FIRST_SUPERUSER_PASSWORD=admin123
+          SECRET_KEY=$CI_SECRET_KEY
           FRONTEND_HOST=http://localhost:5173
           DOCKER_IMAGE_BACKEND=hear-backend
           DOCKER_IMAGE_FRONTEND=hear-frontend
@@ -748,9 +736,7 @@ jobs:
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=smoke_test_pwd
           POSTGRES_DB=smoke_test_db
-          SECRET_KEY=smoke-test-secret-key-minimum-32-characters-long
-          FIRST_SUPERUSER=admin@hear-project.de
-          FIRST_SUPERUSER_PASSWORD=admin123
+          SECRET_KEY=$CI_SECRET_KEY
           DATABASE_URL=postgresql+asyncpg://postgres:smoke_test_pwd@db:5432/smoke_test_db
           FRONTEND_HOST=http://localhost:5173
           DOCKER_IMAGE_BACKEND=hear-backend

@@ -150,11 +150,28 @@
         "submit_error": "Fehler beim Absenden des Feedbacks. Bitte versuchen Sie es erneut."
       },
       "whatif": {
-        "toggle": "What-if-Analyse",
-        "description": "Passen Sie einzelne Merkmalswerte an, um zu sehen, wie unterschiedliche Eingaben die Vorhersage beeinflussen würden.",
+        "toggle": "Was-w\u00e4re-wenn-Analyse",
+        "description": "Passen Sie einzelne Merkmalswerte an, um zu sehen, wie unterschiedliche Eingaben die Vorhersage beeinflussen w\u00fcrden.",
         "original": "Original",
-        "modified": "Geändert",
-        "reset_all": "Alle zurücksetzen"
+        "modified": "Ge\u00e4ndert",
+        "reset_all": "Alle zur\u00fccksetzen",
+        "undo_last": "Letzte r\u00fcckg\u00e4ngig",
+        "percentage_points": "Prozentpunkte",
+        "original_value": "Aktuell: {{value}}",
+        "modified_indicator": "Vom Originalwert abweichend",
+        "implausible_warning": "Diese Kombination ist klinisch unwahrscheinlich. Mit Vorsicht interpretieren.",
+        "implausible_age_hl": "Diese Kombination ist klinisch inkonsistent: Die H\u00f6rverlusdauer \u00fcbersteigt das Alter des Patienten. Bitte passen Sie die Werte an.",
+        "model_unavailable": "Modell nicht verf\u00fcgbar",
+        "shap_driven_by": "Die \u00c4nderung wird haupts\u00e4chlich beeinflusst durch:",
+        "age_hint": "Das Alter kann nicht verringert werden. Der Mindestwert ist das aktuelle Patientenalter.",
+        "age_min_tooltip": "Das Alter kann nicht verringert werden. Der Mindestwert ist das aktuelle Patientenalter.",
+        "other_specify": "Bitte angeben…",
+        "group_hearing": "H\u00f6rstatus",
+        "group_symptoms": "Symptome (pr\u00e4operativ)",
+        "group_imaging": "Bildgebung",
+        "group_demographics": "Demografie",
+        "group_implant": "Implantat-Details",
+        "group_other": "Sonstiges"
       },
       "back": "Zurück zu den Patienten",
       "give_feedback": "Feedback geben"

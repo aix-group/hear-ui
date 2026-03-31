@@ -8,6 +8,8 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.api.deps import SessionDep
 from app.models import Prediction
@@ -15,6 +17,7 @@ from app.models import Prediction
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/predict", tags=["prediction"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 class PatientData(BaseModel):
@@ -114,19 +117,26 @@ def _validate_minimum_input(patient_dict: dict) -> tuple[bool, str | None]:
     return True, None
 
 
-def _calculate_data_completeness(patient_dict: dict) -> dict:
+def _calculate_data_completeness(patient_dict: dict, model_wrapper=None) -> dict:
     """Calculate how complete the patient data is.
 
     Returns:
         Dict with completeness metrics
     """
-    # Total expected features for the RF model
-    TOTAL_FEATURES = 39
+    # Derive expected feature count from the loaded model when available
+    total_features: int = 39  # default fallback
+    if model_wrapper is not None:
+        try:
+            n = model_wrapper.get_n_features()
+            if isinstance(n, (int, float)) and n > 0:
+                total_features = int(n)
+        except Exception:
+            pass  # use default fallback
 
     # Count provided features (non-None, non-empty)
     provided = len([v for v in patient_dict.values() if v is not None and v != ""])
 
-    completeness_percent = (provided / TOTAL_FEATURES) * 100
+    completeness_percent = (provided / total_features) * 100
 
     # Classify completeness level
     if completeness_percent >= 80:
@@ -145,7 +155,7 @@ def _calculate_data_completeness(patient_dict: dict) -> dict:
     return {
         "completeness_percent": round(completeness_percent, 1),
         "provided_features": provided,
-        "total_features": TOTAL_FEATURES,
+        "total_features": total_features,
         "level": level,
         "level_de": level_de,
         "confidence": confidence,
@@ -153,6 +163,7 @@ def _calculate_data_completeness(patient_dict: dict) -> dict:
 
 
 @router.post("/")
+@limiter.limit("30/minute")
 def predict(
     patient: PatientData,
     db: SessionDep,
@@ -180,13 +191,8 @@ def predict(
         is_valid, error_msg = _validate_minimum_input(patient_dict)
         if not is_valid:
             raise HTTPException(
-                status_code=422,  # Unprocessable Entity
-                detail={
-                    "error": "insufficient_data",
-                    "message": error_msg,
-                    "provided_fields": list(patient_dict.keys()),
-                    "provided_count": len(patient_dict),
-                },
+                status_code=422,
+                detail=f"Insufficient data: {error_msg} (provided {len(patient_dict)} field(s): {', '.join(patient_dict.keys())})",
             )
 
         # Use the canonical model wrapper from app state
@@ -202,7 +208,7 @@ def predict(
             raise HTTPException(status_code=503, detail="Model not loaded")
 
         # Calculate data completeness
-        completeness = _calculate_data_completeness(patient_dict)
+        completeness = _calculate_data_completeness(patient_dict, model_wrapper)
 
         # If caller requested a confidence interval, use predict_with_confidence
         if include_confidence:
@@ -280,8 +286,15 @@ def predict(
 
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=f"Invalid input data: {e}")
+    except TypeError as e:
+        raise HTTPException(status_code=422, detail=f"Incompatible data type: {e}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        logger.exception("Prediction failed: %s", e)
+        raise HTTPException(
+            status_code=500, detail="Prediction failed due to an internal error."
+        )
 
 
 def _interpret_prediction(prediction: float, uncertainty: float) -> dict:
@@ -458,6 +471,7 @@ def compute_prediction_and_explanation(
 
 
 @router.post("/simple", summary="Get Prediction Only (No Explainer)")
+@limiter.limit("30/minute")
 def predict_simple(
     patient: PatientData,
     request: Request,
@@ -518,4 +532,7 @@ def predict_simple(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        logger.exception("Simple prediction failed: %s", e)
+        raise HTTPException(
+            status_code=500, detail="Prediction failed due to an internal error."
+        )

@@ -5,7 +5,7 @@ import {App} from "vue";
 import de from './locales/de.json';
 import en from './locales/en.json';
 
-// am besten erstmal frontend-i18n.md lesen
+// see frontend-i18n.md for i18n conventions
 
 i18next
     // detect user language (will read from localStorage if present)

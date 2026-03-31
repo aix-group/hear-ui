@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 # ============================================================================
 # FEATURE MAPPING STATUS (Feb 2026):
-# ✅ Features 1-32: Mapped to CSV columns (excluding ID, post24, post12)
-# ❌ Features 33-39: MISSING - Need training notebook from Khawla Elhadri
+# [OK] Features 1-32: Mapped to CSV columns (excluding ID, post24, post12)
+# [MISSING] Features 33-39: MISSING - Need training notebook from Khawla Elhadri
 #
 # ANALYSIS: placeholder features have significant importance in the model:
 # - _placeholder_39: 0.0400 importance (10th most important!)
@@ -37,9 +37,9 @@ logger = logging.getLogger(__name__)
 # - _placeholder_36: 0.0216 importance
 # These are NOT padding but real engineered features from training.
 #
-# TODO: Contact Khawla Elhadri (Philipps-Universität Marburg) for:
-# - Original feature engineering notebook
-# - Exact preprocessing pipeline that creates 39 features from 32 CSV columns
+# NOTE: Contact the project's data science team or see the training notebook
+# (CI_outcome_prediction.ipynb) for the original feature engineering
+# pipeline that creates 39 features from 32 CSV columns.
 # ============================================================================
 
 # The 39 feature names in the order expected by the model.
@@ -79,7 +79,9 @@ EXPECTED_FEATURES_RF: list[str] = [
     "outcome_measurments.pre.measure.",
     "abstand",
     # --- Additional columns (7 placeholders — from encoding/feature engineering) ---
-    # TODO: Replace these with the actual feature names from the training notebook.
+    # NOTE: These 7 placeholder features correspond to encoded/engineered
+    # columns from the training pipeline. Replace with actual names
+    # once the training notebook is available. Current values default to 0.0.
     "_placeholder_33",
     "_placeholder_34",
     "_placeholder_35",
@@ -91,7 +93,8 @@ EXPECTED_FEATURES_RF: list[str] = [
 
 # Label encoding mappings for categorical columns.
 # These MUST match the exact encoding used during training.
-# TODO(blocked): Replace with actual LabelEncoder mappings from Khawla.
+# NOTE: Extend with additional mappings from the training notebook
+# (LabelEncoder.classes_ for each categorical column).
 CATEGORICAL_ENCODINGS: dict[str, dict[str, int]] = {
     "Geschlecht": {"m": 0, "w": 1, "d": 2},
     "Operierte Seiten": {"L": 0, "R": 1},
@@ -206,8 +209,8 @@ class RandomForestDatasetAdapter(DatasetAdapter):
                 features[feature_name] = 1.0 if value else 0.0
 
         # --- Other categorical features (label-encoded as integers) ---
-        # TODO(blocked): These need proper LabelEncoder mappings from training.
-        # For now, fall through to 0.0 default for unknown categories.
+        # NOTE: Additional LabelEncoder mappings needed from the training notebook
+        # for the following columns. They default to 0.0 for unknown categories.
         other_categoricals = [
             "Primäre Sprache",
             "Weitere Sprachen",

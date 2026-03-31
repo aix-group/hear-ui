@@ -40,13 +40,13 @@ def demonstrate_config_based_adapter():
         "abstand": 200,
     }
 
-    print("\n📋 Sample Patient Data:")
+    print("\nSample Patient Data:")
     for key, value in sample_patient.items():
         print(f"  {key}: {value}")
 
     # 1. Old approach: Hardcoded adapter
     print("\n" + "=" * 70)
-    print("❌ OLD APPROACH: Hardcoded Adapter")
+    print("[OLD] OLD APPROACH: Hardcoded Adapter")
     print("=" * 70)
     print("Code: RandomForestDatasetAdapter() - 305 lines of hardcoded logic")
 
@@ -58,7 +58,7 @@ def demonstrate_config_based_adapter():
 
     # 2. New approach: Config-based adapter
     print("\n" + "=" * 70)
-    print("✅ NEW APPROACH: Config-Based Adapter")
+    print("[NEW] NEW APPROACH: Config-Based Adapter")
     print("=" * 70)
 
     config_path = backend_path / "app" / "config" / "random_forest_features.json"
@@ -72,22 +72,22 @@ def demonstrate_config_based_adapter():
 
     # 3. Compare results
     print("\n" + "=" * 70)
-    print("🔍 Comparison: Hardcoded vs Config-Based")
+    print("Comparison: Hardcoded vs Config-Based")
     print("=" * 70)
 
     matches = np.allclose(X_hardcoded, X_config, rtol=1e-5)
     print(f"\n✓ Arrays match: {matches}")
 
     if matches:
-        print("✅ IDENTICAL RESULTS - Config-based adapter produces same output!")
+        print("IDENTICAL RESULTS - Config-based adapter produces same output!")
     else:
-        print("⚠️  Differences detected:")
+        print("WARNING: Differences detected:")
         diff_indices = np.where(~np.isclose(X_hardcoded, X_config, rtol=1e-5))[1]
         print(f"   Different at indices: {diff_indices}")
 
     # 4. Show advantages
     print("\n" + "=" * 70)
-    print("💡 Advantages of Config-Based Approach")
+    print("Advantages of Config-Based Approach")
     print("=" * 70)
 
     advantages = [
@@ -105,7 +105,7 @@ def demonstrate_config_based_adapter():
 
     # 5. Demonstrate alias resolution
     print("\n" + "=" * 70)
-    print("🌐 Multilingual Alias Resolution")
+    print("Multilingual Alias Resolution")
     print("=" * 70)
 
     english_patient = {
@@ -115,17 +115,17 @@ def demonstrate_config_based_adapter():
         "implant_side": "R",  # Instead of "Seiten"
     }
 
-    print("\n📋 English aliases:")
+    print("\nEnglish aliases:")
     for key, value in english_patient.items():
         print(f"  {key}: {value}")
 
     X_english = config_adapter.preprocess(english_patient)
     print(f"\n✓ Preprocessed with English aliases: {X_english.shape}")
-    print("✅ Aliases automatically resolved to canonical German names!")
+    print("Aliases automatically resolved to canonical German names!")
 
     # 6. Show ModelWrapper integration
     print("\n" + "=" * 70)
-    print("🔧 ModelWrapper Integration")
+    print("ModelWrapper Integration")
     print("=" * 70)
 
     print("\n# OLD: Hardcoded adapter")
@@ -138,7 +138,7 @@ def demonstrate_config_based_adapter():
 
     # 7. Show model swapping example
     print("\n" + "=" * 70)
-    print("🔄 Model Swapping Example")
+    print("Model Swapping Example")
     print("=" * 70)
 
     print("\nScenario: Switch from Random Forest to XGBoost")
@@ -156,7 +156,7 @@ def demonstrate_config_based_adapter():
     print("   config = os.getenv('FEATURES_CONFIG', 'config/random_forest_features.json')")
     print("   wrapper = ModelWrapper.from_config(config)")
 
-    print("\n✅ Model swapped without changing feature engineering code!")
+    print("\nModel swapped without changing feature engineering code!")
 
     print("\n" + "=" * 70)
     print("Summary")
@@ -165,12 +165,12 @@ def demonstrate_config_based_adapter():
     summary = """
 The config-based adapter eliminates hardcoded domain knowledge and enables:
 
-✅ Easy model swapping (change config file)
-✅ No code changes for new features
-✅ Version-controlled feature definitions
-✅ Domain-agnostic architecture
-✅ Multilingual alias support
-✅ Identical results to hardcoded adapters
+- Easy model swapping (change config file)
+- No code changes for new features
+- Version-controlled feature definitions
+- Domain-agnostic architecture
+- Multilingual alias support
+- Identical results to hardcoded adapters
 
 This fulfills the extensibility requirement for a truly generic medical AI
 prototype that supports arbitrary models and datasets.

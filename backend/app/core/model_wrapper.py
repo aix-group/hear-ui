@@ -16,7 +16,7 @@ from .rf_dataset_adapter import RandomForestDatasetAdapter
 try:
     from .config_based_adapter import load_dataset_adapter_from_config
 except ImportError:
-    load_dataset_adapter_from_config = None
+    load_dataset_adapter_from_config = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -333,8 +333,8 @@ class ModelWrapper:
                     tree_probs.append(p[0, 1])
                 else:
                     tree_probs.append(float(p[0]))
-            tree_probs = np.array(tree_probs)
-            std = tree_probs.std()
+            tree_probs = np.array(tree_probs)  # type: ignore[assignment]
+            std = tree_probs.std()  # type: ignore[attr-defined]
             z_score = stats.norm.ppf((1 + confidence_level) / 2)
             half_width = z_score * std
         else:

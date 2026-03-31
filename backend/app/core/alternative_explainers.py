@@ -261,7 +261,7 @@ class LIMEExplainer(ExplainerInterface):
             )
 
         # Generate explanation
-        explanation = self.lime_explainer.explain_instance(
+        explanation = self.lime_explainer.explain_instance(  # type: ignore[attr-defined]
             data_row=X[0],
             predict_fn=model.predict_proba
             if hasattr(model, "predict_proba")

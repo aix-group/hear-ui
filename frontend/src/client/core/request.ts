@@ -21,7 +21,7 @@ export const isStringWithValue = (value: unknown): value is string => {
     return isString(value) && value !== ""
 }
 
-export const isBlob = (value: any): value is Blob => {
+export const isBlob = (value: unknown): value is Blob => {
     return value instanceof Blob
 }
 
@@ -378,7 +378,7 @@ export const request = <T>(
 
                 catchErrorCodes(options, result)
 
-                resolve(result.body)
+                resolve(result.body as T)
             }
         } catch (error) {
             reject(error)

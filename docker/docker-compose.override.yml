@@ -31,17 +31,19 @@ services:
     ports:
       - "5173:80"
 
-  # pgAdmin - PostgreSQL administration tool
+  # pgAdmin - PostgreSQL administration tool (optional)
+  # Start with: docker compose --profile tools up -d
   # Access: http://localhost:5051
-  # Login: admin@hear-ui.local / admin (change in production!)
+  # Login credentials are read from .env (PGADMIN_EMAIL / PGADMIN_PASSWORD)
   pgadmin:
+    profiles: ["tools"]
     image: dpage/pgadmin4:latest
     restart: always
     ports:
       - "5051:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@hear-ui.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     volumes:

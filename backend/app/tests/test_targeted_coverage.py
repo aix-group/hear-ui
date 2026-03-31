@@ -394,7 +394,7 @@ class TestFeaturesRoutes:
 
 
 class TestPredictBatchEndpoint:
-    """Tests for the POST /api/v1/patients/upload endpoint."""
+    """Tests for the POST /api/v1/batch/upload endpoint."""
 
     @pytest.fixture(autouse=True)
     def setup_client(self):
@@ -422,7 +422,7 @@ class TestPredictBatchEndpoint:
             pytest.skip("model_wrapper state not available")
         monkeypatch.setattr(wrapper, "is_loaded", lambda: False)
         resp = self._client.post(
-            "/api/v1/patients/upload",
+            "/api/v1/batch/upload",
             files=self._csv_file([{"Alter [J]": 50, "Geschlecht": "m"}]),
         )
         assert resp.status_code == 503
@@ -433,7 +433,7 @@ class TestPredictBatchEndpoint:
             pytest.skip("Model not loaded in test environment")
         empty_csv = b"Alter [J],Geschlecht\n"
         resp = self._client.post(
-            "/api/v1/patients/upload",
+            "/api/v1/batch/upload",
             files={"file": ("empty.csv", io.BytesIO(empty_csv), "text/csv")},
         )
         assert resp.status_code == 200
@@ -445,7 +445,7 @@ class TestPredictBatchEndpoint:
             pytest.skip("Model not loaded in test environment")
         bad = b"\x00\x01\x02\x03NOTCSV\xff"
         resp = self._client.post(
-            "/api/v1/patients/upload",
+            "/api/v1/batch/upload",
             files={"file": ("bad.bin", io.BytesIO(bad), "application/octet-stream")},
         )
         assert resp.status_code in (400, 422)
@@ -464,7 +464,7 @@ class TestPredictBatchEndpoint:
             }
         ]
         resp = self._client.post(
-            "/api/v1/patients/upload",
+            "/api/v1/batch/upload",
             files=self._csv_file(rows),
         )
         assert resp.status_code == 200
@@ -493,7 +493,7 @@ class TestPredictBatchEndpoint:
             },
         ]
         resp = self._client.post(
-            "/api/v1/patients/upload",
+            "/api/v1/batch/upload",
             files=self._csv_file(rows),
         )
         assert resp.status_code == 200
@@ -513,7 +513,7 @@ class TestPredictBatchEndpoint:
             }
         ]
         resp = self._client.post(
-            "/api/v1/patients/upload?persist=true",
+            "/api/v1/batch/upload?persist=true",
             files=self._csv_file(rows),
         )
         assert resp.status_code == 200

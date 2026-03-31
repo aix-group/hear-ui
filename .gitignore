@@ -92,6 +92,7 @@ backend/venv/
 htmlcov/
 coverage.xml
 nosetests.xml
+frontend/coverage/
 
 # Ignore pytest cache directories at any depth (safety for nested backends)
 **/.pytest_cache/

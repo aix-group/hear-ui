@@ -1,4 +1,6 @@
-# Frontend: i18n und Seitenverwaltung
+# Frontend: i18n und Seitenverwaltung / i18n & Page Management
+
+> **English version below** — Deutsche Version zuerst.
 
 Dieses Dokument beschreibt, wie Internationalisierung (i18n) im Frontend genutzt und neue Seiten oder bestehende Seiten im Frontend bearbeitet werden.
 
@@ -78,8 +80,8 @@ Das Frontend ist eine Vue.js-Anwendung, die `Vue Router` für die Navigation und
 
 ### 1. Eine neue Seite hinzufügen
 
-1.  **Vue-Komponente erstellen**: Erstellen Sie eine neue `.vue`-Datei für Ihre Seite unter `frontend/src/pages/` oder einem geeigneten Unterordner.
-    Beispiel: `frontend/src/pages/AboutPage.vue`
+1.  **Vue-Komponente erstellen**: Erstellen Sie eine neue `.vue`-Datei für Ihre Seite unter `frontend/src/routes/` oder einem geeigneten Unterordner.
+    Beispiel: `frontend/src/routes/AboutPage.vue`
     ```vue
     <template>
       <div class="about-page">
@@ -103,8 +105,8 @@ Das Frontend ist eine Vue.js-Anwendung, die `Vue Router` für die Navigation und
     Importieren Sie Ihre neue Komponente und fügen Sie eine neue Route zum `routes`-Array hinzu:
     ```typescript
     import { createRouter, createWebHistory } from 'vue-router';
-    import HomePage from '../pages/HomePage.vue';
-    import AboutPage from '../pages/AboutPage.vue'; // Importiere deine neue Seite
+    import HomePage from '../routes/HomePage.vue';
+    import AboutPage from '../routes/AboutPage.vue'; // Importiere deine neue Seite
 
     const routes = [
       {
@@ -143,8 +145,124 @@ Das Frontend ist eine Vue.js-Anwendung, die `Vue Router` für die Navigation und
 
 ### 2. Eine bestehende Seite bearbeiten
 
-1.  **Komponente lokalisieren**: Navigieren Sie zu der `.vue`-Datei der Seite, die Sie bearbeiten möchten (z.B. unter `frontend/src/pages/` oder `frontend/src/components/`).
+1.  **Komponente lokalisieren**: Navigieren Sie zu der `.vue`-Datei der Seite, die Sie bearbeiten möchten (z.B. unter `frontend/src/routes/` oder `frontend/src/components/`).
 2.  **Inhalt bearbeiten**: Modifizieren Sie das Template, Skript oder die Stile der Komponente nach Bedarf. Verwenden Sie dabei immer i18n-Schlüssel für alle textuellen Inhalte.
 3.  **Übersetzungen aktualisieren**: Wenn Sie neue Texte hinzufügen oder bestehende ändern, stellen Sie sicher, dass die entsprechenden Einträge in den `frontend/src/locales/*.json`-Dateien aktualisiert werden.
 
 Durch die Einhaltung dieser Richtlinien wird die Konsistenz und Wartbarkeit des Frontends gewährleistet.
+
+---
+
+# English Version
+
+This document describes how internationalisation (i18n) is used in the frontend and how to add or edit pages.
+
+## Internationalisation (i18n)
+
+The frontend uses `i18next` (via `i18next-vue`) for internationalisation. Translations are stored in JSON files, one per language.
+
+### 1. Locating translation files
+
+Translation files are located under `frontend/src/locales/`.
+
+- `en.json` — English translations
+- `de.json` — German translations
+
+Each file contains key-value pairs where the key is a reference string used in code and the value is the translated phrase.
+
+### 2. Adding or editing a translation
+
+1. **Open the JSON file** for the language you want to modify (e.g. `de.json` for German).
+2. **Add / edit the entry** using a semantic key that reflects the content (e.g. `welcome.title`, `button.submit`):
+    ```json
+    {
+      "welcome": {
+        "title": "Welcome to HEAR"
+      },
+      "button": {
+        "submit": "Submit"
+      }
+    }
+    ```
+   Make sure the key exists in **all** language files to avoid missing translations.
+3. **Use in Vue templates** with `$t('your.key.name')`:
+    ```vue
+    <template>
+      <h1>{{ $t('welcome.title') }}</h1>
+      <button>{{ $t('button.submit') }}</button>
+    </template>
+    ```
+4. **Use in TypeScript** with the i18next instance:
+    ```typescript
+    import i18next from 'i18next'
+
+    const message = i18next.t('welcome.title')
+    ```
+
+### 3. Placeholders and dynamic content
+
+Use placeholders to insert dynamic values into translations:
+
+**`en.json`**:
+```json
+{
+  "greeting": "Hello {name}, you have {count} new messages."
+}
+```
+
+**Vue template**:
+```vue
+<template>
+  <p>{{ $t('greeting', { name: 'Max', count: 5 }) }}</p>
+</template>
+```
+
+## Page management
+
+The frontend is a Vue.js application using `Vue Router` for navigation.
+
+### 1. Adding a new page
+
+1. **Create a Vue component** under `frontend/src/routes/` (or a suitable subfolder).
+   Example: `frontend/src/routes/AboutPage.vue`
+    ```vue
+    <template>
+      <div class="about-page">
+        <h1>{{ $t('about.title') }}</h1>
+        <p>{{ $t('about.content') }}</p>
+      </div>
+    </template>
+
+    <script setup lang="ts">
+    </script>
+
+    <style scoped>
+    /* Scoped styles for the AboutPage */
+    </style>
+    ```
+
+2. **Configure the route** in `frontend/src/router/index.ts`.
+   Import your component (prefer lazy loading) and add a route entry:
+    ```typescript
+    const AboutPage = () => import('@/routes/AboutPage.vue')
+
+    // inside routes array:
+    {
+      path: '/about',
+      name: 'About',
+      component: AboutPage,
+    }
+    ```
+
+3. **Add navigation** (optional): add a `router-link` in the navigation drawer or header:
+    ```vue
+    <router-link to="/about">{{ $t('nav.about') }}</router-link>
+    ```
+
+4. **Add translations** for the new page's title and content in all `frontend/src/locales/*.json` files.
+
+### 2. Editing an existing page
+
+1. **Locate the component** — page components live in `frontend/src/routes/`, reusable components in `frontend/src/components/`.
+2. **Edit the template, script, or styles** as needed. Always use i18n keys for user-facing text.
+3. **Update translations** — ensure the corresponding entries in the `frontend/src/locales/*.json` files are kept in sync.
