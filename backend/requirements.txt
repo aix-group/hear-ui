@@ -200,7 +200,7 @@ uvicorn[standard]==0.38.0
     #   fastapi-cloud-cli
 watchfiles==1.1.1
     # via uvicorn
-websockets==15.0.1
+websockets==16.0
     # via uvicorn
 pandas==2.2.3
     # added for CSV upload/processing
