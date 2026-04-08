@@ -208,6 +208,21 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 - **Backend development**: See [backend/README.md](./backend/README.md)
 - **Frontend development**: See [frontend/README.md](./frontend/README.md)
 
+## Citation
+
+If you use this work, please cite:
+
+```bibtex
+@inproceedings{Manafov2026_xailbr_xtab-cds,
+  author = {Manafov, Adelia and Mozharov, Artem and Elhadri, Khawla and Simon, Ramona and Gohe, Jan and Blümer, Max and Williges, Ben and Schlötterer, Jörg and Arweiler-Harbeck, Diana and Höing, Benedikt and Seifert, Christin},
+  booktitle = {xAI Late-breaking Work},
+  title = {XTab-CDS: A lightweight framework for explainable clinical decision support on tabular data},
+  year = {2026},
+  code = {https://github.com/aix-group/hear-ui},
+  note = {accepted}
+}
+```
+
 ## License
 
 This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
