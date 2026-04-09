@@ -202,7 +202,7 @@ watchfiles==1.1.1
     # via uvicorn
 websockets==15.0.1
     # via uvicorn
-pandas==2.2.3
+pandas==3.0.2
     # added for CSV upload/processing
 shap>=0.41.0
     # for explainability (SHAP values)
