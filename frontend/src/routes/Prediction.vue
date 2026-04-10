@@ -1126,8 +1126,30 @@ const featureLabels = computed(() => {
 
 // Re-render chart when labels/values/language change (handled by ExplanationChart component via watch)
 
-watch(language, () => {
+watch(language, async () => {
   void featureDefinitionsStore.loadLabels(language.value)
+
+  // Re-fetch warnings in the new language
+  if (patient_id.value) {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/v1/patients/${encodeURIComponent(patient_id.value)}/explainer`,
+        {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            'Accept-Language': language.value || 'de',
+          },
+        }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        predictionWarnings.value = Array.isArray(data.warnings) ? data.warnings : []
+      }
+    } catch {
+      // keep existing warnings on error
+    }
+  }
 })
 
 onMounted(async () => {
