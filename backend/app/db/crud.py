@@ -85,9 +85,13 @@ def find_duplicate_patient(
         return None
     statement = select(Patient).where(
         Patient.display_name == display_name,
-        Patient.input_features["Geburtsdatum"].astext == birth_date,  # type: ignore[index]
     )
-    return session.exec(statement).first()
+    candidates = session.exec(statement).all()
+    for patient in candidates:
+        features = patient.input_features or {}
+        if str(features.get("Geburtsdatum", "")).strip() == birth_date.strip():
+            return patient
+    return None
 
 
 def create_patient(session: Session, patient_in: PatientCreate) -> Patient:
@@ -123,10 +127,10 @@ def search_patients_by_name(
 
     Requires the `display_name` column to be present on the `patient` table.
     """
-    # Prefix search on display_name – since the format is "Nachname, Vorname",
-    # this matches patients whose last name starts with the query (alphabetical
-    # directory-style filtering). Case-insensitive via ilike.
-    stmt = select(Patient).where(Patient.display_name.ilike(f"{q}%"))  # type: ignore[union-attr]
+    # Substring search on display_name – matches anywhere in the name
+    # (supports searching by first name, last name, or partial match).
+    # Case-insensitive via ilike.
+    stmt = select(Patient).where(Patient.display_name.ilike(f"%{q}%"))  # type: ignore[union-attr]
     stmt = stmt.offset(offset).limit(limit)
     return session.exec(stmt).all()  # type: ignore[return-value]
 

@@ -25,10 +25,10 @@ logger = logging.getLogger(__name__)
 # Each tuple lists alternative key names (German raw / English normalized / alias)
 # ---------------------------------------------------------------------------
 _MINIMUM_PREDICTION_GROUPS: list[tuple[str, tuple[str, ...]]] = [
-    ("Geschlecht (Gender)", ("Geschlecht", "gender", "geschlecht")),
-    ("Alter [J] (Age)", ("Alter [J]", "age", "alter")),
+    ("Gender (Geschlecht)", ("Geschlecht", "gender", "geschlecht")),
+    ("Age (Alter [J])", ("Alter [J]", "age", "alter")),
     (
-        "Hörminderung operiertes Ohr (Hearing Loss)",
+        "Hearing loss operated ear (Hörminderung operiertes Ohr)",
         ("Diagnose.Höranamnese.Hörminderung operiertes Ohr...", "hl_operated_ear"),
     ),
 ]
