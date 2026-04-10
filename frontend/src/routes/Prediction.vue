@@ -1009,7 +1009,7 @@ async function callWhatIf() {
       `${API_BASE}/api/v1/patients/${encodeURIComponent(patient_id.value)}/predict-override`,
       {
         method: 'POST',
-        headers: {'Content-Type': 'application/json', accept: 'application/json'},
+        headers: {'Content-Type': 'application/json', accept: 'application/json', 'Accept-Language': i18next.language || 'de'},
         body: JSON.stringify({overrides: whatIfValues.value}),
       }
     )
@@ -1168,6 +1168,7 @@ onMounted(async () => {
           method: "GET",
           headers: {
             accept: "application/json",
+            'Accept-Language': i18next.language || 'de',
           },
         }
     );
