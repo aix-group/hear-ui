@@ -127,10 +127,10 @@ def search_patients_by_name(
 
     Requires the `display_name` column to be present on the `patient` table.
     """
-    # Substring search on display_name – matches anywhere in the name
-    # (supports searching by first name, last name, or partial match).
-    # Case-insensitive via ilike.
-    stmt = select(Patient).where(Patient.display_name.ilike(f"%{q}%"))  # type: ignore[union-attr]
+    # Prefix search on display_name – since the format is "Nachname, Vorname",
+    # this matches patients whose last name starts with the query (alphabetical
+    # directory-style filtering). Case-insensitive via ilike.
+    stmt = select(Patient).where(Patient.display_name.ilike(f"{q}%"))  # type: ignore[union-attr]
     stmt = stmt.offset(offset).limit(limit)
     return session.exec(stmt).all()  # type: ignore[return-value]
 
