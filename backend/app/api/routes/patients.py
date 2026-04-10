@@ -22,16 +22,25 @@ logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Minimum fields required to make a meaningful prediction
-# Each tuple lists alternative key names (German raw / English normalized / alias)
+# Each tuple: (de_label, en_label, alternative_key_names)
 # ---------------------------------------------------------------------------
-_MINIMUM_PREDICTION_GROUPS: list[tuple[str, tuple[str, ...]]] = [
-    ("Gender (Geschlecht)", ("Geschlecht", "gender", "geschlecht")),
-    ("Age (Alter [J])", ("Alter [J]", "age", "alter")),
+_MINIMUM_PREDICTION_GROUPS: list[tuple[str, str, tuple[str, ...]]] = [
+    ("Geschlecht", "Gender", ("Geschlecht", "gender", "geschlecht")),
+    ("Alter [J]", "Age", ("Alter [J]", "age", "alter")),
     (
-        "Hearing loss operated ear (Hörminderung operiertes Ohr)",
+        "Hörminderung operiertes Ohr",
+        "Hearing loss (operated ear)",
         ("Diagnose.Höranamnese.Hörminderung operiertes Ohr...", "hl_operated_ear"),
     ),
 ]
+
+
+def _get_locale(request: Request) -> str:
+    """Extract locale from Accept-Language header, default to 'de'."""
+    accept = (request.headers.get("accept-language") or "").lower()
+    if accept.startswith("en"):
+        return "en"
+    return "de"
 
 
 def _extract_birth_year(patient) -> int | None:
@@ -70,13 +79,13 @@ def _extract_birth_date(patient) -> str | None:
     return None
 
 
-def _missing_prediction_fields(features: dict) -> list[str]:
+def _missing_prediction_fields(features: dict, locale: str = "de") -> list[str]:
     """Return human-readable names of minimum groups that are missing/empty."""
     missing = []
-    for label, aliases in _MINIMUM_PREDICTION_GROUPS:
+    for de_label, en_label, aliases in _MINIMUM_PREDICTION_GROUPS:
         has_value = any(features.get(k) not in (None, "", [], "Keine") for k in aliases)
         if not has_value:
-            missing.append(label)
+            missing.append(en_label if locale == "en" else de_label)
     return missing
 
 
@@ -92,6 +101,7 @@ class PaginatedPatientsResponse(BaseModel):
 
 @router.post("/", response_model=Patient, status_code=status.HTTP_201_CREATED)
 def create_patient_api(
+    request: Request,
     session: SessionDep,
     patient_in: PatientCreate = Body(
         ...,
@@ -133,15 +143,20 @@ def create_patient_api(
             )
 
         # Validate minimum fields required for a prediction
-        missing = _missing_prediction_fields(patient_in.input_features)
+        locale = _get_locale(request)
+        missing = _missing_prediction_fields(patient_in.input_features, locale)
         if missing:
-            raise HTTPException(
-                status_code=422,
-                detail=(
+            if locale == "en":
+                detail = (
                     f"Missing required prediction fields: {', '.join(missing)}. "
                     "Please provide at least gender, age, and hearing loss (operated ear)."
-                ),
-            )
+                )
+            else:
+                detail = (
+                    f"Fehlende Mindestfelder für die Vorhersage: {', '.join(missing)}. "
+                    "Bitte mindestens Geschlecht, Alter und Hörminderung (operiertes Ohr) angeben."
+                )
+            raise HTTPException(status_code=422, detail=detail)
 
         # Silently prevent duplicates (same display_name + Geburtsdatum)
         birth_date = (patient_in.input_features or {}).get("Geburtsdatum")

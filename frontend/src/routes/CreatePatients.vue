@@ -907,6 +907,7 @@ const onSubmit = handleSubmit(
         headers: {
           'Content-Type': 'application/json',
           accept: 'application/json',
+          'Accept-Language': i18next.language || 'de',
         },
         body: JSON.stringify({
           input_features: payload.input_features,
@@ -922,7 +923,7 @@ const onSubmit = handleSubmit(
             const data = await response.json()
             const rawDetail = (data?.detail as string) ?? JSON.stringify(data)
             // Translate minimum-fields backend error to current UI language
-            if (rawDetail && rawDetail.includes('Mindestfelder')) {
+            if (rawDetail && (rawDetail.includes('Mindestfelder') || rawDetail.includes('Missing required prediction fields'))) {
               errorMessage = i18next.t('form.minimum_fields_error')
               // Highlight the minimum prediction fields that are empty
               highlightEmptyMinimumFields()
