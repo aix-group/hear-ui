@@ -6,7 +6,7 @@
 
 **HEAR-UI** is an AI-assisted clinical decision support system designed to estimate Cochlear Implant outcomes and explain predictions using explainable AI (XAI). It provides machine learning-based outcome predictions, interactive SHAP explanations, patient management, and clinical feedback collection — all engineered as a **decision support tool** where the final decision always rests with the medical professional.
 
-**More information:** [Paper](docs/XAI-2026_Final_paper_4714.pdf) | [Demo video](https://youtu.be/lAfsEkYf-oE) | [System Design](docs/SYSTEM_DESIGN.md) | [Final Report](docs/EndReport.pdf) | [User Manual](docs/USER_MANUAL.md) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md)
+**More information:** [Paper](docs/XAI-2026_Final_paper_4714.pdf) | [Demo video](https://youtu.be/lAfsEkYf-oE) | [User Manual](docs/USER_MANUAL.md) | [System Design](docs/SYSTEM_DESIGN.md) | [Final Report](docs/EndReport.pdf) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md)
 
 ## Quickstart
 
